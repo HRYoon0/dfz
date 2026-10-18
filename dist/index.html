@@ -1,0 +1,309 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>디지털 핏 게임 모음</title>
+<style>
+  :root { --bg: #202B3D; --surface: #30435A; --card: #283850; --ink: #F4F8FF; --muted: #CCDCE9; --line: rgba(255,255,255,.12);
+    --lime: #D1F58E; --mint: #A4F0D7; --sun: #FFD66B; --coral: #FF8A7A; --sky: #8CC8FF; --violet: #C7A4FF;
+    --font: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 500 16px/1.6 var(--font); }
+  header { padding: 32px 4% 8px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; }
+  h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  .count { color: var(--lime); font-weight: 800; font-size: 18px; white-space: nowrap; }
+  .bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 14px 4%; display: flex; flex-wrap: wrap; gap: 10px 24px; border-bottom: 1px solid var(--line); }
+  .group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .group span { color: var(--muted); font-size: 14px; margin-right: 4px; }
+  .chip { font: 700 15px var(--font); color: var(--ink); background: var(--surface); border: 2px solid transparent; border-radius: 99px; padding: 6px 14px; cursor: pointer; }
+  .chip:hover { border-color: rgba(255,255,255,.35); }
+  .chip.on { background: var(--lime); color: #13202F; }
+  main { padding: 20px 4% 48px; }
+  .grade { margin: 18px 0 10px; font-size: 20px; font-weight: 800; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card { text-align: left; font: inherit; color: inherit; background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 0; overflow: hidden; cursor: pointer;
+    display: flex; flex-direction: column; transition: transform .15s ease-out, border-color .15s; }
+  .card:hover { transform: translateY(-3px); border-color: var(--c); }
+  .card:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+  .thumb { height: 128px; background: var(--surface); position: relative; }
+  .thumb canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tag { position: absolute; left: 12px; top: 12px; font-size: 13px; font-weight: 800; color: #13202F; background: var(--c); border-radius: 99px; padding: 2px 10px; }
+  .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .body h3 { margin: 0; font-size: 18px; font-weight: 800; }
+  .body p { margin: 0; color: var(--muted); font-size: 14.5px; }
+  .meta { margin-top: auto; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .meta b { font-size: 13px; font-weight: 700; color: var(--ink); background: rgba(255,255,255,.08); border-radius: 6px; padding: 2px 8px; }
+  .empty { color: var(--muted); padding: 40px 0; }
+  /* 크게 보기 */
+  #player { position: fixed; inset: 0; z-index: 10; background: #0E1626; display: none; flex-direction: column; padding: 14px 2% 12px; gap: 10px; }
+  #player.open { display: flex; }
+  #player .top { display: flex; align-items: center; gap: 12px; }
+  #player h2 { margin: 0; font-size: 20px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #player a, #player button { font: 700 15px var(--font); color: var(--ink); background: var(--surface); border: 0; border-radius: 10px; padding: 8px 14px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  #player button.close { background: var(--lime); color: #13202F; }
+  #player iframe { flex: 1; width: 100%; border: 0; border-radius: 14px; background: #202B3D; }
+  #player .keys { color: var(--muted); font-size: 14px; }
+  @media (max-width: 600px) { h1 { font-size: 24px; } .bar { gap: 8px; } }
+</style>
+</head><body>
+<header>
+  <div>
+    <h1>디지털 핏 게임 모음</h1>
+    <p>Digital Fit Zone 웹 게임 규격으로 만든 게임들 — 카드를 누르면 바로 해 볼 수 있어요 (키보드·화면 단추로 가짜 참가자 조작)</p>
+  </div>
+  <div class="count" id="count"></div>
+</header>
+<div class="bar">
+  <div class="group" id="grades"><span>학년</span></div>
+  <div class="group" id="kinds"><span>종류</span></div>
+</div>
+<main id="list"></main>
+<div id="player" role="dialog" aria-modal="true" aria-labelledby="ptitle">
+  <div class="top"><h2 id="ptitle"></h2><a id="pnew" target="_blank" rel="noopener">새 탭으로</a><button class="close" id="pclose">닫기</button></div>
+  <iframe id="pframe" title="게임"></iframe>
+  <div class="keys" id="pkeys"></div>
+</div>
+<script>
+/* 게임 목록은 build_games.py가 content/*.json과 룰셋에서 만들어 넣는다 */
+const GAMES = [{"file": "g1-ox-camera.html", "kind": "camera", "grade": 1, "title": "1학년 몸으로 OX", "description": "문장을 보고 맞으면 만세, 틀리면 앉는다. 1학년 수·모양·시각·한글·안전 단원.", "devices": "카메라", "players": "1~6명", "seconds": 90, "items": 14}, {"file": "g1-tilt-controller.html", "kind": "controller", "grade": 1, "title": "1학년 기울여 맞추기", "description": "문제의 수를 0~10 수 막대에서 찾는다. 기울이면 한 칸씩, 누르면 확정.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 8}, {"file": "g1-sort-pointer.html", "kind": "pointer", "grade": 1, "title": "1학년 콕콕 분류", "description": "수 카드를 집어 5보다 작은 수와 큰 수로 나눈다. 컨트롤러마다 자기 커서.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 12}, {"file": "g2-ox-camera.html", "kind": "camera", "grade": 2, "title": "2학년 몸으로 OX", "description": "문장을 보고 맞으면 만세, 틀리면 앉는다. 2학년 세·네 자리 수, 도형, 덧셈·뺄셈, 길이, 곱셈구구, 시각 단원.", "devices": "카메라", "players": "1~6명", "seconds": 90, "items": 14}, {"file": "g2-tilt-controller.html", "kind": "controller", "grade": 2, "title": "2학년 기울여 맞추기", "description": "문제의 길이를 0~10 cm 자에서 찾는다. 기울이면 1 cm씩, 누르면 확정.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 8}, {"file": "g2-sort-pointer.html", "kind": "pointer", "grade": 2, "title": "2학년 콕콕 분류", "description": "곱셈 카드를 집어 답이 20보다 작은지 큰지 나눈다. 컨트롤러마다 자기 커서.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 12}, {"file": "g3-ox-camera.html", "kind": "camera", "grade": 3, "title": "3학년 몸으로 OX", "description": "문장을 보고 맞으면 만세, 틀리면 앉는다. 3학년 수학·과학·영어 단원.", "devices": "카메라", "players": "1~6명", "seconds": 90, "items": 14}, {"file": "g3-tilt-controller.html", "kind": "controller", "grade": 3, "title": "3학년 기울여 맞추기", "description": "분수·소수만큼 막대를 채운다. 기울이면 한 칸씩, 누르면 확정.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 8}, {"file": "g3-sort-pointer.html", "kind": "pointer", "grade": 3, "title": "3학년 콕콕 분류", "description": "분수 카드를 집어 1/2보다 작은지 큰지 나눈다. 컨트롤러마다 자기 커서.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 12}, {"file": "g4-ox-camera.html", "kind": "camera", "grade": 4, "title": "4학년 몸으로 OX", "description": "문장을 보고 맞으면 만세, 틀리면 앉는다. 4학년 각도·도형·분수·소수·그래프·과학 단원.", "devices": "카메라", "players": "1~6명", "seconds": 90, "items": 14}, {"file": "g4-tilt-controller.html", "kind": "controller", "grade": 4, "title": "4학년 기울여 맞추기", "description": "각도기에서 각을 맞추고, 소수만큼 막대를 채운다. 기울이면 한 칸씩, 누르면 확정.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 8}, {"file": "g4-sort-pointer.html", "kind": "pointer", "grade": 4, "title": "4학년 콕콕 분류", "description": "세 각의 크기 카드를 집어 예각·직각·둔각삼각형으로 나눈다. 컨트롤러마다 자기 커서.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 9}, {"file": "g5-ox-camera.html", "kind": "camera", "grade": 5, "title": "5학년 몸으로 OX", "description": "문장을 보고 맞으면 만세, 틀리면 앉는다. 5학년 약수·배수·분수·넓이·평균·과학 단원.", "devices": "카메라", "players": "1~6명", "seconds": 90, "items": 14}, {"file": "g5-tilt-controller.html", "kind": "controller", "grade": 5, "title": "5학년 기울여 맞추기", "description": "약분·통분한 분수만큼, 소수만큼 막대를 채운다. 기울이면 한 칸씩, 누르면 확정.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 8}, {"file": "g5-sort-pointer.html", "kind": "pointer", "grade": 5, "title": "5학년 콕콕 분류", "description": "수 카드를 집어 12의 약수와 12의 배수로 나눈다. 컨트롤러마다 자기 커서.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 10}, {"file": "g6-ox-camera.html", "kind": "camera", "grade": 6, "title": "6학년 몸으로 OX", "description": "문장을 보고 맞으면 만세, 틀리면 앉는다. 6학년 분수·소수 나눗셈, 입체도형, 비율, 원, 과학 단원.", "devices": "카메라", "players": "1~6명", "seconds": 90, "items": 14}, {"file": "g6-tilt-controller.html", "kind": "controller", "grade": 6, "title": "6학년 기울여 맞추기", "description": "비율을 백분율 막대에서 찾고, 비례배분 값을 맞춘다. 기울이면 한 칸씩, 누르면 확정.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 8}, {"file": "g6-sort-pointer.html", "kind": "pointer", "grade": 6, "title": "6학년 콕콕 분류", "description": "입체도형 카드를 집어 각기둥과 각뿔로 나눈다. 컨트롤러마다 자기 커서.", "devices": "폰·컨트롤러", "players": "1~30명", "seconds": 120, "items": 10}, {"file": "rocket-jump.html", "kind": "other", "grade": 0, "title": "로켓 점프", "description": "점프할 때마다 내 로켓이 올라간다. 운석 경보가 뜨면 앉아서 방패를 켠다.", "devices": "카메라", "players": "1~6명", "seconds": 60, "items": 0}];
+var Buddy = (function () {
+  'use strict';
+  var POSES = ['idle', 'raise', 'squat', 'jump', 'lean', 'cheer', 'oops'];
+  var ink = '#13202F';
+  var rim = 'rgba(255,255,255,.55)';
+  function oval(c, x, y, rx, ry, fill, edge) {
+    c.beginPath();
+    c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    c.fillStyle = fill;
+    c.fill();
+    if (edge) { c.strokeStyle = edge; c.stroke(); }
+  }
+  function line(c, points, color, width) {
+    c.beginPath();
+    c.moveTo(points[0], points[1]);
+    for (var i = 2; i < points.length; i += 2) c.lineTo(points[i], points[i + 1]);
+    c.strokeStyle = color;
+    c.lineWidth = width;
+    c.stroke();
+  }
+  function body(c) {
+    c.beginPath();
+    c.moveTo(-29, -48);
+    c.bezierCurveTo(-29, -73, -15, -87, 1, -87);
+    c.bezierCurveTo(21, -87, 30, -69, 29, -51);
+    c.bezierCurveTo(39, -24, 23, -9, 1, -10);
+    c.bezierCurveTo(-24, -8, -39, -23, -29, -48);
+    c.closePath();
+  }
+  /* 발바닥 중앙이 원점인 높이 100의 설계 좌표. 모든 변형은 호출 안에서 복원한다. */
+  function draw(ctx, o) {
+    o = o || {};
+    var size = Number(o.size);
+    if (!(size > 0) || !isFinite(size)) return;
+    var pose = POSES.indexOf(o.pose) >= 0 ? o.pose : 'idle';
+    var t = typeof o.t === 'number' && isFinite(o.t) ? o.t : 0;
+    var color = o.color || '#D1F58E';
+    var mood = o.mood || (pose === 'oops' ? 'sad' : pose === 'idle' || pose === 'lean' || pose === 'squat' ? 'calm' : 'happy');
+    var breath = Math.sin(t / 650) * .012;
+    var blink = t > 0 && t % 3900 > 3750;
+    var crouch = pose === 'squat';
+    var airborne = pose === 'jump';
+    var angle = pose === 'lean' ? Math.max(-1, Math.min(1, Number(o.lean) || 0)) * .32 : pose === 'oops' ? Math.sin(t / 180) * .045 : 0;
+    ctx.save();
+    try {
+      ctx.translate(Number(o.x) || 0, Number(o.y) || 0);
+      ctx.scale(size / 100, size / 100);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.translate(0, airborne ? -10 - (1 + Math.sin(t / 240)) * 2 : 0);
+      ctx.rotate(angle);
+      ctx.scale(crouch ? 1.12 : 1 - breath / 2, crouch ? .73 : 1 + breath);
+      ctx.lineWidth = 2.2;
+      oval(ctx, -15, -6, 9, 5, color, rim);
+      oval(ctx, 15, -6, 9, 5, color, rim);
+      /* 팔은 몸 뒤에서 연결하고 둥근 끝을 사용한다. */
+      var lifted = pose === 'raise' || pose === 'cheer' || airborne;
+      [-1, 1].forEach(function (side) {
+        var endY = lifted ? (pose === 'raise' ? -80 : -68) : crouch ? -22 : -30;
+        line(ctx, [side * 25, -48, side * 39, endY], rim, 13);
+        line(ctx, [side * 25, -48, side * 39, endY], color, 9);
+      });
+      body(ctx);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.save();
+      try {
+        ctx.clip();
+        oval(ctx, 0, -10, 38, 12, 'rgba(0,0,0,.18)');
+      } finally { ctx.restore(); }
+      body(ctx);
+      ctx.strokeStyle = rim;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      /* 짧은 새싹 한 개와 잎 한 장. */
+      line(ctx, [0, -87, 0, -95], '#D1F58E', 2.8);
+      ctx.beginPath();
+      ctx.moveTo(0, -94);
+      ctx.bezierCurveTo(2, -100, 10, -99, 11, -97);
+      ctx.bezierCurveTo(9, -91, 3, -91, 0, -94);
+      ctx.fillStyle = '#D1F58E';
+      ctx.fill();
+      oval(ctx, -19, -49, 5, 3, '#FF8A7A');
+      oval(ctx, 19, -49, 5, 3, '#FF8A7A');
+      [-1, 1].forEach(function (side) {
+        var x = side * 11;
+        if (pose === 'oops') {
+          line(ctx, [x - 3, -63, x + 3, -57], ink, 2.8);
+          line(ctx, [x + 3, -63, x - 3, -57], ink, 2.8);
+        } else if (blink || pose === 'cheer') {
+          ctx.beginPath();
+          ctx.moveTo(x - 4, -58);
+          ctx.quadraticCurveTo(x, blink ? -58 : -65, x + 4, -58);
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 2.8;
+          ctx.stroke();
+        } else oval(ctx, x, -60, 3.8, 5, ink);
+      });
+      ctx.beginPath();
+      ctx.moveTo(-4, -48);
+      ctx.quadraticCurveTo(0, mood === 'sad' ? -53 : -42, 4, -48);
+      if (mood === 'happy') {
+        ctx.quadraticCurveTo(0, -36, -4, -48);
+        ctx.fillStyle = ink;
+        ctx.fill();
+        oval(ctx, 0, -43, 2.3, 1.4, '#FF8A7A');
+      } else {
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 2.3;
+        ctx.stroke();
+      }
+      if (o.label !== undefined && o.label !== null && String(o.label)) {
+        oval(ctx, 0, -27, 11, 10, 'rgba(255,255,255,.75)');
+        ctx.fillStyle = ink;
+        ctx.font = "bold 11px 'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Array.from(String(o.label)).slice(0, 3).join(''), 0, -26, 19);
+      }
+      if (crouch || airborne) {
+        ctx.lineWidth = 2.2;
+        oval(ctx, -17, -12, 8, 7, color, rim);
+        oval(ctx, 17, -12, 8, 7, color, rim);
+      }
+      if (pose === 'cheer') {
+        [-1, 1].forEach(function (s) {
+          line(ctx, [s * 35, -87, s * 40, -92], '#FFD66B', 3);
+          line(ctx, [s * 43, -77, s * 48, -79], '#FFD66B', 3);
+        });
+      }
+      if (pose === 'oops') {
+        ctx.beginPath();
+        for (var j = 0; j <= 24; j++) {
+          var a = j * .39;
+          var r = 1 + j * .17;
+          var px = 38 + Math.cos(a) * r;
+          var py = -83 + Math.sin(a) * r;
+          if (!j) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = '#F4F8FF';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+      }
+    } finally { ctx.restore(); }
+  }
+  return { draw: draw, POSES: POSES.slice() };
+})();
+
+const KINDS = {
+  camera:     { name: '몸으로 OX',     color: '#A4F0D7', pose: 'raise', keys: '만세 1~6 · 앉기 Q~Y · 스페이스로 시작' },
+  controller: { name: '기울여 맞추기', color: '#8CC8FF', pose: 'lean',  keys: '◀ 1~6 · ▶ Q~Y · 누르기 A~H · 흔들기 Z~N · 스페이스로 시작' },
+  pointer:    { name: '콕콕 분류',     color: '#FFD66B', pose: 'cheer', keys: '마우스 = 1번 커서(누른 채 끌어 놓기) · ◀ 1~6 · ▶ Q~Y · 누르기 A~H(떼면 놓기) · 스페이스로 시작' },
+  other:      { name: '그 밖의 게임',  color: '#C7A4FF', pose: 'jump',  keys: '점프 1~6 · 앉기 Q~Y · 스페이스로 시작' },
+};
+const SEAT = ['#FF8A7A', '#8CC8FF', '#D1F58E', '#FFD66B', '#C7A4FF', '#A4F0D7'];
+let grade = 'all', kind = 'all';
+
+function chip(box, label, value, cur, onPick) {
+  const b = document.createElement('button');
+  b.className = 'chip' + (value === cur ? ' on' : '');
+  b.textContent = label;
+  b.onclick = function () { onPick(value); };
+  box.appendChild(b);
+}
+function drawFilters() {
+  const g = document.getElementById('grades'), k = document.getElementById('kinds');
+  g.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
+  k.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
+  const pickG = function (v) { grade = v; render(); }, pickK = function (v) { kind = v; render(); };
+  chip(g, '전체', 'all', grade, pickG);
+  for (let n = 1; n <= 6; n++) chip(g, n + '학년', n, grade, pickG);
+  chip(g, '학년 무관', 0, grade, pickG);
+  chip(k, '전체', 'all', kind, pickK);
+  Object.keys(KINDS).forEach(function (id) { if (GAMES.some(function (x) { return x.kind === id; })) chip(k, KINDS[id].name, id, kind, pickK); });
+}
+
+function thumb(canvas, g, i) {
+  const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+  const ctx = canvas.getContext('2d'), W = canvas.width, H = canvas.height, k = KINDS[g.kind] || KINDS.other;
+  const n = 3, s = H * 0.78;
+  for (let j = 0; j < n; j++) {
+    const x = W * (0.5 + (j - 1) * 0.24), pose = j === 1 ? k.pose : (k.pose === 'lean' ? 'lean' : 'idle');
+    Buddy.draw(ctx, { x: x, y: H * 0.95, size: j === 1 ? s : s * 0.8, color: SEAT[(i + j * 2) % 6], pose: pose, lean: j === 0 ? -1 : 1, t: 1, label: String(j + 1) });
+  }
+}
+
+function render() {
+  drawFilters();
+  const box = document.getElementById('list');
+  box.innerHTML = '';
+  const shown = GAMES.filter(function (g) { return (grade === 'all' || g.grade === grade) && (kind === 'all' || g.kind === kind); });
+  document.getElementById('count').textContent = '게임 ' + shown.length + ' / ' + GAMES.length + '개';
+  if (!shown.length) { box.innerHTML = '<p class="empty">조건에 맞는 게임이 없어요.</p>'; return; }
+  const groups = {};
+  shown.forEach(function (g) { (groups[g.grade] = groups[g.grade] || []).push(g); });
+  Object.keys(groups).sort(function (a, b) { return (a == 0) - (b == 0) || a - b; }).forEach(function (gr) {
+    const h = document.createElement('h2'); h.className = 'grade'; h.textContent = gr == 0 ? '학년 무관' : gr + '학년';
+    const grid = document.createElement('div'); grid.className = 'grid';
+    box.appendChild(h); box.appendChild(grid);
+    groups[gr].forEach(function (g, i) {
+      const k = KINDS[g.kind] || KINDS.other;
+      const c = document.createElement('button'); c.className = 'card'; c.style.setProperty('--c', k.color);
+      c.innerHTML = '<div class="thumb"><canvas></canvas><span class="tag"></span></div><div class="body"><h3></h3><p></p><div class="meta"></div></div>';
+      c.querySelector('.tag').textContent = k.name;
+      c.querySelector('h3').textContent = g.title;
+      c.querySelector('p').textContent = g.description;
+      const meta = c.querySelector('.meta');
+      [g.devices, g.players, g.seconds + '초', g.items ? g.items + '문항' : ''].forEach(function (t) {
+        if (!t) return; const b = document.createElement('b'); b.textContent = t; meta.appendChild(b);
+      });
+      c.onclick = function () { play(g); };
+      grid.appendChild(c);
+      thumb(c.querySelector('canvas'), g, i);
+    });
+  });
+}
+
+let lastFocus = null;
+function play(g) {
+  lastFocus = document.activeElement;
+  const p = document.getElementById('player'), f = document.getElementById('pframe');
+  document.getElementById('ptitle').textContent = g.title;
+  document.getElementById('pnew').href = g.file;
+  document.getElementById('pkeys').textContent = '키: ' + (KINDS[g.kind] || KINDS.other).keys;
+  f.src = g.file;
+  p.classList.add('open');
+  f.onload = function () { f.focus(); };   /* 키 입력이 바로 게임으로 가게 */
+}
+function closePlayer() {
+  const p = document.getElementById('player');
+  if (!p.classList.contains('open')) return;
+  p.classList.remove('open');
+  document.getElementById('pframe').src = 'about:blank';
+  if (lastFocus) lastFocus.focus();
+}
+document.getElementById('pclose').onclick = closePlayer;
+window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePlayer(); });
+window.addEventListener('resize', function () { render(); });
+render();
+</script>
+</body></html>

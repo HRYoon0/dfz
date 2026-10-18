@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "ruleSetId": "fa816686-aaff-5121-b705-a223d4c1952a",
+  "title": "6학년 기울여 맞추기",
+  "description": "비율을 백분율 막대에서 찾고, 비례배분 값을 맞춘다. 기울이면 한 칸씩, 누르면 확정.",
+  "category": "Accuracy",
+  "players": {
+    "min": 1,
+    "max": 30,
+    "teams": {
+      "enabled": false
+    }
+  },
+  "duration": {
+    "mode": "Timed",
+    "seconds": 120,
+    "countdownSeconds": 3
+  },
+  "inputs": {
+    "required": [
+      "Tilt",
+      "Press"
+    ],
+    "optional": [
+      "Shake"
+    ],
+    "deviceKinds": [
+      "Phone",
+      "Controller"
+    ],
+    "minMagnitude": 0.35
+  },
+  "flow": {
+    "type": "Web",
+    "web": {
+      "entry": "web/game.html",
+      "people": 30,
+      "bridge": "players"
+    }
+  },
+  "scoring": {
+    "rules": [
+      {
+        "id": "reported",
+        "trigger": "OnAction",
+        "when": {
+          "action": "Tilt",
+          "minMagnitude": 0.0,
+          "cooldownMs": 0
+        },
+        "award": {
+          "points": 1,
+          "target": "Player"
+        }
+      }
+    ],
+    "aggregation": "Sum",
+    "teamAggregation": "Average",
+    "allowNegative": false
+  },
+  "victory": {
+    "condition": "HighestScore",
+    "scope": "Individual",
+    "tieBreak": [
+      "Draw"
+    ],
+    "showRanking": 5
+  },
+  "difficulty": {
+    "default": "Normal"
+  },
+  "guide": {
+    "ko": {
+      "moves": [
+        {
+          "action": "Tilt",
+          "effect": "기울이면 내 눈금이 한 칸씩 움직인다"
+        },
+        {
+          "action": "Press",
+          "effect": "누르면 답을 확정한다(흔들어도 된다)"
+        }
+      ],
+      "scoring": [
+        {
+          "rule": "reported",
+          "text": "정답 칸에 맞추면 1점 — 확정하지 않아도 시간이 끝날 때 위치로 채점"
+        }
+      ],
+      "cautions": [
+        "컨트롤러 끈을 손목에 건다",
+        "흔들 때 옆 친구와 부딪히지 않게 간격을 둔다"
+      ]
+    }
+  }
+}

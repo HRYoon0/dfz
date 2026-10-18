@@ -1,0 +1,19 @@
+{
+  "kind": "controller", "grade": 1, "title": "1학년 기울여 맞추기",
+  "description": "문제의 수를 0~10 수 막대에서 찾는다. 기울이면 한 칸씩, 누르면 확정.",
+  "seconds": 120, "answerSec": 12,
+  "source": "885 기획안 기울기센서형 — 9까지의 수, 모으기와 가르기, 한 자리 덧셈과 뺄셈 (수치 조절·비교)",
+  "scales": {
+    "ten": { "view": "bar", "unit": "", "stops": ["0","1","2","3","4","5","6","7","8","9","10"] }
+  },
+  "items": [
+    { "ask": "3과 5를 모으면?", "scale": "ten", "answer": "8" },
+    { "ask": "10은 6과 몇?", "scale": "ten", "answer": "4" },
+    { "ask": "7보다 2 작은 수", "scale": "ten", "answer": "5" },
+    { "ask": "2 + 7 = ?", "scale": "ten", "answer": "9" },
+    { "ask": "9 − 3 = ?", "scale": "ten", "answer": "6" },
+    { "ask": "5와 5를 모으면?", "scale": "ten", "answer": "10" },
+    { "ask": "6보다 1 큰 수", "scale": "ten", "answer": "7" },
+    { "ask": "8 − 5 = ?", "scale": "ten", "answer": "3" }
+  ]
+}

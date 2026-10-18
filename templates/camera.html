@@ -1,0 +1,175 @@
+<!doctype html><html><head><meta charset="utf-8"><title>__TITLE__</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #202B3D; }
+</style>
+</head><body><script>
+/* 카메라 틀 「몸으로 OX」 — 문장을 보고 맞으면 만세(O), 틀리면 앉기(X).
+   885 기획안의 판별·선택형(근거 선택·특징 판별·예측 선택·듣기 뜻 매칭 …)을 몸 동작 하나로 묶었다.
+   내용(GAME)은 content/<id>.json에서 build_games.py가 넣는다. */
+const GAME = /*@GAME@*/null;
+dfz.ui.frame({ title: GAME.title, hint: '맞으면 만세 · 틀리면 앉기' });   /* 맨 먼저 */
+
+/*@BUDDY@*/
+/*@COMMON@*/
+
+const READ_MS = 1500;                          /* 문제를 읽는 시간 — 이때부터 답할 수 있다 */
+const ANSWER_MS = (GAME.answerSec || 6) * 1000; /* 답하는 시간 — 마지막 동작이 답이 된다 */
+const SHOW_MS = 3000;                          /* 정답 보여 주는 시간 */
+const POSE_MS = 900;                           /* 동작 하나에 캐릭터가 따라 하는 시간 */
+
+const canvas = dfz.ui.canvas();
+const ctx = canvas.getContext('2d');
+
+let cfg = null, playing = false, over = false, startAt = 0;
+const people = {};
+let order = [];
+let deck = [], q = null, qNo = 0, phase = 'wait', phaseAt = 0;
+
+dfz.on('ready', function (c) { cfg = c; });
+dfz.on('players', function (list) {
+  order = syncPeople(people, list, function (p) {
+    return { seat: p.seat, index: p.index, color: p.color || PAL.mint, score: 0, pick: null, result: null, act: 'idle', actAt: 0 };
+  });
+});
+dfz.on('start', function () {
+  playing = true;
+  startAt = performance.now();
+  nextQuestion(startAt);
+});
+dfz.on('end', function () {
+  playing = false; over = true; phase = 'wait';
+  order.forEach(function (p) { p.result = null; p.pick = null; p.act = 'cheer'; p.actAt = performance.now(); });
+  dfz.kit.confetti(90);
+});
+
+dfz.on('input', function (e) {
+  const p = people[e.seat];
+  if (!p || !playing) return;
+  const t = performance.now();
+  const pick = e.action === 'Raise' ? 'O' : e.action === 'Squat' ? 'X' : null;
+  if (!pick) return;
+  p.act = pick === 'O' ? 'raise' : 'squat';   /* 어느 때든 바로 따라 한다 — 1초 안 반응 */
+  p.actAt = t;
+  if (phase === 'read' || phase === 'answer') {
+    if (p.pick !== pick) dfz.ui.status(p.seat, pick === 'O' ? 'O 골랐어요' : 'X 골랐어요');
+    p.pick = pick;
+  }
+});
+
+function timeLeft(t) { return (cfg && cfg.seconds ? cfg.seconds : 90) * 1000 - (t - startAt); }
+
+function nextQuestion(t) {
+  if (timeLeft(t) < READ_MS + ANSWER_MS + SHOW_MS) { phase = 'last'; phaseAt = t; return; }
+  if (!deck.length) deck = shuffle(GAME.items);
+  q = deck.pop();
+  qNo++;
+  phase = 'read'; phaseAt = t;
+  order.forEach(function (p) { p.pick = null; p.result = null; dfz.ui.status(p.seat, ''); });
+}
+
+function reveal(t) {
+  phase = 'show'; phaseAt = t;
+  const answer = q.a ? 'O' : 'X';
+  order.forEach(function (p) {
+    if (!p.pick) { p.result = 'none'; dfz.ui.status(p.seat, '다음엔 같이 해요'); return; }
+    p.result = p.pick === answer ? 'right' : 'wrong';
+    if (p.result === 'right') {
+      p.score++;
+      dfz.score(p.seat, p.score);
+      dfz.ui.status(p.seat, '맞았어요!');
+      const s = spot(p, canvas.width, canvas.height);
+      dfz.kit.burst(s.x, s.y - s.size * 0.9, p.color, '+1');
+    } else dfz.ui.status(p.seat, '아쉬워요');
+  });
+}
+
+function update(t) {
+  if (!playing || !q) return;
+  const k = t - phaseAt;
+  if (phase === 'read' && k >= READ_MS) { phase = 'answer'; phaseAt = t; }
+  else if (phase === 'answer' && k >= ANSWER_MS) reveal(t);
+  else if (phase === 'show' && k >= SHOW_MS) nextQuestion(t);
+}
+
+/* ---------- 그리기 ---------- */
+
+function spot(p, W, H) {
+  const n = Math.max(1, order.length), lane = W / n, i = order.indexOf(p);
+  return { x: lane * (i + 0.5), y: H * 0.95, size: Math.min(H * 0.36, lane * 0.62) };
+}
+
+function poseOf(p, t) {
+  if (phase === 'show' && p.result === 'right') return 'cheer';
+  if (phase === 'show' && p.result === 'wrong') return 'oops';
+  if (over) return 'cheer';
+  if (p.pick && (phase === 'read' || phase === 'answer')) return p.pick === 'O' ? 'raise' : 'squat';
+  if (t - p.actAt < POSE_MS) return p.act;
+  return 'idle';
+}
+
+function drawCard(W, H, t) {
+  const x = W * 0.04, y = H * 0.035, w = W * 0.92, h = H * 0.34;
+  ctx.fillStyle = PAL.card;
+  rr(ctx, x, y, w, h, H * 0.05); ctx.fill();
+  if (!playing || !q || phase === 'last') {
+    const msg = over ? '모두 잘했어요!' : phase === 'last' ? '마지막까지 힘내요!'
+      : (order.length ? '맞으면 만세, 틀리면 앉아요' : '카메라 앞에 서 주세요');
+    textBox(ctx, msg, x + w * 0.05, y, w * 0.9, h, H * 0.1, H * MIN_TEXT, PAL.ink);
+    return;
+  }
+  const r = h * 0.3;
+  ctx.font = font(800, H * 0.058);
+  ctx.fillStyle = PAL.muted; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(qNo + '번 문제', x + H * 0.04, y + H * 0.025);
+  if (phase === 'show') {
+    const right = q.a;
+    (right ? drawO : drawX)(ctx, x + h * 0.55, y + h * 0.55, r, right ? PAL.mint : PAL.coral);
+    textBox(ctx, (q.why || q.q), x + h * 1.1, y + h * 0.12, w - h * 1.2, h * 0.84, H * 0.09, H * MIN_TEXT, right ? PAL.mint : PAL.coral);
+  } else {
+    textBox(ctx, q.q, x + w * 0.04, y + h * 0.16, w * 0.92, h * 0.8, H * 0.1, H * MIN_TEXT, PAL.ink);
+  }
+  /* 남은 시간 막대 — dfz-bar 모양 */
+  const bx = x + w * 0.1, by = y + h + H * 0.025, bw = w * 0.8, bh = H * 0.026;
+  let p = 0;
+  if (phase === 'read') p = 1;
+  else if (phase === 'answer') p = 1 - (t - phaseAt) / ANSWER_MS;
+  ctx.fillStyle = 'rgba(255,255,255,.14)'; rr(ctx, bx, by, bw, bh, bh / 2); ctx.fill();
+  if (p > 0) { ctx.fillStyle = p < 0.3 ? PAL.coral : PAL.lime; rr(ctx, bx, by, Math.max(bh, bw * p), bh, bh / 2); ctx.fill(); }
+}
+
+function drawLegend(W, H) {
+  const y = H * 0.47, r = H * 0.045;
+  ctx.font = font(800, H * 0.06); ctx.textBaseline = 'middle';
+  ctx.globalAlpha = phase === 'show' ? 0.35 : 1;
+  drawO(ctx, W * 0.1, y, r, PAL.mint);
+  ctx.fillStyle = PAL.ink; ctx.textAlign = 'left';
+  ctx.fillText('만세하면 O', W * 0.1 + r * 1.4, y);
+  drawX(ctx, W * 0.9, y, r, PAL.coral);
+  ctx.textAlign = 'right';
+  ctx.fillText('앉으면 X', W * 0.9 - r * 1.4, y);
+  ctx.globalAlpha = 1;
+}
+
+function drawPeople(W, H, t) {
+  ctx.fillStyle = 'rgba(255,255,255,.06)';
+  ctx.fillRect(0, H * 0.95, W, H * 0.05);
+  order.forEach(function (p) {
+    const s = spot(p, W, H);
+    Buddy.draw(ctx, { x: s.x, y: s.y, size: s.size, color: p.color, pose: poseOf(p, t), t: t + p.index * 700, label: String(p.seat) });
+    /* 고른 답 말풍선 — 머리 위 */
+    if (p.pick && (phase === 'read' || phase === 'answer' || phase === 'show')) {
+      const by = s.y - s.size * 1.18, br = Math.min(H * 0.055, s.size * 0.2);
+      ctx.fillStyle = PAL.surface; ctx.beginPath(); ctx.arc(s.x + s.size * 0.36, by, br * 1.25, 0, 6.283); ctx.fill();
+      (p.pick === 'O' ? drawO : drawX)(ctx, s.x + s.size * 0.36, by, br, p.pick === 'O' ? PAL.mint : PAL.coral);
+    }
+  });
+}
+
+runLoop(canvas, function (dt, t, W, H) {
+  update(t);
+  nightSky(ctx, W, H);
+  drawCard(W, H, t);
+  drawLegend(W, H);
+  drawPeople(W, H, t);
+});
+</script></body></html>

@@ -1,0 +1,258 @@
+<!doctype html><html><head><meta charset="utf-8"><title>__TITLE__</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #202B3D; }
+</style>
+</head><body><script>
+/* 멀티 포인터 틀 「콕콕 분류」 — 자리마다 자기 커서로 카드를 집어 알맞은 바구니에 놓는다.
+   885 기획안의 멀티 마우스형(공동 분류·공동 끌어놓기·특징 선택)을 묶었다. 한 카드는 먼저 집은 사람 것.
+   입력 → 커서:
+     Move (x, y)  포인터 장치 — 가리키는 곳(0~1)으로 간다. 앱 웹 미리보기의 손 좌표(HandX·HandY)와 같은 뜻
+     Tilt (x, y)  폰·컨트롤러 — 기울인 쪽으로 흘러간다
+     Press / Release  집기 / 놓기 (컨트롤러 단추는 둘을 따로 보낸다)
+     Touch        폰 터치 — 집기와 놓기를 번갈아
+   제목·시간·점수 칸·결과 화면은 앱 틀이 그린다. 내용(GAME)은 content/<id>.json에서 build_games.py가 넣는다. */
+const GAME = /*@GAME@*/null;
+dfz.ui.frame({ title: GAME.title, hint: '기울여 겨누고 · 누르고 있으면 집고 · 떼면 놓기' });   /* 맨 먼저 */
+
+/*@BUDDY@*/
+/*@COMMON@*/
+
+const COLORS = [PAL.coral, PAL.sky, PAL.lime, PAL.sun, PAL.violet, PAL.mint];
+const BIN_COLORS = [PAL.mint, PAL.sky, PAL.sun];
+
+/* ---------- 커서 ---------- */
+const SMOOTHING = 14;         /* 클수록 커서가 바로 따라온다 */
+const TILT_SPEED = 0.7;       /* 끝까지 기울였을 때 1초에 화면의 몇 배를 가나 */
+const TILT_DEAD = 0.12;       /* 이보다 덜 기울이면 멈춤 */
+const TILT_HOLD_MS = 300;     /* 기울기 신호가 끊기면 이만큼 뒤 멈춘다 */
+const TILT_FLIP_Y = 1;        /* 실기기에서 위아래가 반대로 가면 -1 — 확인 안 된 값이라 손잡이로 남김 */
+
+const canvas = dfz.ui.canvas();
+const ctx = canvas.getContext('2d');
+const ptrs = {};   /* 자리 → 커서 */
+
+function ptrOf(seat) { return ptrs[seat]; }
+
+/* 커서를 그 자리(0~1)로 + 단추 상태(1 = 누름, null = 그대로). 누름·뗌의 순간에 집기·놓기 */
+function setPointer(p, x, y, btn, now) {
+  if (x != null) { p.tx = clamp(x, 0, 1); p.ty = clamp(y, 0, 1); }
+  if (btn != null) {
+    if (btn && !p.btn) press(p, now);
+    if (!btn && p.btn) release(p, now);
+    p.btn = btn;
+  }
+}
+/* 기울기 = 커서가 흘러가는 속도 */
+function tiltPointer(p, x, y, now) {
+  p.vx = Math.abs(x) < TILT_DEAD ? 0 : clamp(x, -1, 1);
+  p.vy = Math.abs(y) < TILT_DEAD ? 0 : clamp(y, -1, 1) * TILT_FLIP_Y;
+  p.vAt = now;
+}
+
+dfz.on('players', function (list) {
+  const seen = {};
+  list.forEach(function (s, i) {
+    seen[s.seat] = true;
+    if (!ptrs[s.seat]) {   /* 처음엔 나란히 — 한가운데 겹쳐 있지 않게 */
+      const x = (i + 0.5) / list.length;
+      ptrs[s.seat] = { seat: s.seat, x: x, y: 0.3, tx: x, ty: 0.3, vx: 0, vy: 0, vAt: -1e9, btn: 0, score: 0, holding: null, clickAt: -1e9 };
+    }
+    ptrs[s.seat].index = s.index;
+    ptrs[s.seat].color = s.color || COLORS[i % COLORS.length];
+  });
+  Object.keys(ptrs).forEach(function (k) {
+    if (seen[k]) return;
+    if (ptrs[k].holding) ptrs[k].holding.by = null;   /* 나간 사람이 들고 있던 카드는 내려놓는다 */
+    delete ptrs[k];
+  });
+});
+dfz.on('start', function () { phase = 'play'; refill(); });
+dfz.on('end', function () {
+  phase = 'end';
+  Object.values(ptrs).forEach(function (p) { if (p.holding) { p.holding.by = null; p.holding = null; } });
+  dfz.kit.confetti(90);
+});
+dfz.on('input', function (e) {
+  const p = ptrOf(e.seat);
+  if (!p) return;
+  const now = performance.now();
+  if (e.action === 'Move') setPointer(p, e.x, e.y, null, now);
+  else if (e.action === 'Tilt') tiltPointer(p, e.x || 0, e.y || 0, now);
+  else if (e.action === 'Press') setPointer(p, null, null, 1, now);
+  else if (e.action === 'Release') setPointer(p, null, null, 0, now);
+  else if (e.action === 'Touch') { p.clickAt = now; if (p.holding) release(p, now); else press(p, now); }   /* 단추 상태는 그대로 */
+});
+
+/* ---------- 게임 ---------- */
+let phase = 'wait', deck = [], cards = [], sparks = [], sorted = 0;
+const binFx = GAME.bins.map(function () { return { pose: 'idle', at: 0 }; });
+
+function press(p, now) {
+  p.clickAt = now;
+  if (phase !== 'play' || p.holding) return;
+  const W = canvas.width, H = canvas.height, x = p.x * W, y = p.y * H;
+  for (let i = cards.length - 1; i >= 0; i--) {   /* 위에 그려진 카드부터 */
+    const c = cards[i];
+    if (c.by || c.gone) continue;
+    if (Math.abs(x - c.x) < c.w / 2 + H * 0.01 && Math.abs(y - c.y) < c.h / 2 + H * 0.01) {
+      c.by = p; c.dx = c.x - x; c.dy = c.y - y; p.holding = c;
+      cards.splice(i, 1); cards.push(c);   /* 집은 카드를 맨 위로 */
+      dfz.ui.status(p.seat, '집었어요');
+      return;
+    }
+  }
+}
+
+function release(p, now) {
+  const c = p.holding;
+  if (!c) return;
+  p.holding = null; c.by = null;
+  const bin = binAt(p.y * canvas.height, p.x * canvas.width);
+  if (bin < 0) { c.hx = c.x; c.hy = c.y; dfz.ui.status(p.seat, ''); return; }   /* 바구니 밖이면 그 자리에 둔다 */
+  if (bin === c.bin) {
+    c.gone = true; p.score++; sorted++;
+    dfz.score(p.seat, p.score);
+    dfz.ui.status(p.seat, '맞았어요!');
+    binFx[bin] = { pose: 'cheer', at: now };
+    burst(c.x, c.y, p.color, '+1', now);
+    setTimeout(function () { cards = cards.filter(function (k) { return k !== c; }); refill(); }, 0);
+  } else {
+    dfz.ui.status(p.seat, '다른 바구니예요');
+    binFx[bin] = { pose: 'oops', at: now };
+    c.back = now;   /* 원래 자리로 미끄러져 돌아간다 */
+  }
+}
+
+function burst(x, y, color, text, now) {
+  for (let i = 0; i < 14; i++) { const a = Math.random() * 6.283, v = 0.25 + Math.random() * 0.35; sparks.push({ x: x, y: y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, c: color, at: now }); }
+  sparks.push({ x: x, y: y, text: text, c: color, at: now });
+}
+
+/* ---------- 배치 ---------- */
+function L(W, H) {
+  const n = GAME.bins.length, gap = W * 0.02, bw = (W * 0.92 - gap * (n - 1)) / n;
+  return { top: H * 0.04, playB: H * 0.6, binY: H * 0.64, binH: H * 0.32, binW: bw, binX: function (i) { return W * 0.04 + i * (bw + gap); },
+    cardH: H * 0.11 };
+}
+function binAt(y, x) {
+  const l = L(canvas.width, canvas.height);
+  if (y < l.binY - l.binH * 0.15 || y > l.binY + l.binH) return -1;   /* 바구니 입구 조금 위까지 받아 준다 */
+  for (let i = 0; i < GAME.bins.length; i++) if (x >= l.binX(i) && x <= l.binX(i) + l.binW) return i;
+  return -1;
+}
+
+function refill() {
+  if (phase !== 'play') return;
+  const W = canvas.width, H = canvas.height, l = L(W, H);
+  const want = clamp(2 + Object.keys(ptrs).length, 4, 8);
+  while (cards.filter(function (c) { return !c.gone; }).length < want) {
+    if (!deck.length) deck = shuffle(GAME.cards);
+    const d = deck.pop();
+    ctx.font = font(900, H * 0.06);
+    const cw = clamp(ctx.measureText(d.t).width + H * 0.08, l.cardH * 1.5, W * 0.26);   /* 글 길이에 맞춘 카드 폭 */
+    let best = null;
+    for (let t = 0; t < 40; t++) {   /* 다른 카드와 덜 겹치는 자리 */
+      const x = W * 0.06 + cw / 2 + Math.random() * (W * 0.88 - cw);
+      const y = l.top + l.cardH / 2 + Math.random() * (l.playB - l.top - l.cardH);
+      const near = cards.reduce(function (m, c) { return c.gone ? m : Math.min(m, Math.hypot((c.x - x) / ((c.w + cw) / 2), (c.y - y) / l.cardH)); }, 9);
+      if (!best || near > best.near) best = { x: x, y: y, near: near };
+      if (near > 1.25) break;
+    }
+    cards.push({ t: d.t, bin: d.bin, x: best.x, y: best.y, hx: best.x, hy: best.y, w: cw, h: l.cardH, by: null, gone: false, back: 0, born: performance.now() });
+  }
+}
+
+/* ---------- 갱신 ---------- */
+function update(dt, now, W, H) {
+  const k = 1 - Math.exp(-SMOOTHING * Math.max(dt, 1e-4));
+  Object.values(ptrs).forEach(function (p) {
+    if (now - p.vAt < TILT_HOLD_MS) { p.tx = clamp(p.tx + p.vx * TILT_SPEED * dt, 0, 1); p.ty = clamp(p.ty + p.vy * TILT_SPEED * dt, 0, 1); }
+    p.x += (p.tx - p.x) * k; p.y += (p.ty - p.y) * k;
+    if (p.holding) { p.holding.x = p.x * W + p.holding.dx * 0.6; p.holding.y = p.y * H + p.holding.dy * 0.6; }
+  });
+  cards.forEach(function (c) {
+    if (c.back) { c.x += (c.hx - c.x) * Math.min(1, dt * 8); c.y += (c.hy - c.y) * Math.min(1, dt * 8); if (now - c.back > 600) c.back = 0; }
+  });
+}
+
+/* ---------- 그리기 ---------- */
+function drawBins(W, H, now) {
+  const l = L(W, H);
+  GAME.bins.forEach(function (name, i) {
+    const x = l.binX(i), y = l.binY, c = BIN_COLORS[i % 3];
+    const fx = binFx[i], hot = now - fx.at < 900;
+    const shake = hot && fx.pose === 'oops' ? Math.sin(now / 30) * H * 0.008 : 0;
+    ctx.fillStyle = PAL.surface; rr(ctx, x + shake, y, l.binW, l.binH, H * 0.03); ctx.fill();
+    ctx.lineWidth = H * 0.008; ctx.strokeStyle = c; rr(ctx, x + shake, y, l.binW, l.binH, H * 0.03); ctx.stroke();
+    /* 입구 띠 */
+    ctx.fillStyle = c; ctx.globalAlpha = 0.25; rr(ctx, x + shake, y, l.binW, l.binH * 0.18, H * 0.03); ctx.fill(); ctx.globalAlpha = 1;
+    textBox(ctx, name, x + l.binH * 0.62 + shake, y + l.binH * 0.18, l.binW - l.binH * 0.75, l.binH * 0.8, H * 0.075, H * MIN_TEXT, PAL.ink);
+    Buddy.draw(ctx, { x: x + l.binH * 0.36 + shake, y: y + l.binH * 0.95, size: l.binH * 0.72, color: c, pose: hot ? fx.pose : 'idle', t: now + i * 900 });
+  });
+}
+
+function drawCard(c, now) {
+  const H = canvas.height, pop = Math.min(1, (now - c.born) / 250);
+  ctx.save();
+  ctx.translate(c.x, c.y); ctx.scale(0.6 + 0.4 * pop, 0.6 + 0.4 * pop);
+  if (c.by) { ctx.rotate(-0.04); }
+  ctx.fillStyle = 'rgba(0,0,0,.25)'; rr(ctx, -c.w / 2 + H * 0.006, -c.h / 2 + H * 0.01, c.w, c.h, H * 0.025); ctx.fill();
+  ctx.fillStyle = '#F4F8FF'; rr(ctx, -c.w / 2, -c.h / 2, c.w, c.h, H * 0.025); ctx.fill();
+  if (c.by) { ctx.lineWidth = H * 0.008; ctx.strokeStyle = c.by.color; rr(ctx, -c.w / 2, -c.h / 2, c.w, c.h, H * 0.025); ctx.stroke(); }
+  textBox(ctx, c.t, -c.w / 2 + c.h * 0.12, -c.h / 2, c.w - c.h * 0.24, c.h, H * 0.065, H * MIN_TEXT, PAL.face);
+  ctx.restore();
+}
+
+/* 커서 — 과녁 모양 + 자리 번호. 누르는 동안 작아지고, 누른 순간 물결 */
+function drawPointer(p, W, H, now) {
+  const x = p.x * W, y = p.y * H, r = H * 0.022;
+  const age = now - p.clickAt;
+  if (age < 250) { ctx.strokeStyle = p.color; ctx.lineWidth = H * 0.005; ctx.beginPath(); ctx.arc(x, y, r + H * 0.04 * age / 250, 0, 6.283); ctx.stroke(); }
+  ctx.fillStyle = '#13202F'; ctx.beginPath(); ctx.arc(x, y, r + H * 0.006, 0, 6.283); ctx.fill();
+  ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(x, y, p.btn ? r * 0.75 : r, 0, 6.283); ctx.fill();
+  ctx.strokeStyle = PAL.ink; ctx.lineWidth = H * 0.004; ctx.stroke();
+  ctx.strokeStyle = p.color; ctx.lineWidth = H * 0.006; ctx.lineCap = 'round';
+  [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) {
+    ctx.beginPath(); ctx.moveTo(x + d[0] * (r + 4), y + d[1] * (r + 4)); ctx.lineTo(x + d[0] * r * 1.9, y + d[1] * r * 1.9); ctx.stroke();
+  });
+  ctx.font = font(900, H * MIN_TEXT); ctx.fillStyle = p.color; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(String(p.seat).slice(0, 3), x + r * 1.3, y + r * 1.1);
+}
+
+function drawSparks(now) {
+  const H = canvas.height;
+  sparks = sparks.filter(function (s) { return now - s.at < 900; });
+  sparks.forEach(function (s) {
+    const k = (now - s.at) / 900; if (k < 0) return;
+    ctx.globalAlpha = 1 - k;
+    if (s.text) { ctx.font = font(900, H * 0.07); ctx.fillStyle = s.c; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(s.text, s.x, s.y - k * H * 0.12); }
+    else { ctx.fillStyle = s.c; ctx.beginPath(); ctx.arc(s.x + s.vx * k * H * 0.4, s.y + s.vy * k * H * 0.4, H * 0.008 * (1 - k * 0.6), 0, 6.283); ctx.fill(); }
+    ctx.globalAlpha = 1;
+  });
+}
+
+/* 시작 전·끝난 뒤 판 위쪽 한 줄 — 커서는 시작 전에도 움직여 볼 수 있다 */
+function drawIdle(W, H) {
+  if (phase === 'play') return;
+  const msg = phase === 'end' ? '모두 함께 ' + sorted + '장!' : '기울여 겨누고, 누르고 있으면 집어요';
+  textBox(ctx, msg, W * 0.08, H * 0.12, W * 0.84, H * 0.3, H * 0.09, H * MIN_TEXT, phase === 'end' ? PAL.lime : PAL.ink);
+}
+
+window.KokKok = {   /* 자동 시험용 — 카드·바구니 위치 읽기 */
+  state: function () { const l = L(canvas.width, canvas.height); return { phase: phase, sorted: sorted, W: canvas.width, H: canvas.height,
+    cards: cards.filter(function (c) { return !c.gone; }).map(function (c) { return { t: c.t, bin: c.bin, x: c.x, y: c.y }; }),
+    bins: GAME.bins.map(function (n, i) { return { x: l.binX(i) + l.binW / 2, y: l.binY + l.binH / 2 }; }),
+    pointers: Object.values(ptrs).map(function (p) { return [p.seat, +p.x.toFixed(3), +p.y.toFixed(3), p.score]; }) }; }
+};
+
+runLoop(canvas, function (dt, now, W, H) {
+  update(dt, now, W, H);
+  nightSky(ctx, W, H);
+  drawBins(W, H, now);
+  cards.forEach(function (c) { if (!c.by && !c.gone) drawCard(c, now); });
+  cards.forEach(function (c) { if (c.by && !c.gone) drawCard(c, now); });
+  drawSparks(now);
+  drawIdle(W, H);
+  Object.values(ptrs).forEach(function (p) { drawPointer(p, W, H, now); });
+});
+</script></body></html>

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": "1.0",
+  "ruleSetId": "28b7925e-cb57-5bb4-a1fc-18ccc8b41ba5",
+  "title": "6학년 콕콕 분류",
+  "description": "입체도형 카드를 집어 각기둥과 각뿔로 나눈다. 컨트롤러마다 자기 커서.",
+  "category": "Cooperation",
+  "players": {
+    "min": 1,
+    "max": 30,
+    "teams": {
+      "enabled": false
+    }
+  },
+  "duration": {
+    "mode": "Timed",
+    "seconds": 120,
+    "countdownSeconds": 3
+  },
+  "inputs": {
+    "required": [
+      "Tilt",
+      "Press"
+    ],
+    "optional": [
+      "Release",
+      "Touch",
+      "Move"
+    ],
+    "deviceKinds": [
+      "Phone",
+      "Controller"
+    ],
+    "minMagnitude": 0.2
+  },
+  "flow": {
+    "type": "Web",
+    "web": {
+      "entry": "web/game.html",
+      "people": 30,
+      "bridge": "players"
+    }
+  },
+  "scoring": {
+    "rules": [
+      {
+        "id": "reported",
+        "trigger": "OnAction",
+        "when": {
+          "action": "Tilt",
+          "minMagnitude": 0.0,
+          "cooldownMs": 0
+        },
+        "award": {
+          "points": 1,
+          "target": "Player"
+        }
+      }
+    ],
+    "aggregation": "Sum",
+    "teamAggregation": "Average",
+    "allowNegative": false
+  },
+  "victory": {
+    "condition": "HighestScore",
+    "scope": "Individual",
+    "tieBreak": [
+      "Draw"
+    ],
+    "showRanking": 5
+  },
+  "difficulty": {
+    "default": "Normal"
+  },
+  "guide": {
+    "ko": {
+      "moves": [
+        {
+          "action": "Tilt",
+          "effect": "기울이면 내 커서가 그쪽으로 움직인다"
+        },
+        {
+          "action": "Press",
+          "effect": "누르고 있으면 카드를 집는다"
+        },
+        {
+          "action": "Release",
+          "effect": "떼면 그 자리에 놓는다 — 알맞은 바구니면 점수"
+        }
+      ],
+      "scoring": [
+        {
+          "rule": "reported",
+          "text": "알맞은 바구니에 넣은 카드 한 장에 1점"
+        }
+      ],
+      "cautions": [
+        "컨트롤러 끈을 손목에 건다",
+        "카드는 먼저 집은 친구 것 — 기다렸다가 다른 카드를 집는다"
+      ]
+    }
+  }
+}

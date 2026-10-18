@@ -1,0 +1,163 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>디지털 핏 게임 모음</title>
+<style>
+  :root { --bg: #202B3D; --surface: #30435A; --card: #283850; --ink: #F4F8FF; --muted: #CCDCE9; --line: rgba(255,255,255,.12);
+    --lime: #D1F58E; --mint: #A4F0D7; --sun: #FFD66B; --coral: #FF8A7A; --sky: #8CC8FF; --violet: #C7A4FF;
+    --font: 'Malgun Gothic', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 500 16px/1.6 var(--font); }
+  header { padding: 32px 4% 8px; display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 16px; }
+  h1 { margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -.5px; }
+  header p { margin: 4px 0 0; color: var(--muted); }
+  .count { color: var(--lime); font-weight: 800; font-size: 18px; white-space: nowrap; }
+  .bar { position: sticky; top: 0; z-index: 2; background: var(--bg); padding: 14px 4%; display: flex; flex-wrap: wrap; gap: 10px 24px; border-bottom: 1px solid var(--line); }
+  .group { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .group span { color: var(--muted); font-size: 14px; margin-right: 4px; }
+  .chip { font: 700 15px var(--font); color: var(--ink); background: var(--surface); border: 2px solid transparent; border-radius: 99px; padding: 6px 14px; cursor: pointer; }
+  .chip:hover { border-color: rgba(255,255,255,.35); }
+  .chip.on { background: var(--lime); color: #13202F; }
+  main { padding: 20px 4% 48px; }
+  .grade { margin: 18px 0 10px; font-size: 20px; font-weight: 800; color: var(--muted); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .card { text-align: left; font: inherit; color: inherit; background: var(--card); border: 2px solid var(--line); border-radius: 18px; padding: 0; overflow: hidden; cursor: pointer;
+    display: flex; flex-direction: column; transition: transform .15s ease-out, border-color .15s; }
+  .card:hover { transform: translateY(-3px); border-color: var(--c); }
+  .card:focus-visible { outline: 3px solid var(--sun); outline-offset: 3px; }
+  .thumb { height: 128px; background: var(--surface); position: relative; }
+  .thumb canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tag { position: absolute; left: 12px; top: 12px; font-size: 13px; font-weight: 800; color: #13202F; background: var(--c); border-radius: 99px; padding: 2px 10px; }
+  .body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .body h3 { margin: 0; font-size: 18px; font-weight: 800; }
+  .body p { margin: 0; color: var(--muted); font-size: 14.5px; }
+  .meta { margin-top: auto; padding-top: 6px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .meta b { font-size: 13px; font-weight: 700; color: var(--ink); background: rgba(255,255,255,.08); border-radius: 6px; padding: 2px 8px; }
+  .empty { color: var(--muted); padding: 40px 0; }
+  /* 크게 보기 */
+  #player { position: fixed; inset: 0; z-index: 10; background: #0E1626; display: none; flex-direction: column; padding: 14px 2% 12px; gap: 10px; }
+  #player.open { display: flex; }
+  #player .top { display: flex; align-items: center; gap: 12px; }
+  #player h2 { margin: 0; font-size: 20px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #player a, #player button { font: 700 15px var(--font); color: var(--ink); background: var(--surface); border: 0; border-radius: 10px; padding: 8px 14px; cursor: pointer; text-decoration: none; white-space: nowrap; }
+  #player button.close { background: var(--lime); color: #13202F; }
+  #player iframe { flex: 1; width: 100%; border: 0; border-radius: 14px; background: #202B3D; }
+  #player .keys { color: var(--muted); font-size: 14px; }
+  @media (max-width: 600px) { h1 { font-size: 24px; } .bar { gap: 8px; } }
+</style>
+</head><body>
+<header>
+  <div>
+    <h1>디지털 핏 게임 모음</h1>
+    <p>Digital Fit Zone 웹 게임 규격으로 만든 게임들 — 카드를 누르면 바로 해 볼 수 있어요 (키보드·화면 단추로 가짜 참가자 조작)</p>
+  </div>
+  <div class="count" id="count"></div>
+</header>
+<div class="bar">
+  <div class="group" id="grades"><span>학년</span></div>
+  <div class="group" id="kinds"><span>종류</span></div>
+</div>
+<main id="list"></main>
+<div id="player" role="dialog" aria-modal="true" aria-labelledby="ptitle">
+  <div class="top"><h2 id="ptitle"></h2><a id="pnew" target="_blank" rel="noopener">새 탭으로</a><button class="close" id="pclose">닫기</button></div>
+  <iframe id="pframe" title="게임"></iframe>
+  <div class="keys" id="pkeys"></div>
+</div>
+<script>
+/* 게임 목록은 build_games.py가 content/*.json과 룰셋에서 만들어 넣는다 */
+const GAMES = /*@GAMES@*/[];
+/*@BUDDY@*/
+
+const KINDS = {
+  camera:     { name: '몸으로 OX',     color: '#A4F0D7', pose: 'raise', keys: '만세 1~6 · 앉기 Q~Y · 스페이스로 시작' },
+  controller: { name: '기울여 맞추기', color: '#8CC8FF', pose: 'lean',  keys: '◀ 1~6 · ▶ Q~Y · 누르기 A~H · 흔들기 Z~N · 스페이스로 시작' },
+  pointer:    { name: '콕콕 분류',     color: '#FFD66B', pose: 'cheer', keys: '마우스 = 1번 커서(누른 채 끌어 놓기) · ◀ 1~6 · ▶ Q~Y · 누르기 A~H(떼면 놓기) · 스페이스로 시작' },
+  other:      { name: '그 밖의 게임',  color: '#C7A4FF', pose: 'jump',  keys: '점프 1~6 · 앉기 Q~Y · 스페이스로 시작' },
+};
+const SEAT = ['#FF8A7A', '#8CC8FF', '#D1F58E', '#FFD66B', '#C7A4FF', '#A4F0D7'];
+let grade = 'all', kind = 'all';
+
+function chip(box, label, value, cur, onPick) {
+  const b = document.createElement('button');
+  b.className = 'chip' + (value === cur ? ' on' : '');
+  b.textContent = label;
+  b.onclick = function () { onPick(value); };
+  box.appendChild(b);
+}
+function drawFilters() {
+  const g = document.getElementById('grades'), k = document.getElementById('kinds');
+  g.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
+  k.querySelectorAll('.chip').forEach(function (c) { c.remove(); });
+  const pickG = function (v) { grade = v; render(); }, pickK = function (v) { kind = v; render(); };
+  chip(g, '전체', 'all', grade, pickG);
+  for (let n = 1; n <= 6; n++) chip(g, n + '학년', n, grade, pickG);
+  chip(g, '학년 무관', 0, grade, pickG);
+  chip(k, '전체', 'all', kind, pickK);
+  Object.keys(KINDS).forEach(function (id) { if (GAMES.some(function (x) { return x.kind === id; })) chip(k, KINDS[id].name, id, kind, pickK); });
+}
+
+function thumb(canvas, g, i) {
+  const r = canvas.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.round(r.width * dpr); canvas.height = Math.round(r.height * dpr);
+  const ctx = canvas.getContext('2d'), W = canvas.width, H = canvas.height, k = KINDS[g.kind] || KINDS.other;
+  const n = 3, s = H * 0.78;
+  for (let j = 0; j < n; j++) {
+    const x = W * (0.5 + (j - 1) * 0.24), pose = j === 1 ? k.pose : (k.pose === 'lean' ? 'lean' : 'idle');
+    Buddy.draw(ctx, { x: x, y: H * 0.95, size: j === 1 ? s : s * 0.8, color: SEAT[(i + j * 2) % 6], pose: pose, lean: j === 0 ? -1 : 1, t: 1, label: String(j + 1) });
+  }
+}
+
+function render() {
+  drawFilters();
+  const box = document.getElementById('list');
+  box.innerHTML = '';
+  const shown = GAMES.filter(function (g) { return (grade === 'all' || g.grade === grade) && (kind === 'all' || g.kind === kind); });
+  document.getElementById('count').textContent = '게임 ' + shown.length + ' / ' + GAMES.length + '개';
+  if (!shown.length) { box.innerHTML = '<p class="empty">조건에 맞는 게임이 없어요.</p>'; return; }
+  const groups = {};
+  shown.forEach(function (g) { (groups[g.grade] = groups[g.grade] || []).push(g); });
+  Object.keys(groups).sort(function (a, b) { return (a == 0) - (b == 0) || a - b; }).forEach(function (gr) {
+    const h = document.createElement('h2'); h.className = 'grade'; h.textContent = gr == 0 ? '학년 무관' : gr + '학년';
+    const grid = document.createElement('div'); grid.className = 'grid';
+    box.appendChild(h); box.appendChild(grid);
+    groups[gr].forEach(function (g, i) {
+      const k = KINDS[g.kind] || KINDS.other;
+      const c = document.createElement('button'); c.className = 'card'; c.style.setProperty('--c', k.color);
+      c.innerHTML = '<div class="thumb"><canvas></canvas><span class="tag"></span></div><div class="body"><h3></h3><p></p><div class="meta"></div></div>';
+      c.querySelector('.tag').textContent = k.name;
+      c.querySelector('h3').textContent = g.title;
+      c.querySelector('p').textContent = g.description;
+      const meta = c.querySelector('.meta');
+      [g.devices, g.players, g.seconds + '초', g.items ? g.items + '문항' : ''].forEach(function (t) {
+        if (!t) return; const b = document.createElement('b'); b.textContent = t; meta.appendChild(b);
+      });
+      c.onclick = function () { play(g); };
+      grid.appendChild(c);
+      thumb(c.querySelector('canvas'), g, i);
+    });
+  });
+}
+
+let lastFocus = null;
+function play(g) {
+  lastFocus = document.activeElement;
+  const p = document.getElementById('player'), f = document.getElementById('pframe');
+  document.getElementById('ptitle').textContent = g.title;
+  document.getElementById('pnew').href = g.file;
+  document.getElementById('pkeys').textContent = '키: ' + (KINDS[g.kind] || KINDS.other).keys;
+  f.src = g.file;
+  p.classList.add('open');
+  f.onload = function () { f.focus(); };   /* 키 입력이 바로 게임으로 가게 */
+}
+function closePlayer() {
+  const p = document.getElementById('player');
+  if (!p.classList.contains('open')) return;
+  p.classList.remove('open');
+  document.getElementById('pframe').src = 'about:blank';
+  if (lastFocus) lastFocus.focus();
+}
+document.getElementById('pclose').onclick = closePlayer;
+window.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePlayer(); });
+window.addEventListener('resize', function () { render(); });
+render();
+</script>
+</body></html>

@@ -1,0 +1,700 @@
+<!doctype html><html><head>
+<script>window.DFZ_SHIM = {"seconds": 60, "countdown": 3, "actions": ["Jump", "Squat"], "maxPlayers": 6};</script>
+<style id="dfz-shim">
+  #dfz-frame { position: fixed; inset: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; background: #202B3D; color: #F4F8FF;
+    font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; overflow: hidden; z-index: 10; }
+  #dfz-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 2vh; padding: 1.6vh 2.4vh; border-bottom: 1px solid rgba(255,255,255,.12); }
+  #dfz-title { font-size: 5.6vh; font-weight: 700; line-height: 1.15; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #dfz-hint { font-size: 3.2vh; color: #CCDCE9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #dfz-time { font-size: 6.4vh; font-weight: 700; color: #D1F58E; font-variant-numeric: tabular-nums; }
+  #dfz-stage { position: relative; min-height: 0; overflow: hidden; }
+  #dfz-chips { display: grid; gap: 1vh; padding: 1.2vh 2.4vh 1.6vh; border-top: 1px solid rgba(255,255,255,.12); }
+  .dfz-chip { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: .6vh 1vh; padding: .8vh 1.2vh;
+    border-radius: 1.2vh; background: #30435A; border: .35vh solid var(--c); }
+  .dfz-chip .keys { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: .6vh; }
+  .dfz-chip b { font-size: 3.4vh; color: var(--c); }
+  .dfz-chip .sc { font-size: 4vh; font-weight: 700; text-align: right; font-variant-numeric: tabular-nums; }
+  .dfz-chip .st { font-size: 2.4vh; color: #CCDCE9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dfz-chip button { white-space: nowrap; font: 700 2.2vh 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; padding: .6vh 1vh; border-radius: .8vh; border: 0; background: #445A78; color: #F4F8FF; cursor: pointer; }
+  .dfz-chip button:active { background: #5C7AA0; }
+  #dfz-toast { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 2vh 4vh; border-radius: 2vh; background: rgba(20,30,44,.86);
+    font-size: 7vh; font-weight: 700; pointer-events: none; opacity: 0; transition: opacity .2s; z-index: 6; white-space: nowrap; }
+  #dfz-over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2vh;
+    background: rgba(20,30,44,.88); z-index: 7; text-align: center; }
+  #dfz-over h2 { margin: 0; font-size: 7vh; color: #D1F58E; }
+  #dfz-over p { margin: 0; font-size: 3.2vh; color: #CCDCE9; line-height: 1.5; }
+  #dfz-over .line { font-size: 5vh; font-weight: 700; }
+  #dfz-over .pick { display: flex; gap: 1.2vh; }
+  #dfz-over button { font: 700 3.6vh 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; padding: 1.2vh 2.6vh; border-radius: 1.4vh; border: .3vh solid #5C7AA0; background: #30435A; color: #F4F8FF; cursor: pointer; }
+  #dfz-over button.on, #dfz-over button.go { background: #D1F58E; color: #202B3D; border-color: #D1F58E; }
+  .dfz-spark { position: absolute; width: 1.4vh; height: 1.4vh; margin: -.7vh 0 0 -.7vh; border-radius: 50%; background: var(--c); animation: dfz-spark .6s ease-out forwards; }
+  @keyframes dfz-spark { to { transform: translate(var(--dx), var(--dy)) scale(.3); opacity: 0; } }
+  .dfz-float-text { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; font: 900 6vh/1 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; color: var(--c);
+    text-shadow: 0 .3vh .9vh rgba(0,0,0,.45); animation: dfz-rise .9s ease-out forwards; }
+  @keyframes dfz-rise { to { transform: translate(-50%, -150%); opacity: 0; } }
+  .dfz-confetti { position: absolute; top: -3vh; width: 1.4vh; height: 2.2vh; border-radius: .3vh; animation: dfz-fall 2.6s ease-in forwards; }
+  @keyframes dfz-fall { to { transform: translateY(110vh) rotate(var(--r)); } }
+</style>
+<script>
+/* 단독 실행용 dfz 대역 — Digital Fit Zone 앱 없이 브라우저에서 바로 돌게 한다.
+   앱의 웹 게임 통로(bridge: players)와 같은 이름의 기능만 직접 새로 짰다.
+   build_standalone.py가 룰셋에서 읽은 window.DFZ_SHIM(시간·동작·인원)을 앞에 넣어 준다.
+   조작: 동작마다 한 줄씩 1~6 / Q~Y / A~H / Z~N 키 (자리 순) · 스페이스 = 시작 */
+(function () {
+  'use strict';
+  const OPT = window.DFZ_SHIM || {};
+  const SECONDS = OPT.seconds || 60, COUNTDOWN = OPT.countdown || 3, MAXP = Math.min(6, OPT.maxPlayers || 6);
+  const ACTIONS = OPT.actions || ['Jump', 'Squat'];
+  const COLORS = ['#FF8A7A', '#8CC8FF', '#D1F58E', '#FFD66B', '#C7A4FF', '#A4F0D7'];
+  const ROWS = ['123456', 'qwerty', 'asdfgh', 'zxcvbn'];
+  const NAMES = { Jump: '점프', Squat: '앉기', Raise: '만세', Press: '누르기', Shake: '흔들기', Touch: '터치', Move: '손' };
+  /* 키 한 줄 = 조작 하나. 기울이기는 왼쪽·오른쪽 두 줄을 쓴다 */
+  const CTRLS = [];
+  const HAS_RELEASE = ACTIONS.indexOf('Release') >= 0;   /* 누르기를 떼면 Release를 보낸다 */
+  ACTIONS.forEach(function (a) {
+    if (a === 'Move' || a === 'Release') return;   /* Move는 마우스가 맡는다 */
+    if (a === 'Tilt') { CTRLS.push({ action: a, x: -1, name: '◀' }, { action: a, x: 1, name: '▶' }); }
+    else CTRLS.push({ action: a, x: 0, name: NAMES[a] || a });
+  });
+  CTRLS.splice(ROWS.length);
+  CTRLS.forEach(function (c, k) { c.keys = ROWS[k]; c.repeat = c.action === 'Tilt'; });
+  const H = { ready: [], players: [], join: [], leave: [], input: [], start: [], end: [] };
+  let cfg = null, list = [], started = false, ended = false, startAt = 0, count = 4;
+  const scores = {}, chips = {};
+  let UI = null, title = '', hint = '';
+
+  function call(fn, a) { try { fn(a); } catch (err) { console.error(err); } }
+  function emit(t, a) { (H[t] || []).forEach(function (fn) { call(fn, a); }); }
+  function el(tag, cls, parent, text) {
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+
+  function build() {
+    if (UI) return UI;
+    const root = el('div', '', document.body); root.id = 'dfz-frame';
+    const top = el('div', '', root); top.id = 'dfz-top';
+    const words = el('div', '', top);
+    const t = el('div', '', words); t.id = 'dfz-title';
+    const h = el('div', '', words); h.id = 'dfz-hint';
+    const time = el('div', '', top); time.id = 'dfz-time';
+    const stage = el('div', '', root); stage.id = 'dfz-stage'; stage.setAttribute('data-dfz-stage', '1');
+    const box = el('div', '', root); box.id = 'dfz-chips';
+    const toast = el('div', '', stage); toast.id = 'dfz-toast';
+    UI = { title: t, hint: h, time: time, stage: stage, chips: box, toast: toast, over: null, toastTimer: 0 };
+    t.textContent = title || document.title; h.textContent = hint;
+    setInterval(tickTime, 250); tickTime();
+    return UI;
+  }
+  function tickTime() {
+    if (!UI) return;
+    if (ended) { UI.time.textContent = '끝'; return; }
+    if (!started) { UI.time.textContent = '준비'; return; }
+    const left = Math.max(0, Math.ceil(SECONDS - (performance.now() - startAt) / 1000));
+    UI.time.textContent = left + '초';
+    if (left <= 0) finish();
+  }
+  function drawChips() {
+    const box = build().chips;
+    box.innerHTML = '';
+    box.style.gridTemplateColumns = 'repeat(' + Math.max(1, list.length) + ', minmax(0, 1fr))';
+    list.forEach(function (p, i) {
+      const c = el('div', 'dfz-chip', box); c.style.setProperty('--c', p.color);
+      el('b', '', c, p.seat + '번');
+      const sc = el('div', 'sc', c, String(scores[p.seat] || 0));
+      const keys = el('div', 'keys', c);   /* 단추는 아랫줄 — 칸이 좁으면 줄을 바꾼다 */
+      CTRLS.forEach(function (k) {
+        const b = el('button', '', keys, k.name + ' ' + k.keys[i].toUpperCase());
+        if (k.action === 'Press' && HAS_RELEASE) {
+          b.onmousedown = function () { input(i, k); };
+          b.onmouseup = b.onmouseleave = function () { input(i, { action: 'Release', x: 0 }); };
+        } else b.onclick = function () { input(i, k); };
+      });
+      const st = el('div', 'st', c); st.style.gridColumn = '1 / -1';
+      chips[p.seat] = { sc: sc, st: st };
+    });
+  }
+
+  function seatOf(s) {
+    if (typeof s === 'number') return list[s] ? list[s].seat : null;
+    return list.some(function (p) { return p.seat === s; }) ? s : null;
+  }
+
+  function stagePoint(x, y) {
+    if (x && x.getBoundingClientRect) {
+      const r = x.getBoundingClientRect(), s = build().stage.getBoundingClientRect();
+      return { x: r.left - s.left + r.width / 2, y: r.top - s.top + r.height / 2 };
+    }
+    return { x: Number(x) || 0, y: Number(y) || 0 };
+  }
+
+  const kit = {
+    version: 1,
+    fx: function (e) { return e; },
+    burst: function (x, y, color, text) {
+      if (x && x.getBoundingClientRect) { text = color; color = y; }
+      const at = stagePoint(x, y);
+      const box = el('div', '', build().stage);
+      box.style.cssText = 'position:absolute;left:' + at.x + 'px;top:' + at.y + 'px;width:0;height:0;pointer-events:none;z-index:5';
+      box.style.setProperty('--c', color || '#D1F58E');
+      for (let i = 0; i < 12; i++) {
+        const a = Math.random() * 6.2832, d = 5 + Math.random() * 9, s = el('i', 'dfz-spark', box);
+        s.style.setProperty('--dx', (Math.cos(a) * d).toFixed(2) + 'vh');
+        s.style.setProperty('--dy', (Math.sin(a) * d).toFixed(2) + 'vh');
+      }
+      if (text != null && text !== '') el('b', 'dfz-float-text', box, String(text));
+      setTimeout(function () { box.remove(); }, 1000);
+      return box;
+    },
+    confetti: function (n) {
+      n = Math.max(10, Math.min(120, Math.round(Number(n) || 60)));
+      const cs = ['#D1F58E', '#A4F0D7', '#FFD66B', '#FF8A7A', '#8CC8FF', '#C7A4FF'];
+      const box = el('div', '', build().stage);
+      box.style.cssText = 'position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:8';
+      for (let i = 0; i < n; i++) {
+        const p = el('i', 'dfz-confetti', box);
+        p.style.left = (Math.random() * 100).toFixed(1) + '%';
+        p.style.background = cs[i % cs.length];
+        p.style.animationDelay = (Math.random() * 0.6).toFixed(2) + 's';
+        p.style.setProperty('--r', Math.round(Math.random() * 720 - 360) + 'deg');
+      }
+      setTimeout(function () { box.remove(); }, 3400);
+      return box;
+    },
+    cols: function (n) { return Math.max(1, Math.ceil(Math.sqrt(Number(n) || 1))); }
+  };
+
+  const api = {
+    on: function (t, fn) {
+      if (!H[t] || typeof fn !== 'function') return api;
+      H[t].push(fn);
+      if (t === 'ready' && cfg) call(fn, cfg);
+      if (t === 'players' && cfg) call(fn, list.slice());
+      return api;
+    },
+    score: function (s, points) {
+      const seat = seatOf(s), n = Math.round(Number(points));
+      if (!seat || !isFinite(n)) return;
+      scores[seat] = n;
+      if (chips[seat]) chips[seat].sc.textContent = String(n);
+    },
+    finish: function () { finish(); },
+    get config() { return cfg; },
+    get players() { return list.slice(); },
+    get started() { return started; },
+    get ended() { return ended; },
+    kit: kit,
+    ui: {
+      frame: function (o) {
+        o = o || {};
+        if (o.title) title = String(o.title);
+        if (o.hint) hint = String(o.hint);
+        build(); UI.title.textContent = title || document.title; UI.hint.textContent = hint;
+        return UI.stage;
+      },
+      get stage() { return build().stage; },
+      hint: function (t) { hint = String(t || ''); if (UI) UI.hint.textContent = hint; },
+      toast: function (t, color) {
+        const x = build().toast;
+        x.textContent = String(t || ''); x.style.color = color || '#F4F8FF'; x.style.opacity = '1';
+        clearTimeout(UI.toastTimer);
+        UI.toastTimer = setTimeout(function () { x.style.opacity = '0'; }, 1100);
+      },
+      status: function (seat, t) { const s = seatOf(seat); if (s && chips[s]) chips[s].st.textContent = String(t || ''); },
+      canvas: function () {
+        const st = build().stage;
+        let c = st.querySelector('canvas[data-dfz]');
+        if (c) return c;
+        c = document.createElement('canvas');
+        c.setAttribute('data-dfz', '1');
+        c.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%';
+        st.insertBefore(c, st.firstChild);
+        function fit() { const r = st.getBoundingClientRect(); c.width = Math.max(1, Math.round(r.width)); c.height = Math.max(1, Math.round(r.height)); }
+        fit(); window.addEventListener('resize', fit);
+        return c;
+      }
+    }
+  };
+  Object.defineProperty(window, 'dfz', { value: Object.freeze(api), writable: false, configurable: false });
+
+  /* ---------- 앱 대신 판을 돌리는 쪽 ---------- */
+
+  function setPlayers(n) {
+    count = n;
+    const old = {};
+    list.forEach(function (p) { old[p.seat] = p; });
+    list = [];
+    for (let i = 0; i < n; i++) list.push({ seat: String(i + 1), index: i, color: COLORS[i], team: 0 });
+    emit('players', list.slice());
+    list.forEach(function (p) { if (!old[p.seat]) emit('join', p); });
+    Object.keys(old).forEach(function (s) { if (!list.some(function (p) { return p.seat === s; })) emit('leave', old[s]); });
+    drawChips();
+  }
+
+  function input(i, ctrl, y) {
+    const p = list[i];
+    if (!p || !started || ended) return;
+    emit('input', { seat: p.seat, index: p.index, action: ctrl.action, x: ctrl.x, y: y || 0, strength: 1 });
+  }
+  /* 마우스 = 1번 자리의 포인터 장치 (룰셋에 Move가 있을 때) — 판 위 위치를 0~1로 */
+  if (ACTIONS.indexOf('Move') >= 0) {
+    const at = function (e) { const r = build().stage.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height]; };
+    window.addEventListener('mousemove', function (e) { const v = at(e); input(0, { action: 'Move', x: v[0] }, v[1]); });
+    window.addEventListener('mousedown', function (e) { if (e.target.closest && e.target.closest('#dfz-stage') && !e.target.closest('#dfz-over')) input(0, { action: 'Press', x: 0 }); });
+    window.addEventListener('mouseup', function (e) { if (HAS_RELEASE && e.target.closest && e.target.closest('#dfz-stage')) input(0, { action: 'Release', x: 0 }); });
+  }
+
+  function overlay() {
+    const st = build().stage;
+    if (UI.over) UI.over.remove();
+    UI.over = el('div', '', st); UI.over.id = 'dfz-over';
+    return UI.over;
+  }
+
+  function showSetup() {
+    const o = overlay();
+    el('h2', '', o, title || document.title);
+    el('p', '', o, '몇 명이 할까요?');
+    const pick = el('div', 'pick', o);
+    for (let n = 1; n <= MAXP; n++) {
+      const b = el('button', n === count ? 'on' : '', pick, n + '명');
+      b.onclick = function () { setPlayers(n); showSetup(); };
+    }
+    el('p', '', o, CTRLS.map(function (k) { return k.name + ': ' + k.keys[0].toUpperCase() + '~' + k.keys[5].toUpperCase(); }).join(' · ')
+      + ' · 화면 아래 단추로도 할 수 있어요');
+    const go = el('button', 'go', o, '시작 (스페이스)');
+    go.onclick = countdown;
+  }
+
+  let counting = false;
+  function countdown() {
+    if (started || counting) return;
+    counting = true;
+    let n = COUNTDOWN;
+    const o = overlay();
+    const big = el('h2', '', o, String(n));
+    big.style.fontSize = '20vh';
+    const timer = setInterval(function () {
+      n--;
+      if (n > 0) { big.textContent = String(n); return; }
+      clearInterval(timer);
+      o.remove(); UI.over = null;
+      started = true; startAt = performance.now();
+      emit('start');
+    }, 1000);
+  }
+
+  function finish() {
+    if (!started || ended) return;
+    ended = true;
+    emit('end');
+    const o = overlay();
+    el('h2', '', o, '결과');
+    list.slice().sort(function (a, b) { return (scores[b.seat] || 0) - (scores[a.seat] || 0); }).slice(0, 5).forEach(function (p, k) {
+      const line = el('div', 'line', o, (k + 1) + '등  ' + p.seat + '번  ' + (scores[p.seat] || 0) + '점');
+      line.style.color = p.color;
+    });
+    const again = el('button', 'go', o, '다시 하기');
+    again.onclick = function () { location.reload(); };
+  }
+
+  window.addEventListener('keydown', function (ev) {
+    const k = ev.key.toLowerCase();
+    if (k === ' ') { ev.preventDefault(); if (!started) countdown(); return; }
+    CTRLS.forEach(function (c) {
+      const i = c.keys.indexOf(k);
+      if (i >= 0 && (c.repeat || !ev.repeat)) input(i, c);
+    });
+  });
+  window.addEventListener('keyup', function (ev) {
+    if (!HAS_RELEASE) return;
+    const k = ev.key.toLowerCase();
+    CTRLS.forEach(function (c) { const i = c.keys.indexOf(k); if (i >= 0 && c.action === 'Press') input(i, { action: 'Release', x: 0 }); });
+  });
+
+  window.addEventListener('DOMContentLoaded', function () {
+    build();
+    cfg = Object.freeze({ seconds: SECONDS, minPlayers: 1, maxPlayers: OPT.maxPlayers || 6, mode: 'individual', teams: 0, actions: ACTIONS.slice(), lang: 'ko' });
+    emit('ready', cfg);
+    setPlayers(count);
+    showSetup();
+  });
+})();
+</script>
+<meta charset="utf-8"><title>로켓 점프</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0B1026; }
+</style>
+</head><body><script>
+/* 로켓 점프 — 점프할 때마다 내 로켓이 한 칸 올라간다.
+   운석 경보가 뜨면 앉아서 방패를 켠다. 방패가 없으면 운석에 맞아 내려간다.
+   점수 = 로켓 높이. Digital Fit Zone 웹 게임 통로(bridge: players)로 돈다. */
+dfz.ui.frame({ title: '로켓 점프', hint: '점프하면 로켓이 올라가요 · 운석 경보엔 앉아요' });   /* 맨 먼저 */
+
+const JUMP_GAIN = 1;          /* 점프 한 번에 오르는 높이 */
+const DODGE_GAIN = 2;         /* 경보 중에 앉아 막으면 더 오르는 높이 */
+const HIT_LOSS = 3;           /* 방패 없이 맞으면 내려가는 높이 */
+const JUMP_COOLDOWN_MS = 250; /* 한 번 뛴 것을 두 번 세지 않게 */
+const WARN_MS = 2400;         /* 경보가 떠 있는 시간 — 이 안에 앉아야 한다 */
+const SHOWER_MS = 1400;       /* 운석이 지나가는 시간 */
+const FIRST_SHOWER_S = 8;     /* 시작 뒤 첫 경보까지(초) */
+const GAP_LEAST_S = 9, GAP_MOST_S = 13;
+
+const canvas = dfz.ui.canvas();
+const ctx = canvas.getContext('2d');
+
+let cfg = null, playing = false, over = false;
+let startAt = 0;
+const people = {};   /* seat → { seat, index, color, alt, shown, flame, shield, wobble, lastJump } */
+let order = [];      /* 화면에 놓는 순서(index 순) */
+
+/* 운석 경보 상태: idle → warn → shower → idle */
+let phase = 'idle', phaseAt = 0, nextShowerAt = 0;
+let meteors = [];
+const stars = [];
+for (let i = 0; i < 140; i++) {
+  stars.push({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.8, tw: Math.random() * 6.28, depth: 0.3 + Math.random() * 0.7 });
+}
+let scroll = 0;
+
+function now() { return performance.now(); }
+function rand(a, b) { return a + Math.random() * (b - a); }
+
+function relayout() {
+  order = Object.values(people).sort(function (a, b) { return a.index - b.index; });
+}
+
+function report(p) {
+  dfz.score(p.seat, p.alt);
+}
+
+function rocketSpot(p) {
+  const W = canvas.width, H = canvas.height;
+  const n = Math.max(1, order.length);
+  const i = order.indexOf(p);
+  const laneW = W / n;
+  const x = laneW * (i + 0.5);
+  const y = groundY(H) - (p.shown / viewTop()) * (H * 0.62);
+  return { x: x, y: y, laneW: laneW };
+}
+
+function groundY(H) { return H * 0.86; }
+
+/* 화면 꼭대기가 뜻하는 높이 — 가장 높은 로켓이 늘 화면 안에 들어오게 넓힌다 */
+let viewTopSmooth = 20;
+function viewTop() { return viewTopSmooth; }
+
+dfz.on('ready', function (c) { cfg = c; });
+dfz.on('players', function (list) {
+  const seen = {};
+  list.forEach(function (p) {
+    seen[p.seat] = true;
+    if (!people[p.seat]) {
+      people[p.seat] = { seat: p.seat, index: p.index, color: p.color || '#A4F0D7', alt: 0, shown: 0, flame: 0, shield: 0, wobble: 0, lastJump: 0, dodged: false };
+    } else {
+      people[p.seat].index = p.index;
+      people[p.seat].color = p.color || people[p.seat].color;
+    }
+  });
+  Object.keys(people).forEach(function (s) { if (!seen[s]) delete people[s]; });
+  relayout();
+});
+dfz.on('start', function () {
+  playing = true;
+  startAt = now();
+  nextShowerAt = startAt + FIRST_SHOWER_S * 1000;
+  phase = 'idle';
+  dfz.ui.toast('출발!', '#D1F58E');
+});
+dfz.on('end', function () {
+  playing = false;
+  over = true;
+  phase = 'idle';
+  meteors = [];
+  dfz.kit.confetti(80);
+});
+
+dfz.on('input', function (e) {
+  const p = people[e.seat];
+  if (!p || !playing) return;   /* 명단에 없거나 시작 전이면 무시 */
+  const t = now();
+  const s = rocketSpot(p);
+  if (e.action === 'Jump' || e.action === 'Shake') {
+    if (t - p.lastJump < JUMP_COOLDOWN_MS) return;
+    p.lastJump = t;
+    p.alt += JUMP_GAIN;
+    p.flame = 1;
+    report(p);
+    dfz.kit.burst(s.x, s.y + canvas.height * 0.09, p.color, '+' + JUMP_GAIN);
+  } else if (e.action === 'Squat' || e.action === 'Press') {
+    if (phase === 'warn' && !p.dodged) {
+      p.dodged = true;
+      p.shield = 1;
+      p.alt += DODGE_GAIN;
+      report(p);
+      dfz.ui.status(p.seat, '방패 켬!');
+      dfz.kit.burst(s.x, s.y, '#8CC8FF', '방패 +' + DODGE_GAIN);
+    } else {
+      p.wobble = Math.max(p.wobble, 0.4);   /* 경보가 아닐 때 앉으면 살짝 흔들리기만 */
+    }
+  }
+});
+
+function startWarn(t) {
+  phase = 'warn';
+  phaseAt = t;
+  order.forEach(function (p) { p.dodged = false; });   /* 경보 글은 drawWarn이 판 위쪽에 그린다 — 로켓을 가리지 않게 */
+}
+
+function startShower(t) {
+  phase = 'shower';
+  phaseAt = t;
+  const W = canvas.width, H = canvas.height;
+  meteors = [];
+  for (let i = 0; i < 9; i++) {
+    meteors.push({ x: rand(-0.2, 1.0) * W, y: rand(-0.5, -0.1) * H, vx: rand(0.35, 0.55) * W, vy: rand(0.7, 1.0) * H, r: rand(0.025, 0.045) * H });
+  }
+  order.forEach(function (p) {
+    if (p.dodged) {
+      dfz.ui.status(p.seat, '막았다!');
+    } else {
+      const lost = Math.min(p.alt, HIT_LOSS);
+      p.alt -= lost;
+      p.wobble = 1;
+      report(p);
+      dfz.ui.status(p.seat, '쾅!');
+      if (lost > 0) {
+        const s = rocketSpot(p);
+        dfz.kit.burst(s.x, s.y, '#FF8A7A', '-' + lost);
+      }
+    }
+  });
+}
+
+function endShower(t) {
+  phase = 'idle';
+  meteors = [];
+  order.forEach(function (p) { p.shield = 0; dfz.ui.status(p.seat, ''); });
+  nextShowerAt = t + rand(GAP_LEAST_S, GAP_MOST_S) * 1000;
+}
+
+function update(dt, t) {
+  if (playing && cfg) {
+    const left = (cfg.seconds || 60) * 1000 - (t - startAt);
+    if (phase === 'idle' && t >= nextShowerAt && left > WARN_MS + SHOWER_MS + 1000) startWarn(t);
+    else if (phase === 'warn' && t - phaseAt >= WARN_MS) startShower(t);
+    else if (phase === 'shower' && t - phaseAt >= SHOWER_MS) endShower(t);
+  }
+  let top = 0;
+  order.forEach(function (p) {
+    p.shown += (p.alt - p.shown) * Math.min(1, dt * 6);
+    p.flame = Math.max(0, p.flame - dt * 2.5);
+    p.wobble = Math.max(0, p.wobble - dt * 1.6);
+    if (phase !== 'warn' && phase !== 'shower') p.shield = Math.max(0, p.shield - dt * 2);
+    top = Math.max(top, p.shown);
+  });
+  const want = Math.max(20, Math.ceil((top + 6) / 10) * 10);
+  viewTopSmooth += (want - viewTopSmooth) * Math.min(1, dt * 2);
+  scroll += dt * (0.02 + top * 0.002);
+  meteors.forEach(function (m) { m.x += m.vx * dt; m.y += m.vy * dt; });
+}
+
+/* ---------- 그리기 ---------- */
+
+function drawSky(W, H, t) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#05081A');
+  g.addColorStop(0.6, '#141C46');
+  g.addColorStop(1, '#2B2266');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  stars.forEach(function (s) {
+    const y = ((s.y + scroll * s.depth) % 1) * H;
+    const a = 0.45 + 0.55 * Math.abs(Math.sin(s.tw + t / 700));
+    ctx.globalAlpha = a;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(s.x * W, y, s.r * (H / 700), 0, 6.283);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  /* 멀리 있는 행성 */
+  ctx.fillStyle = 'rgba(199,164,255,0.35)';
+  ctx.beginPath(); ctx.arc(W * 0.86, H * 0.2, H * 0.09, 0, 6.283); ctx.fill();
+  ctx.strokeStyle = 'rgba(199,164,255,0.5)'; ctx.lineWidth = H * 0.008;
+  ctx.beginPath(); ctx.ellipse(W * 0.86, H * 0.2, H * 0.15, H * 0.03, -0.3, 0, 6.283); ctx.stroke();
+}
+
+function drawHeightLines(W, H) {
+  const top = viewTop();
+  const step = top > 60 ? 20 : 10;
+  ctx.font = '700 ' + Math.round(H * 0.06) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  for (let v = step; v < top; v += step) {
+    const y = groundY(H) - (v / top) * (H * 0.62);
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = Math.max(1, H * 0.003);
+    ctx.setLineDash([H * 0.02, H * 0.02]);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillText(v + '', H * 0.015, y - H * 0.035);
+  }
+}
+
+function drawGround(W, H) {
+  ctx.fillStyle = '#3B3F6B';
+  ctx.fillRect(0, groundY(H) + H * 0.05, W, H);
+  ctx.fillStyle = '#565C94';
+  ctx.fillRect(0, groundY(H) + H * 0.05, W, H * 0.015);
+}
+
+function drawRocket(p, W, H, t) {
+  const s = rocketSpot(p);
+  const size = Math.min(H * 0.17, s.laneW * 0.55);
+  const bw = size * 0.42;
+  const shake = p.wobble > 0 ? Math.sin(t / 30) * size * 0.12 * p.wobble : 0;
+  const x = s.x + shake, y = s.y;
+
+  /* 발사대 */
+  ctx.fillStyle = '#6B71B0';
+  ctx.fillRect(s.x - bw * 1.1, groundY(H) + size * 0.42, bw * 2.2, H * 0.02);
+
+  /* 불꽃 — 점프할 때 길어진다 */
+  const flameLen = size * (0.18 + 0.75 * p.flame) * (0.85 + 0.15 * Math.sin(t / 45));
+  ctx.fillStyle = '#FFD66B';
+  ctx.beginPath();
+  ctx.moveTo(x - bw * 0.35, y + size * 0.42);
+  ctx.quadraticCurveTo(x, y + size * 0.42 + flameLen * 1.2, x + bw * 0.35, y + size * 0.42);
+  ctx.fill();
+  ctx.fillStyle = '#FF8A7A';
+  ctx.beginPath();
+  ctx.moveTo(x - bw * 0.2, y + size * 0.42);
+  ctx.quadraticCurveTo(x, y + size * 0.42 + flameLen * 0.75, x + bw * 0.2, y + size * 0.42);
+  ctx.fill();
+
+  /* 날개 */
+  ctx.fillStyle = shade(p.color, -0.25);
+  ctx.beginPath();
+  ctx.moveTo(x - bw * 0.5, y + size * 0.1);
+  ctx.lineTo(x - bw * 1.0, y + size * 0.45);
+  ctx.lineTo(x - bw * 0.5, y + size * 0.38);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x + bw * 0.5, y + size * 0.1);
+  ctx.lineTo(x + bw * 1.0, y + size * 0.45);
+  ctx.lineTo(x + bw * 0.5, y + size * 0.38);
+  ctx.closePath(); ctx.fill();
+
+  /* 몸통 */
+  ctx.fillStyle = p.color;
+  ctx.beginPath();
+  ctx.moveTo(x, y - size * 0.55);
+  ctx.bezierCurveTo(x + bw * 0.75, y - size * 0.3, x + bw * 0.55, y + size * 0.3, x + bw * 0.45, y + size * 0.42);
+  ctx.lineTo(x - bw * 0.45, y + size * 0.42);
+  ctx.bezierCurveTo(x - bw * 0.55, y + size * 0.3, x - bw * 0.75, y - size * 0.3, x, y - size * 0.55);
+  ctx.fill();
+
+  /* 창문 — 자리 번호를 크게 */
+  ctx.fillStyle = '#F4F8FF';
+  ctx.beginPath(); ctx.arc(x, y - size * 0.08, bw * 0.38, 0, 6.283); ctx.fill();
+  ctx.fillStyle = '#0B1026';
+  ctx.font = '900 ' + Math.round(Math.max(H * 0.055, bw * 0.42)) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(p.seat).slice(0, 3), x, y - size * 0.07);
+
+  /* 방패 */
+  if (p.shield > 0) {
+    ctx.globalAlpha = 0.35 + 0.25 * Math.sin(t / 90);
+    ctx.fillStyle = '#8CC8FF';
+    ctx.beginPath(); ctx.arc(x, y, size * 0.75, 0, 6.283); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#8CC8FF'; ctx.lineWidth = H * 0.008;
+    ctx.beginPath(); ctx.arc(x, y, size * 0.75, 0, 6.283); ctx.stroke();
+  }
+
+  /* 높이 숫자 */
+  ctx.fillStyle = '#F4F8FF';
+  ctx.font = '900 ' + Math.round(H * 0.075) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText(p.alt + '', x, y - size * 0.6);
+}
+
+function drawMeteors(H) {
+  meteors.forEach(function (m) {
+    ctx.strokeStyle = 'rgba(255,138,122,0.5)';
+    ctx.lineWidth = m.r * 0.9;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(m.x - m.vx * 0.12, m.y - m.vy * 0.12); ctx.stroke();
+    ctx.fillStyle = '#B5653F';
+    ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#8A4A2E';
+    ctx.beginPath(); ctx.arc(m.x - m.r * 0.3, m.y - m.r * 0.2, m.r * 0.3, 0, 6.283); ctx.fill();
+  });
+}
+
+function drawWarn(W, H, t) {
+  const k = (t - phaseAt) / WARN_MS;
+  const blink = 0.5 + 0.5 * Math.sin(t / 110);
+  ctx.strokeStyle = 'rgba(255,90,80,' + (0.45 + 0.45 * blink) + ')';
+  ctx.lineWidth = H * 0.03;
+  ctx.strokeRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(20,10,30,0.55)';
+  ctx.fillRect(W * 0.18, H * 0.06, W * 0.64, H * 0.2);
+  ctx.fillStyle = '#FF8A7A';
+  ctx.font = '900 ' + Math.round(H * 0.1) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('운석 경보! 앉아요!', W / 2, H * 0.16, W * 0.6);
+  /* 남은 시간 막대 */
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fillRect(W * 0.2, H * 0.24, W * 0.6, H * 0.015);
+  ctx.fillStyle = '#FF8A7A';
+  ctx.fillRect(W * 0.2, H * 0.24, W * 0.6 * Math.max(0, 1 - k), H * 0.015);
+}
+
+function drawIdleText(W, H) {
+  ctx.fillStyle = 'rgba(244,248,255,0.92)';
+  ctx.font = '900 ' + Math.round(H * 0.085) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const msg = over ? '모두 잘했어요!' : (order.length ? '점프하면 로켓이 올라가요' : '카메라 앞에 서 주세요');
+  ctx.fillText(msg, W / 2, H * 0.2, W * 0.9);
+}
+
+function shade(hex, amt) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const f = function (c) { return Math.max(0, Math.min(255, Math.round(c + c * amt))); };
+  const r = f(n >> 16 & 255), g = f(n >> 8 & 255), b = f(n & 255);
+  return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+/* dfz.ui.canvas()는 resize 때만 크기를 맞춘다 — 처음 뜰 때 판 크기가 0일 수 있어 매 장면 확인한다 */
+function fitCanvas() {
+  const r = canvas.parentNode.getBoundingClientRect();
+  const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+}
+
+let last = 0;
+function frame(t) {
+  const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+  last = t;
+  fitCanvas();
+  update(dt, t);
+  const W = canvas.width, H = canvas.height;
+  drawSky(W, H, t);
+  drawHeightLines(W, H);
+  drawGround(W, H);
+  order.forEach(function (p) { drawRocket(p, W, H, t); });
+  if (phase === 'shower') drawMeteors(H);
+  if (phase === 'warn') drawWarn(W, H, t);
+  if (!playing) drawIdleText(W, H);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script></body></html>

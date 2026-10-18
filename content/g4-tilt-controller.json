@@ -1,0 +1,20 @@
+{
+  "kind": "controller", "grade": 4, "title": "4학년 기울여 맞추기",
+  "description": "각도기에서 각을 맞추고, 소수만큼 막대를 채운다. 기울이면 한 칸씩, 누르면 확정.",
+  "seconds": 120, "answerSec": 12,
+  "source": "885 기획안 기울기센서형 — 각도, 평면도형의 이동, 소수의 덧셈·뺄셈 (수치 조절·비교, 변환 조절)",
+  "scales": {
+    "deg": { "view": "angle", "unit": "", "stops": ["0°","30°","60°","90°","120°","150°","180°"] },
+    "tenths": { "view": "bar", "unit": "", "stops": ["0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1"] }
+  },
+  "items": [
+    { "ask": "직각을 만들어요", "scale": "deg", "answer": "90°" },
+    { "ask": "직각보다 30° 큰 각", "scale": "deg", "answer": "120°" },
+    { "ask": "일직선이 되는 각", "scale": "deg", "answer": "180°" },
+    { "ask": "정삼각형의 한 각", "scale": "deg", "answer": "60°" },
+    { "ask": "180° − 150°", "scale": "deg", "answer": "30°" },
+    { "ask": "90° + 60°", "scale": "deg", "answer": "150°" },
+    { "ask": "0.4 + 0.3", "scale": "tenths", "answer": "0.7" },
+    { "ask": "1 − 0.6", "scale": "tenths", "answer": "0.4" }
+  ]
+}

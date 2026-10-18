@@ -1,0 +1,250 @@
+<!doctype html><html><head><meta charset="utf-8"><title>__TITLE__</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #202B3D; }
+</style>
+</head><body><script>
+/* 컨트롤러 틀 「기울여 맞추기」 — 문제의 값을 눈금 위에서 찾는다. 기울이면 한 칸씩, 누르면(흔들어도) 확정.
+   885 기획안의 기울기센서형(수치 조절·비교, 값 조절과 비교, 변환 조절, 기울기 조절)을 묶었다.
+   눈금(scale)은 막대(bar)와 각도(angle) 두 모양. 내용(GAME)은 content/<id>.json에서 build_games.py가 넣는다. */
+const GAME = /*@GAME@*/null;
+dfz.ui.frame({ title: GAME.title, hint: '기울여서 맞추고 · 누르면 확정' });   /* 맨 먼저 */
+
+/*@BUDDY@*/
+/*@COMMON@*/
+
+const READ_MS = 1500;
+const ADJUST_MS = (GAME.answerSec || 12) * 1000;
+const SHOW_MS = 3000;
+const STEP_MS = 220;      /* 기울인 채로 있으면 이 간격으로 한 칸씩 — 한 번 기울임을 여러 칸으로 세지 않게 */
+const TILT_MIN = 0.2;     /* 이보다 덜 기울이면 움직이지 않는다 */
+
+const canvas = dfz.ui.canvas();
+const ctx = canvas.getContext('2d');
+
+let cfg = null, playing = false, over = false, startAt = 0;
+const people = {};
+let order = [];
+let deck = [], q = null, sc = null, qNo = 0, phase = 'wait', phaseAt = 0;
+
+dfz.on('ready', function (c) { cfg = c; });
+dfz.on('players', function (list) {
+  order = syncPeople(people, list, function (p) {
+    return { seat: p.seat, index: p.index, color: p.color || PAL.mint, score: 0, pos: 0, locked: false, result: null, lastStep: 0, lean: 0, leanAt: 0, bumpAt: 0 };
+  });
+});
+dfz.on('start', function () {
+  playing = true;
+  startAt = performance.now();
+  nextQuestion(startAt);
+});
+dfz.on('end', function () {
+  playing = false; over = true; phase = 'wait';
+  dfz.kit.confetti(90);
+});
+
+dfz.on('input', function (e) {
+  const p = people[e.seat];
+  if (!p || !playing) return;
+  const t = performance.now();
+  const open = (phase === 'read' || phase === 'adjust') && !p.locked;
+  if (e.action === 'Tilt') {
+    const d = e.x >= TILT_MIN ? 1 : e.x <= -TILT_MIN ? -1 : 0;
+    if (!d) return;
+    p.lean = d; p.leanAt = t;   /* 잠겨 있어도 캐릭터는 기울어 반응한다 */
+    if (!open || t - p.lastStep < STEP_MS) return;
+    p.lastStep = t;
+    const next = clamp(p.pos + d, 0, sc.stops.length - 1);
+    if (next === p.pos) p.bumpAt = t;   /* 끝에 닿으면 살짝 흔들림 */
+    p.pos = next;
+  } else if (e.action === 'Press' || e.action === 'Shake') {
+    p.bumpAt = t;
+    if (!open || phase !== 'adjust') return;
+    p.locked = true;
+    dfz.ui.status(p.seat, '확정!');
+    const s = panelOf(p, canvas.width, canvas.height);
+    if (s) dfz.kit.burst(s.x + s.h * 0.45, s.y + s.h * 0.5, p.color);
+    if (order.every(function (o) { return o.locked; })) reveal(t);   /* 모두 확정하면 바로 정답 */
+  }
+});
+
+function lab(i) { return sc.stops[i] + (sc.unit || ''); }   /* 눈금 글자 + 단위 (예: 30%) */
+
+function timeLeft(t) { return (cfg && cfg.seconds ? cfg.seconds : 120) * 1000 - (t - startAt); }
+
+function nextQuestion(t) {
+  if (timeLeft(t) < READ_MS + 4000 + SHOW_MS) { phase = 'last'; phaseAt = t; return; }
+  if (!deck.length) deck = shuffle(GAME.items);
+  q = deck.pop();
+  sc = GAME.scales[q.scale];
+  qNo++;
+  phase = 'read'; phaseAt = t;
+  order.forEach(function (p) { p.pos = 0; p.locked = false; p.result = null; dfz.ui.status(p.seat, ''); });
+}
+
+function reveal(t) {
+  phase = 'show'; phaseAt = t;
+  order.forEach(function (p) {
+    p.result = p.pos === q.answer ? 'right' : 'wrong';
+    if (p.result === 'right') {
+      p.score++;
+      dfz.score(p.seat, p.score);
+      dfz.ui.status(p.seat, '맞았어요!');
+    } else dfz.ui.status(p.seat, '정답 ' + lab(q.answer));
+  });
+}
+
+function update(t) {
+  if (!playing || !q) return;
+  const k = t - phaseAt, left = timeLeft(t);
+  if (phase === 'read' && k >= READ_MS) { phase = 'adjust'; phaseAt = t; }
+  else if (phase === 'adjust' && (k >= ADJUST_MS || left < SHOW_MS + 500)) reveal(t);
+  else if (phase === 'show' && k >= SHOW_MS) nextQuestion(t);
+}
+
+/* ---------- 그리기 ---------- */
+
+/* 눈금 그리기 — 막대: 왼쪽부터 pos칸까지 채움 / 각도: 반원 각도기 위 바늘 */
+function gauge(x, y, w, h, pos, color, opt) {
+  const n = sc.stops.length - 1, f = pos / n;
+  if (sc.view === 'angle') {
+    const r = Math.min(w / 2, h) * 0.92, cx = x + w / 2, cy = y + h * 0.5 + r * 0.5;
+    ctx.fillStyle = 'rgba(255,255,255,.12)';
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, Math.PI, 0); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = color; ctx.globalAlpha = 0.55;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, 0, -Math.PI * f, true); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = PAL.ink; ctx.lineWidth = Math.max(2, r * 0.05); ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + r, cy); ctx.stroke();
+    ctx.strokeStyle = color;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(-Math.PI * f) * r, cy + Math.sin(-Math.PI * f) * r); ctx.stroke();
+    if (opt && opt.target != null) {
+      const a = -Math.PI * opt.target / n;
+      ctx.strokeStyle = PAL.lime; ctx.setLineDash([r * 0.08, r * 0.06]);
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(a) * r * 1.05, cy + Math.sin(a) * r * 1.05); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    return { cx: cx, cy: cy, r: r };
+  }
+  const bh = Math.min(h, w * 0.18);
+  const by = y + (h - bh) / 2;
+  ctx.fillStyle = 'rgba(255,255,255,.12)'; rr(ctx, x, by, w, bh, bh * 0.3); ctx.fill();
+  if (pos > 0) { ctx.fillStyle = color; rr(ctx, x, by, w * f, bh, bh * 0.3); ctx.fill(); }
+  ctx.strokeStyle = 'rgba(19,32,47,.45)'; ctx.lineWidth = Math.max(1, bh * 0.06);
+  for (let i = 1; i < n; i++) { const tx = x + w * i / n; ctx.beginPath(); ctx.moveTo(tx, by); ctx.lineTo(tx, by + bh); ctx.stroke(); }
+  if (opt && opt.target != null) {
+    const tx = x + w * opt.target / n;
+    ctx.strokeStyle = PAL.lime; ctx.lineWidth = Math.max(3, bh * 0.14);
+    ctx.beginPath(); ctx.moveTo(tx, by - bh * 0.25); ctx.lineTo(tx, by + bh * 1.25); ctx.stroke();
+  }
+  return { x: x, by: by, bh: bh, w: w };
+}
+
+/* 위쪽 큰 눈금 — 값 글자를 붙인다. 글자가 겹치면 건너뛰며 쓴다 */
+function drawScale(x, y, w, h, H) {
+  const n = sc.stops.length - 1, target = phase === 'show' ? q.answer : null;
+  const px = H * MIN_TEXT;
+  ctx.font = font(800, px);
+  if (sc.view === 'angle') {
+    const g = gauge(x + px * 2.4, y + px * 1.5, w - px * 4.8, h - px * 2, 0, PAL.sky, { target: target });
+    ctx.fillStyle = PAL.muted; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    const every = n > 6 ? 2 : 1;
+    sc.stops.forEach(function (s, i) {
+      if (i % every && i !== target) return;
+      const a = -Math.PI * i / n, rx = g.cx + Math.cos(a) * (g.r + px * 1.1), ry = g.cy + Math.sin(a) * (g.r + px * 0.8);
+      ctx.fillStyle = i === target ? PAL.lime : PAL.muted;
+      ctx.fillText(lab(i), rx, ry);
+    });
+    return;
+  }
+  x += px; w -= px * 2;   /* 양 끝 글자가 카드 밖으로 나가지 않게 */
+  const g = gauge(x, y + h * 0.12, w, h * 0.4, 0, PAL.sky, { target: target });
+  const widest = Math.max.apply(null, sc.stops.map(function (s, i) { return ctx.measureText(lab(i)).width; }));
+  /* 건너뛰는 간격은 칸 수의 약수로 — 그래야 마지막 글자가 바로 앞 글자와 겹치지 않는다 */
+  const step = w / n, need = Math.max(1, Math.ceil(widest * 1.25 / step));
+  let every = need;
+  while (n % every) every++;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  sc.stops.forEach(function (s, i) {
+    if (i !== target && (i % every || (target != null && Math.abs(i - target) * step < widest * 1.15))) return;
+    ctx.fillStyle = i === target ? PAL.lime : PAL.muted;
+    ctx.fillText(lab(i), x + w * i / n, g.by + g.bh * 1.3 + px * 0.2);
+  });
+}
+
+function drawTop(W, H, t) {
+  const x = W * 0.03, y = H * 0.03, w = W * 0.94, h = H * 0.36;
+  ctx.fillStyle = PAL.card; rr(ctx, x, y, w, h, H * 0.05); ctx.fill();
+  if (!playing || !q || phase === 'last') {
+    const msg = over ? '모두 잘했어요!' : phase === 'last' ? '마지막까지 힘내요!'
+      : (order.length ? '기울여서 맞추고, 누르면 확정해요' : '컨트롤러를 연결해 주세요');
+    textBox(ctx, msg, x + w * 0.05, y, w * 0.9, h, H * 0.1, H * MIN_TEXT, PAL.ink);
+    return;
+  }
+  ctx.font = font(800, H * MIN_TEXT);
+  ctx.fillStyle = PAL.muted; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(qNo + '번 문제', x + H * 0.035, y + H * 0.025);
+  textBox(ctx, q.ask, x + H * 0.03, y + H * 0.09, w * 0.42, h - H * 0.11, H * 0.095, H * MIN_TEXT, phase === 'show' ? PAL.lime : PAL.ink);
+  drawScale(x + w * 0.5, y + H * 0.035, w * 0.46, h - H * 0.05, H);
+  /* 남은 시간 막대 */
+  const bx = x + w * 0.1, by = y + h + H * 0.02, bw = w * 0.8, bh = H * 0.022;
+  let p = phase === 'read' ? 1 : phase === 'adjust' ? 1 - (t - phaseAt) / ADJUST_MS : 0;
+  ctx.fillStyle = 'rgba(255,255,255,.14)'; rr(ctx, bx, by, bw, bh, bh / 2); ctx.fill();
+  if (p > 0) { ctx.fillStyle = p < 0.3 ? PAL.coral : PAL.lime; rr(ctx, bx, by, Math.max(bh, bw * p), bh, bh / 2); ctx.fill(); }
+}
+
+/* 참가자 칸 배치 — 아래 영역을 가장 크게 쓰는 열 수를 고른다 (칸 비율 약 2.6:1) */
+let grid = null;
+function layout(W, H) {
+  const n = Math.max(1, order.length), ax = W * 0.03, ay = H * 0.44, aw = W * 0.94, ah = H * 0.54;
+  let best = null;
+  for (let c = 1; c <= n; c++) {
+    const r = Math.ceil(n / c), gap = H * 0.015;
+    const cw = (aw - gap * (c - 1)) / c, ch = (ah - gap * (r - 1)) / r;
+    const h = Math.min(ch, cw / 2.6, H * 0.26);
+    if (!best || h > best.h) best = { c: c, r: r, h: h, w: h * 2.6, gap: gap };
+  }
+  const tw = best.c * best.w + (best.c - 1) * best.gap, th = best.r * best.h + (best.r - 1) * best.gap;
+  best.x0 = ax + (aw - tw) / 2; best.y0 = ay + (ah - th) / 2;
+  grid = best;
+}
+function panelOf(p, W, H) {
+  if (!grid) layout(W, H);
+  const i = order.indexOf(p);
+  if (i < 0) return null;
+  const c = i % grid.c, r = Math.floor(i / grid.c);
+  return { x: grid.x0 + c * (grid.w + grid.gap), y: grid.y0 + r * (grid.h + grid.gap), w: grid.w, h: grid.h };
+}
+
+function drawPanels(W, H, t) {
+  layout(W, H);
+  order.forEach(function (p) {
+    const b = panelOf(p, W, H);
+    const edge = phase === 'show' ? (p.result === 'right' ? PAL.lime : PAL.coral) : p.locked ? PAL.ink : p.color;
+    ctx.fillStyle = PAL.surface; rr(ctx, b.x, b.y, b.w, b.h, b.h * 0.18); ctx.fill();
+    ctx.strokeStyle = edge; ctx.lineWidth = Math.max(2, b.h * (p.locked || phase === 'show' ? 0.06 : 0.035));
+    rr(ctx, b.x, b.y, b.w, b.h, b.h * 0.18); ctx.stroke();
+    let pose = 'idle';
+    if (phase === 'show') pose = p.result === 'right' ? 'cheer' : 'oops';
+    else if (over) pose = 'cheer';
+    else if (t - p.leanAt < 600) pose = 'lean';
+    const shake = t - p.bumpAt < 250 ? Math.sin(t / 25) * b.h * 0.03 : 0;
+    Buddy.draw(ctx, { x: b.x + b.h * 0.5 + shake, y: b.y + b.h * 0.96, size: b.h * 0.86, color: p.color, pose: pose, lean: p.lean,
+      t: t + p.index * 700, label: String(p.seat) });
+    if (!sc) return;
+    /* 내 눈금과 지금 값 */
+    const gx = b.x + b.h * 1.05, gw = b.w - b.h * 1.2, txt = H * MIN_TEXT;
+    ctx.font = font(900, txt);
+    ctx.fillStyle = p.locked && phase !== 'show' ? PAL.lime : PAL.ink;   /* 확정하면 값이 연두색 */
+    ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+    ctx.fillText(lab(p.pos), gx, b.y + b.h * 0.08, gw);
+    gauge(gx, b.y + b.h * 0.08 + txt * 1.15, gw, b.h * 0.84 - txt * 1.15, p.pos, p.color, phase === 'show' ? { target: q.answer } : null);
+  });
+}
+
+runLoop(canvas, function (dt, t, W, H) {
+  update(t);
+  nightSky(ctx, W, H);
+  drawTop(W, H, t);
+  drawPanels(W, H, t);
+});
+</script></body></html>

@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0",
+  "ruleSetId": "74e18f0d-d603-5c24-bb57-8b4b05329e68",
+  "title": "1학년 몸으로 OX",
+  "description": "문장을 보고 맞으면 만세, 틀리면 앉는다. 1학년 수·모양·시각·한글·안전 단원.",
+  "category": "Reaction",
+  "players": {
+    "min": 1,
+    "max": 6,
+    "teams": {
+      "enabled": false
+    }
+  },
+  "duration": {
+    "mode": "Timed",
+    "seconds": 90,
+    "countdownSeconds": 3
+  },
+  "inputs": {
+    "required": [
+      "Raise",
+      "Squat"
+    ],
+    "optional": [],
+    "deviceKinds": [
+      "Camera"
+    ],
+    "minMagnitude": 0.3
+  },
+  "flow": {
+    "type": "Web",
+    "web": {
+      "entry": "web/game.html",
+      "people": 6,
+      "bridge": "players"
+    }
+  },
+  "scoring": {
+    "rules": [
+      {
+        "id": "reported",
+        "trigger": "OnAction",
+        "when": {
+          "action": "Raise",
+          "minMagnitude": 0.0,
+          "cooldownMs": 0
+        },
+        "award": {
+          "points": 1,
+          "target": "Player"
+        }
+      }
+    ],
+    "aggregation": "Sum",
+    "teamAggregation": "Average",
+    "allowNegative": false
+  },
+  "victory": {
+    "condition": "HighestScore",
+    "scope": "Individual",
+    "tieBreak": [
+      "Draw"
+    ],
+    "showRanking": 5
+  },
+  "difficulty": {
+    "default": "Normal"
+  },
+  "guide": {
+    "ko": {
+      "moves": [
+        {
+          "action": "Raise",
+          "effect": "맞다고 생각하면 두 팔을 번쩍 든다(O)"
+        },
+        {
+          "action": "Squat",
+          "effect": "틀리다고 생각하면 앉는다(X)"
+        }
+      ],
+      "scoring": [
+        {
+          "rule": "reported",
+          "text": "맞힌 문제 하나에 1점"
+        }
+      ],
+      "cautions": [
+        "옆 사람과 팔 하나 이상 떨어져 선다",
+        "무릎이 아프면 얕게 앉아도 된다"
+      ]
+    }
+  }
+}

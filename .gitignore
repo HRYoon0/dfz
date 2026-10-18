@@ -1,0 +1,6 @@
+# 앱의 코드·DLL이 들어 있음 — 공유 금지
+reference/
+tools/out/
+
+__pycache__/
+.DS_Store

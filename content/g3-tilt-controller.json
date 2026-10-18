@@ -1,0 +1,20 @@
+{
+  "kind": "controller", "grade": 3, "title": "3학년 기울여 맞추기",
+  "description": "분수·소수만큼 막대를 채운다. 기울이면 한 칸씩, 누르면 확정.",
+  "seconds": 120, "answerSec": 12,
+  "source": "885 기획안 기울기센서형 — 분수의 의미, 분수의 크기, 소수의 의미 (값 조절과 비교)",
+  "scales": {
+    "eighths": { "view": "bar", "unit": "", "stops": ["0","1/8","2/8","3/8","4/8","5/8","6/8","7/8","1"] },
+    "tenths": { "view": "bar", "unit": "", "stops": ["0","0.1","0.2","0.3","0.4","0.5","0.6","0.7","0.8","0.9","1"] }
+  },
+  "items": [
+    { "ask": "전체의 3/8만큼 채워요", "scale": "eighths", "answer": "3/8" },
+    { "ask": "8로 나눈 것 중 5만큼", "scale": "eighths", "answer": "5/8" },
+    { "ask": "1/8이 6개", "scale": "eighths", "answer": "6/8" },
+    { "ask": "1보다 1/8 작게", "scale": "eighths", "answer": "7/8" },
+    { "ask": "딱 절반만큼 채워요", "scale": "eighths", "answer": "4/8" },
+    { "ask": "0.1이 7개", "scale": "tenths", "answer": "0.7" },
+    { "ask": "0.3보다 0.1 크게", "scale": "tenths", "answer": "0.4" },
+    { "ask": "1/10이 2개를 소수로", "scale": "tenths", "answer": "0.2" }
+  ]
+}

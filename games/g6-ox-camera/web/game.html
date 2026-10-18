@@ -1,0 +1,429 @@
+<!doctype html><html><head><meta charset="utf-8"><title>6학년 몸으로 OX</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #202B3D; }
+</style>
+</head><body><script>
+/* 카메라 틀 「몸으로 OX」 — 문장을 보고 맞으면 만세(O), 틀리면 앉기(X).
+   885 기획안의 판별·선택형(근거 선택·특징 판별·예측 선택·듣기 뜻 매칭 …)을 몸 동작 하나로 묶었다.
+   내용(GAME)은 content/<id>.json에서 build_games.py가 넣는다. */
+const GAME = {"title": "6학년 몸으로 OX", "seconds": 90, "answerSec": 6, "items": [{"q": "3/4 ÷ 1/4 = 3", "a": true, "why": "3/4 안에 1/4이 3번"}, {"q": "삼각기둥의 밑면은 삼각형이에요", "a": true, "why": "밑면 모양으로 이름을 붙여요"}, {"q": "사각뿔의 꼭짓점은 4개예요", "a": false, "why": "밑면 4개 + 위 1개 = 5개"}, {"q": "비율 3/5를 백분율로 나타내면 60%예요", "a": true, "why": "3/5 = 0.6 = 60%"}, {"q": "4.8 ÷ 0.6 = 8", "a": true, "why": "48 ÷ 6 = 8"}, {"q": "한 모서리가 3 cm인 정육면체의 부피는 9 cm³예요", "a": false, "why": "3 × 3 × 3 = 27 cm³"}, {"q": "2 : 3 = 4 : 6은 옳은 비례식이에요", "a": true, "why": "외항의 곱 12 = 내항의 곱 12"}, {"q": "원주율은 원주를 반지름으로 나눈 값이에요", "a": false, "why": "원주 ÷ 지름 = 원주율"}, {"q": "구는 어느 방향에서 보아도 원 모양이에요", "a": true, "why": "구는 어디서 봐도 원"}, {"q": "원뿔의 밑면은 2개예요", "a": false, "why": "원뿔의 밑면은 1개"}, {"q": "전지 2개를 병렬로 연결하면 직렬보다 전구가 더 밝아요", "a": false, "why": "직렬이 더 밝고, 병렬은 더 오래가요"}, {"q": "산소는 다른 물질이 타는 것을 도와요", "a": true, "why": "산소는 연소를 도와요"}, {"q": "물이 담긴 컵 속 빨대가 꺾여 보이는 것은 빛의 굴절 때문이에요", "a": true, "why": "빛이 물과 공기 경계에서 꺾여요"}, {"q": "불을 끄려면 탈 물질, 산소, 온도 중 하나를 없애면 돼요", "a": true, "why": "연소 조건 하나만 없애도 꺼져요"}]};
+dfz.ui.frame({ title: GAME.title, hint: '맞으면 만세 · 틀리면 앉기' });   /* 맨 먼저 */
+
+var Buddy = (function () {
+  'use strict';
+  var POSES = ['idle', 'raise', 'squat', 'jump', 'lean', 'cheer', 'oops'];
+  var ink = '#13202F';
+  var rim = 'rgba(255,255,255,.55)';
+  function oval(c, x, y, rx, ry, fill, edge) {
+    c.beginPath();
+    c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    c.fillStyle = fill;
+    c.fill();
+    if (edge) { c.strokeStyle = edge; c.stroke(); }
+  }
+  function line(c, points, color, width) {
+    c.beginPath();
+    c.moveTo(points[0], points[1]);
+    for (var i = 2; i < points.length; i += 2) c.lineTo(points[i], points[i + 1]);
+    c.strokeStyle = color;
+    c.lineWidth = width;
+    c.stroke();
+  }
+  function body(c) {
+    c.beginPath();
+    c.moveTo(-29, -48);
+    c.bezierCurveTo(-29, -73, -15, -87, 1, -87);
+    c.bezierCurveTo(21, -87, 30, -69, 29, -51);
+    c.bezierCurveTo(39, -24, 23, -9, 1, -10);
+    c.bezierCurveTo(-24, -8, -39, -23, -29, -48);
+    c.closePath();
+  }
+  /* 발바닥 중앙이 원점인 높이 100의 설계 좌표. 모든 변형은 호출 안에서 복원한다. */
+  function draw(ctx, o) {
+    o = o || {};
+    var size = Number(o.size);
+    if (!(size > 0) || !isFinite(size)) return;
+    var pose = POSES.indexOf(o.pose) >= 0 ? o.pose : 'idle';
+    var t = typeof o.t === 'number' && isFinite(o.t) ? o.t : 0;
+    var color = o.color || '#D1F58E';
+    var mood = o.mood || (pose === 'oops' ? 'sad' : pose === 'idle' || pose === 'lean' || pose === 'squat' ? 'calm' : 'happy');
+    var breath = Math.sin(t / 650) * .012;
+    var blink = t > 0 && t % 3900 > 3750;
+    var crouch = pose === 'squat';
+    var airborne = pose === 'jump';
+    var angle = pose === 'lean' ? Math.max(-1, Math.min(1, Number(o.lean) || 0)) * .32 : pose === 'oops' ? Math.sin(t / 180) * .045 : 0;
+    ctx.save();
+    try {
+      ctx.translate(Number(o.x) || 0, Number(o.y) || 0);
+      ctx.scale(size / 100, size / 100);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.translate(0, airborne ? -10 - (1 + Math.sin(t / 240)) * 2 : 0);
+      ctx.rotate(angle);
+      ctx.scale(crouch ? 1.12 : 1 - breath / 2, crouch ? .73 : 1 + breath);
+      ctx.lineWidth = 2.2;
+      oval(ctx, -15, -6, 9, 5, color, rim);
+      oval(ctx, 15, -6, 9, 5, color, rim);
+      /* 팔은 몸 뒤에서 연결하고 둥근 끝을 사용한다. */
+      var lifted = pose === 'raise' || pose === 'cheer' || airborne;
+      [-1, 1].forEach(function (side) {
+        var endY = lifted ? (pose === 'raise' ? -80 : -68) : crouch ? -22 : -30;
+        line(ctx, [side * 25, -48, side * 39, endY], rim, 13);
+        line(ctx, [side * 25, -48, side * 39, endY], color, 9);
+      });
+      body(ctx);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.save();
+      try {
+        ctx.clip();
+        oval(ctx, 0, -10, 38, 12, 'rgba(0,0,0,.18)');
+      } finally { ctx.restore(); }
+      body(ctx);
+      ctx.strokeStyle = rim;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      /* 짧은 새싹 한 개와 잎 한 장. */
+      line(ctx, [0, -87, 0, -95], '#D1F58E', 2.8);
+      ctx.beginPath();
+      ctx.moveTo(0, -94);
+      ctx.bezierCurveTo(2, -100, 10, -99, 11, -97);
+      ctx.bezierCurveTo(9, -91, 3, -91, 0, -94);
+      ctx.fillStyle = '#D1F58E';
+      ctx.fill();
+      oval(ctx, -19, -49, 5, 3, '#FF8A7A');
+      oval(ctx, 19, -49, 5, 3, '#FF8A7A');
+      [-1, 1].forEach(function (side) {
+        var x = side * 11;
+        if (pose === 'oops') {
+          line(ctx, [x - 3, -63, x + 3, -57], ink, 2.8);
+          line(ctx, [x + 3, -63, x - 3, -57], ink, 2.8);
+        } else if (blink || pose === 'cheer') {
+          ctx.beginPath();
+          ctx.moveTo(x - 4, -58);
+          ctx.quadraticCurveTo(x, blink ? -58 : -65, x + 4, -58);
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 2.8;
+          ctx.stroke();
+        } else oval(ctx, x, -60, 3.8, 5, ink);
+      });
+      ctx.beginPath();
+      ctx.moveTo(-4, -48);
+      ctx.quadraticCurveTo(0, mood === 'sad' ? -53 : -42, 4, -48);
+      if (mood === 'happy') {
+        ctx.quadraticCurveTo(0, -36, -4, -48);
+        ctx.fillStyle = ink;
+        ctx.fill();
+        oval(ctx, 0, -43, 2.3, 1.4, '#FF8A7A');
+      } else {
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 2.3;
+        ctx.stroke();
+      }
+      if (o.label !== undefined && o.label !== null && String(o.label)) {
+        oval(ctx, 0, -27, 11, 10, 'rgba(255,255,255,.75)');
+        ctx.fillStyle = ink;
+        ctx.font = "bold 11px 'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Array.from(String(o.label)).slice(0, 3).join(''), 0, -26, 19);
+      }
+      if (crouch || airborne) {
+        ctx.lineWidth = 2.2;
+        oval(ctx, -17, -12, 8, 7, color, rim);
+        oval(ctx, 17, -12, 8, 7, color, rim);
+      }
+      if (pose === 'cheer') {
+        [-1, 1].forEach(function (s) {
+          line(ctx, [s * 35, -87, s * 40, -92], '#FFD66B', 3);
+          line(ctx, [s * 43, -77, s * 48, -79], '#FFD66B', 3);
+        });
+      }
+      if (pose === 'oops') {
+        ctx.beginPath();
+        for (var j = 0; j <= 24; j++) {
+          var a = j * .39;
+          var r = 1 + j * .17;
+          var px = 38 + Math.cos(a) * r;
+          var py = -83 + Math.sin(a) * r;
+          if (!j) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = '#F4F8FF';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+      }
+    } finally { ctx.restore(); }
+  }
+  return { draw: draw, POSES: POSES.slice() };
+})();
+/* 두 틀(카메라·컨트롤러)이 함께 쓰는 도구. 색은 앱 dfz.kit 토큰과 같다. */
+var PAL = { bg: '#202B3D', surface: '#30435A', card: 'rgba(255,255,255,.09)', ink: '#F4F8FF', muted: '#CCDCE9', face: '#13202F',
+  lime: '#D1F58E', mint: '#A4F0D7', sun: '#FFD66B', coral: '#FF8A7A', sky: '#8CC8FF', violet: '#C7A4FF' };
+var FONT = "'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif";
+var MIN_TEXT = 0.055;   /* 화면 글자는 놀이판 높이의 5% 이상 (앱 검사 규칙) — 여유를 둔 값 */
+
+function font(weight, px) { return weight + ' ' + Math.round(px) + 'px ' + FONT; }
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+function shuffle(a) {
+  a = a.slice();
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const t = a[i]; a[i] = a[j]; a[j] = t; }
+  return a;
+}
+
+function rr(ctx, x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+/* 글을 maxW 안에 줄바꿈한다. 띄어쓰기 단위로 자르고, 한 낱말이 넘치면 글자 단위로 자른다 */
+function wrap(ctx, text, maxW) {
+  const out = [];
+  String(text).split('\n').forEach(function (para) {
+    let line = '';
+    para.split(' ').forEach(function (word) {
+      const tryLine = line ? line + ' ' + word : word;
+      if (ctx.measureText(tryLine).width <= maxW) { line = tryLine; return; }
+      if (line) out.push(line);
+      line = '';
+      Array.from(word).forEach(function (ch) {
+        if (ctx.measureText(line + ch).width > maxW && line) { out.push(line); line = ''; }
+        line += ch;
+      });
+    });
+    out.push(line);
+  });
+  return out;
+}
+
+/* 상자(x,y,w,h) 가운데에 글을 맞춰 쓴다. 글자 크기는 big에서 시작해 들어갈 때까지 줄이되 small 밑으로는 안 내린다.
+   낱말 하나가 폭을 넘으면(낱말 중간에서 잘릴 상황) 줄을 바꾸기 전에 먼저 글자를 줄인다 */
+function textBox(ctx, text, x, y, w, h, big, small, color, weight) {
+  let px = big, lines;
+  const words = String(text).split(/\s+/);
+  for (;;) {
+    ctx.font = font(weight || 900, px);
+    lines = wrap(ctx, text, w);
+    const wordFits = words.every(function (wd) { return ctx.measureText(wd).width <= w; });
+    if ((wordFits && lines.length * px * 1.22 <= h) || px <= small) break;
+    px = Math.max(small, px * 0.9);
+  }
+  ctx.fillStyle = color;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  const lh = px * 1.22, top = y + h / 2 - (lines.length - 1) * lh / 2;
+  lines.forEach(function (ln, i) { ctx.fillText(ln, x + w / 2, top + i * lh, w); });
+}
+
+function nightSky(ctx, W, H) {
+  const g = ctx.createRadialGradient(W / 2, H * 0.15, 0, W / 2, H * 0.15, Math.max(W, H));
+  g.addColorStop(0, '#34507F'); g.addColorStop(0.55, '#1A2944'); g.addColorStop(1, '#111B2E');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+}
+
+/* O 고리와 X 표 — 이모지 대신 도형으로 그려 윈도·맥이 같게 보인다 */
+function drawO(ctx, x, y, r, color) {
+  ctx.strokeStyle = color; ctx.lineWidth = r * 0.34;
+  ctx.beginPath(); ctx.arc(x, y, r * 0.8, 0, 6.283); ctx.stroke();
+}
+function drawX(ctx, x, y, r, color) {
+  const d = r * 0.72;
+  ctx.strokeStyle = color; ctx.lineWidth = r * 0.34; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(x - d, y - d); ctx.lineTo(x + d, y + d); ctx.moveTo(x + d, y - d); ctx.lineTo(x - d, y + d); ctx.stroke();
+}
+/* 판 크기 맞추기 + 매 장면 그리기. dfz.ui.canvas()는 resize 때만 맞추므로 처음 0 크기를 매번 확인한다 */
+function runLoop(canvas, step) {
+  let last = 0;
+  function frame(t) {
+    const r = canvas.parentNode.getBoundingClientRect();
+    const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+    const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+    last = t;
+    step(dt, t, w, h);
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* 자리 목록 받기 — 들어온 사람은 만들고, 나간 사람은 지운다 */
+function syncPeople(people, list, make) {
+  const seen = {};
+  list.forEach(function (p) {
+    seen[p.seat] = true;
+    if (!people[p.seat]) people[p.seat] = make(p);
+    people[p.seat].index = p.index;
+    people[p.seat].color = p.color || people[p.seat].color;
+  });
+  Object.keys(people).forEach(function (s) { if (!seen[s]) delete people[s]; });
+  return Object.values(people).sort(function (a, b) { return a.index - b.index; });
+}
+
+const READ_MS = 1500;                          /* 문제를 읽는 시간 — 이때부터 답할 수 있다 */
+const ANSWER_MS = (GAME.answerSec || 6) * 1000; /* 답하는 시간 — 마지막 동작이 답이 된다 */
+const SHOW_MS = 3000;                          /* 정답 보여 주는 시간 */
+const POSE_MS = 900;                           /* 동작 하나에 캐릭터가 따라 하는 시간 */
+
+const canvas = dfz.ui.canvas();
+const ctx = canvas.getContext('2d');
+
+let cfg = null, playing = false, over = false, startAt = 0;
+const people = {};
+let order = [];
+let deck = [], q = null, qNo = 0, phase = 'wait', phaseAt = 0;
+
+dfz.on('ready', function (c) { cfg = c; });
+dfz.on('players', function (list) {
+  order = syncPeople(people, list, function (p) {
+    return { seat: p.seat, index: p.index, color: p.color || PAL.mint, score: 0, pick: null, result: null, act: 'idle', actAt: 0 };
+  });
+});
+dfz.on('start', function () {
+  playing = true;
+  startAt = performance.now();
+  nextQuestion(startAt);
+});
+dfz.on('end', function () {
+  playing = false; over = true; phase = 'wait';
+  order.forEach(function (p) { p.result = null; p.pick = null; p.act = 'cheer'; p.actAt = performance.now(); });
+  dfz.kit.confetti(90);
+});
+
+dfz.on('input', function (e) {
+  const p = people[e.seat];
+  if (!p || !playing) return;
+  const t = performance.now();
+  const pick = e.action === 'Raise' ? 'O' : e.action === 'Squat' ? 'X' : null;
+  if (!pick) return;
+  p.act = pick === 'O' ? 'raise' : 'squat';   /* 어느 때든 바로 따라 한다 — 1초 안 반응 */
+  p.actAt = t;
+  if (phase === 'read' || phase === 'answer') {
+    if (p.pick !== pick) dfz.ui.status(p.seat, pick === 'O' ? 'O 골랐어요' : 'X 골랐어요');
+    p.pick = pick;
+  }
+});
+
+function timeLeft(t) { return (cfg && cfg.seconds ? cfg.seconds : 90) * 1000 - (t - startAt); }
+
+function nextQuestion(t) {
+  if (timeLeft(t) < READ_MS + ANSWER_MS + SHOW_MS) { phase = 'last'; phaseAt = t; return; }
+  if (!deck.length) deck = shuffle(GAME.items);
+  q = deck.pop();
+  qNo++;
+  phase = 'read'; phaseAt = t;
+  order.forEach(function (p) { p.pick = null; p.result = null; dfz.ui.status(p.seat, ''); });
+}
+
+function reveal(t) {
+  phase = 'show'; phaseAt = t;
+  const answer = q.a ? 'O' : 'X';
+  order.forEach(function (p) {
+    if (!p.pick) { p.result = 'none'; dfz.ui.status(p.seat, '다음엔 같이 해요'); return; }
+    p.result = p.pick === answer ? 'right' : 'wrong';
+    if (p.result === 'right') {
+      p.score++;
+      dfz.score(p.seat, p.score);
+      dfz.ui.status(p.seat, '맞았어요!');
+      const s = spot(p, canvas.width, canvas.height);
+      dfz.kit.burst(s.x, s.y - s.size * 0.9, p.color, '+1');
+    } else dfz.ui.status(p.seat, '아쉬워요');
+  });
+}
+
+function update(t) {
+  if (!playing || !q) return;
+  const k = t - phaseAt;
+  if (phase === 'read' && k >= READ_MS) { phase = 'answer'; phaseAt = t; }
+  else if (phase === 'answer' && k >= ANSWER_MS) reveal(t);
+  else if (phase === 'show' && k >= SHOW_MS) nextQuestion(t);
+}
+
+/* ---------- 그리기 ---------- */
+
+function spot(p, W, H) {
+  const n = Math.max(1, order.length), lane = W / n, i = order.indexOf(p);
+  return { x: lane * (i + 0.5), y: H * 0.95, size: Math.min(H * 0.36, lane * 0.62) };
+}
+
+function poseOf(p, t) {
+  if (phase === 'show' && p.result === 'right') return 'cheer';
+  if (phase === 'show' && p.result === 'wrong') return 'oops';
+  if (over) return 'cheer';
+  if (p.pick && (phase === 'read' || phase === 'answer')) return p.pick === 'O' ? 'raise' : 'squat';
+  if (t - p.actAt < POSE_MS) return p.act;
+  return 'idle';
+}
+
+function drawCard(W, H, t) {
+  const x = W * 0.04, y = H * 0.035, w = W * 0.92, h = H * 0.34;
+  ctx.fillStyle = PAL.card;
+  rr(ctx, x, y, w, h, H * 0.05); ctx.fill();
+  if (!playing || !q || phase === 'last') {
+    const msg = over ? '모두 잘했어요!' : phase === 'last' ? '마지막까지 힘내요!'
+      : (order.length ? '맞으면 만세, 틀리면 앉아요' : '카메라 앞에 서 주세요');
+    textBox(ctx, msg, x + w * 0.05, y, w * 0.9, h, H * 0.1, H * MIN_TEXT, PAL.ink);
+    return;
+  }
+  const r = h * 0.3;
+  ctx.font = font(800, H * 0.058);
+  ctx.fillStyle = PAL.muted; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText(qNo + '번 문제', x + H * 0.04, y + H * 0.025);
+  if (phase === 'show') {
+    const right = q.a;
+    (right ? drawO : drawX)(ctx, x + h * 0.55, y + h * 0.55, r, right ? PAL.mint : PAL.coral);
+    textBox(ctx, (q.why || q.q), x + h * 1.1, y + h * 0.12, w - h * 1.2, h * 0.84, H * 0.09, H * MIN_TEXT, right ? PAL.mint : PAL.coral);
+  } else {
+    textBox(ctx, q.q, x + w * 0.04, y + h * 0.16, w * 0.92, h * 0.8, H * 0.1, H * MIN_TEXT, PAL.ink);
+  }
+  /* 남은 시간 막대 — dfz-bar 모양 */
+  const bx = x + w * 0.1, by = y + h + H * 0.025, bw = w * 0.8, bh = H * 0.026;
+  let p = 0;
+  if (phase === 'read') p = 1;
+  else if (phase === 'answer') p = 1 - (t - phaseAt) / ANSWER_MS;
+  ctx.fillStyle = 'rgba(255,255,255,.14)'; rr(ctx, bx, by, bw, bh, bh / 2); ctx.fill();
+  if (p > 0) { ctx.fillStyle = p < 0.3 ? PAL.coral : PAL.lime; rr(ctx, bx, by, Math.max(bh, bw * p), bh, bh / 2); ctx.fill(); }
+}
+
+function drawLegend(W, H) {
+  const y = H * 0.47, r = H * 0.045;
+  ctx.font = font(800, H * 0.06); ctx.textBaseline = 'middle';
+  ctx.globalAlpha = phase === 'show' ? 0.35 : 1;
+  drawO(ctx, W * 0.1, y, r, PAL.mint);
+  ctx.fillStyle = PAL.ink; ctx.textAlign = 'left';
+  ctx.fillText('만세하면 O', W * 0.1 + r * 1.4, y);
+  drawX(ctx, W * 0.9, y, r, PAL.coral);
+  ctx.textAlign = 'right';
+  ctx.fillText('앉으면 X', W * 0.9 - r * 1.4, y);
+  ctx.globalAlpha = 1;
+}
+
+function drawPeople(W, H, t) {
+  ctx.fillStyle = 'rgba(255,255,255,.06)';
+  ctx.fillRect(0, H * 0.95, W, H * 0.05);
+  order.forEach(function (p) {
+    const s = spot(p, W, H);
+    Buddy.draw(ctx, { x: s.x, y: s.y, size: s.size, color: p.color, pose: poseOf(p, t), t: t + p.index * 700, label: String(p.seat) });
+    /* 고른 답 말풍선 — 머리 위 */
+    if (p.pick && (phase === 'read' || phase === 'answer' || phase === 'show')) {
+      const by = s.y - s.size * 1.18, br = Math.min(H * 0.055, s.size * 0.2);
+      ctx.fillStyle = PAL.surface; ctx.beginPath(); ctx.arc(s.x + s.size * 0.36, by, br * 1.25, 0, 6.283); ctx.fill();
+      (p.pick === 'O' ? drawO : drawX)(ctx, s.x + s.size * 0.36, by, br, p.pick === 'O' ? PAL.mint : PAL.coral);
+    }
+  });
+}
+
+runLoop(canvas, function (dt, t, W, H) {
+  update(t);
+  nightSky(ctx, W, H);
+  drawCard(W, H, t);
+  drawLegend(W, H);
+  drawPeople(W, H, t);
+});
+</script></body></html>

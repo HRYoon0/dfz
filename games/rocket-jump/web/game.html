@@ -1,0 +1,374 @@
+<!doctype html><html><head><meta charset="utf-8"><title>로켓 점프</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0B1026; }
+</style>
+</head><body><script>
+/* 로켓 점프 — 점프할 때마다 내 로켓이 한 칸 올라간다.
+   운석 경보가 뜨면 앉아서 방패를 켠다. 방패가 없으면 운석에 맞아 내려간다.
+   점수 = 로켓 높이. Digital Fit Zone 웹 게임 통로(bridge: players)로 돈다. */
+dfz.ui.frame({ title: '로켓 점프', hint: '점프하면 로켓이 올라가요 · 운석 경보엔 앉아요' });   /* 맨 먼저 */
+
+const JUMP_GAIN = 1;          /* 점프 한 번에 오르는 높이 */
+const DODGE_GAIN = 2;         /* 경보 중에 앉아 막으면 더 오르는 높이 */
+const HIT_LOSS = 3;           /* 방패 없이 맞으면 내려가는 높이 */
+const JUMP_COOLDOWN_MS = 250; /* 한 번 뛴 것을 두 번 세지 않게 */
+const WARN_MS = 2400;         /* 경보가 떠 있는 시간 — 이 안에 앉아야 한다 */
+const SHOWER_MS = 1400;       /* 운석이 지나가는 시간 */
+const FIRST_SHOWER_S = 8;     /* 시작 뒤 첫 경보까지(초) */
+const GAP_LEAST_S = 9, GAP_MOST_S = 13;
+
+const canvas = dfz.ui.canvas();
+const ctx = canvas.getContext('2d');
+
+let cfg = null, playing = false, over = false;
+let startAt = 0;
+const people = {};   /* seat → { seat, index, color, alt, shown, flame, shield, wobble, lastJump } */
+let order = [];      /* 화면에 놓는 순서(index 순) */
+
+/* 운석 경보 상태: idle → warn → shower → idle */
+let phase = 'idle', phaseAt = 0, nextShowerAt = 0;
+let meteors = [];
+const stars = [];
+for (let i = 0; i < 140; i++) {
+  stars.push({ x: Math.random(), y: Math.random(), r: 0.6 + Math.random() * 1.8, tw: Math.random() * 6.28, depth: 0.3 + Math.random() * 0.7 });
+}
+let scroll = 0;
+
+function now() { return performance.now(); }
+function rand(a, b) { return a + Math.random() * (b - a); }
+
+function relayout() {
+  order = Object.values(people).sort(function (a, b) { return a.index - b.index; });
+}
+
+function report(p) {
+  dfz.score(p.seat, p.alt);
+}
+
+function rocketSpot(p) {
+  const W = canvas.width, H = canvas.height;
+  const n = Math.max(1, order.length);
+  const i = order.indexOf(p);
+  const laneW = W / n;
+  const x = laneW * (i + 0.5);
+  const y = groundY(H) - (p.shown / viewTop()) * (H * 0.62);
+  return { x: x, y: y, laneW: laneW };
+}
+
+function groundY(H) { return H * 0.86; }
+
+/* 화면 꼭대기가 뜻하는 높이 — 가장 높은 로켓이 늘 화면 안에 들어오게 넓힌다 */
+let viewTopSmooth = 20;
+function viewTop() { return viewTopSmooth; }
+
+dfz.on('ready', function (c) { cfg = c; });
+dfz.on('players', function (list) {
+  const seen = {};
+  list.forEach(function (p) {
+    seen[p.seat] = true;
+    if (!people[p.seat]) {
+      people[p.seat] = { seat: p.seat, index: p.index, color: p.color || '#A4F0D7', alt: 0, shown: 0, flame: 0, shield: 0, wobble: 0, lastJump: 0, dodged: false };
+    } else {
+      people[p.seat].index = p.index;
+      people[p.seat].color = p.color || people[p.seat].color;
+    }
+  });
+  Object.keys(people).forEach(function (s) { if (!seen[s]) delete people[s]; });
+  relayout();
+});
+dfz.on('start', function () {
+  playing = true;
+  startAt = now();
+  nextShowerAt = startAt + FIRST_SHOWER_S * 1000;
+  phase = 'idle';
+  dfz.ui.toast('출발!', '#D1F58E');
+});
+dfz.on('end', function () {
+  playing = false;
+  over = true;
+  phase = 'idle';
+  meteors = [];
+  dfz.kit.confetti(80);
+});
+
+dfz.on('input', function (e) {
+  const p = people[e.seat];
+  if (!p || !playing) return;   /* 명단에 없거나 시작 전이면 무시 */
+  const t = now();
+  const s = rocketSpot(p);
+  if (e.action === 'Jump' || e.action === 'Shake') {
+    if (t - p.lastJump < JUMP_COOLDOWN_MS) return;
+    p.lastJump = t;
+    p.alt += JUMP_GAIN;
+    p.flame = 1;
+    report(p);
+    dfz.kit.burst(s.x, s.y + canvas.height * 0.09, p.color, '+' + JUMP_GAIN);
+  } else if (e.action === 'Squat' || e.action === 'Press') {
+    if (phase === 'warn' && !p.dodged) {
+      p.dodged = true;
+      p.shield = 1;
+      p.alt += DODGE_GAIN;
+      report(p);
+      dfz.ui.status(p.seat, '방패 켬!');
+      dfz.kit.burst(s.x, s.y, '#8CC8FF', '방패 +' + DODGE_GAIN);
+    } else {
+      p.wobble = Math.max(p.wobble, 0.4);   /* 경보가 아닐 때 앉으면 살짝 흔들리기만 */
+    }
+  }
+});
+
+function startWarn(t) {
+  phase = 'warn';
+  phaseAt = t;
+  order.forEach(function (p) { p.dodged = false; });   /* 경보 글은 drawWarn이 판 위쪽에 그린다 — 로켓을 가리지 않게 */
+}
+
+function startShower(t) {
+  phase = 'shower';
+  phaseAt = t;
+  const W = canvas.width, H = canvas.height;
+  meteors = [];
+  for (let i = 0; i < 9; i++) {
+    meteors.push({ x: rand(-0.2, 1.0) * W, y: rand(-0.5, -0.1) * H, vx: rand(0.35, 0.55) * W, vy: rand(0.7, 1.0) * H, r: rand(0.025, 0.045) * H });
+  }
+  order.forEach(function (p) {
+    if (p.dodged) {
+      dfz.ui.status(p.seat, '막았다!');
+    } else {
+      const lost = Math.min(p.alt, HIT_LOSS);
+      p.alt -= lost;
+      p.wobble = 1;
+      report(p);
+      dfz.ui.status(p.seat, '쾅!');
+      if (lost > 0) {
+        const s = rocketSpot(p);
+        dfz.kit.burst(s.x, s.y, '#FF8A7A', '-' + lost);
+      }
+    }
+  });
+}
+
+function endShower(t) {
+  phase = 'idle';
+  meteors = [];
+  order.forEach(function (p) { p.shield = 0; dfz.ui.status(p.seat, ''); });
+  nextShowerAt = t + rand(GAP_LEAST_S, GAP_MOST_S) * 1000;
+}
+
+function update(dt, t) {
+  if (playing && cfg) {
+    const left = (cfg.seconds || 60) * 1000 - (t - startAt);
+    if (phase === 'idle' && t >= nextShowerAt && left > WARN_MS + SHOWER_MS + 1000) startWarn(t);
+    else if (phase === 'warn' && t - phaseAt >= WARN_MS) startShower(t);
+    else if (phase === 'shower' && t - phaseAt >= SHOWER_MS) endShower(t);
+  }
+  let top = 0;
+  order.forEach(function (p) {
+    p.shown += (p.alt - p.shown) * Math.min(1, dt * 6);
+    p.flame = Math.max(0, p.flame - dt * 2.5);
+    p.wobble = Math.max(0, p.wobble - dt * 1.6);
+    if (phase !== 'warn' && phase !== 'shower') p.shield = Math.max(0, p.shield - dt * 2);
+    top = Math.max(top, p.shown);
+  });
+  const want = Math.max(20, Math.ceil((top + 6) / 10) * 10);
+  viewTopSmooth += (want - viewTopSmooth) * Math.min(1, dt * 2);
+  scroll += dt * (0.02 + top * 0.002);
+  meteors.forEach(function (m) { m.x += m.vx * dt; m.y += m.vy * dt; });
+}
+
+/* ---------- 그리기 ---------- */
+
+function drawSky(W, H, t) {
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#05081A');
+  g.addColorStop(0.6, '#141C46');
+  g.addColorStop(1, '#2B2266');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+  stars.forEach(function (s) {
+    const y = ((s.y + scroll * s.depth) % 1) * H;
+    const a = 0.45 + 0.55 * Math.abs(Math.sin(s.tw + t / 700));
+    ctx.globalAlpha = a;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.beginPath();
+    ctx.arc(s.x * W, y, s.r * (H / 700), 0, 6.283);
+    ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  /* 멀리 있는 행성 */
+  ctx.fillStyle = 'rgba(199,164,255,0.35)';
+  ctx.beginPath(); ctx.arc(W * 0.86, H * 0.2, H * 0.09, 0, 6.283); ctx.fill();
+  ctx.strokeStyle = 'rgba(199,164,255,0.5)'; ctx.lineWidth = H * 0.008;
+  ctx.beginPath(); ctx.ellipse(W * 0.86, H * 0.2, H * 0.15, H * 0.03, -0.3, 0, 6.283); ctx.stroke();
+}
+
+function drawHeightLines(W, H) {
+  const top = viewTop();
+  const step = top > 60 ? 20 : 10;
+  ctx.font = '700 ' + Math.round(H * 0.06) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'left';
+  for (let v = step; v < top; v += step) {
+    const y = groundY(H) - (v / top) * (H * 0.62);
+    ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+    ctx.lineWidth = Math.max(1, H * 0.003);
+    ctx.setLineDash([H * 0.02, H * 0.02]);
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.fillText(v + '', H * 0.015, y - H * 0.035);
+  }
+}
+
+function drawGround(W, H) {
+  ctx.fillStyle = '#3B3F6B';
+  ctx.fillRect(0, groundY(H) + H * 0.05, W, H);
+  ctx.fillStyle = '#565C94';
+  ctx.fillRect(0, groundY(H) + H * 0.05, W, H * 0.015);
+}
+
+function drawRocket(p, W, H, t) {
+  const s = rocketSpot(p);
+  const size = Math.min(H * 0.17, s.laneW * 0.55);
+  const bw = size * 0.42;
+  const shake = p.wobble > 0 ? Math.sin(t / 30) * size * 0.12 * p.wobble : 0;
+  const x = s.x + shake, y = s.y;
+
+  /* 발사대 */
+  ctx.fillStyle = '#6B71B0';
+  ctx.fillRect(s.x - bw * 1.1, groundY(H) + size * 0.42, bw * 2.2, H * 0.02);
+
+  /* 불꽃 — 점프할 때 길어진다 */
+  const flameLen = size * (0.18 + 0.75 * p.flame) * (0.85 + 0.15 * Math.sin(t / 45));
+  ctx.fillStyle = '#FFD66B';
+  ctx.beginPath();
+  ctx.moveTo(x - bw * 0.35, y + size * 0.42);
+  ctx.quadraticCurveTo(x, y + size * 0.42 + flameLen * 1.2, x + bw * 0.35, y + size * 0.42);
+  ctx.fill();
+  ctx.fillStyle = '#FF8A7A';
+  ctx.beginPath();
+  ctx.moveTo(x - bw * 0.2, y + size * 0.42);
+  ctx.quadraticCurveTo(x, y + size * 0.42 + flameLen * 0.75, x + bw * 0.2, y + size * 0.42);
+  ctx.fill();
+
+  /* 날개 */
+  ctx.fillStyle = shade(p.color, -0.25);
+  ctx.beginPath();
+  ctx.moveTo(x - bw * 0.5, y + size * 0.1);
+  ctx.lineTo(x - bw * 1.0, y + size * 0.45);
+  ctx.lineTo(x - bw * 0.5, y + size * 0.38);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(x + bw * 0.5, y + size * 0.1);
+  ctx.lineTo(x + bw * 1.0, y + size * 0.45);
+  ctx.lineTo(x + bw * 0.5, y + size * 0.38);
+  ctx.closePath(); ctx.fill();
+
+  /* 몸통 */
+  ctx.fillStyle = p.color;
+  ctx.beginPath();
+  ctx.moveTo(x, y - size * 0.55);
+  ctx.bezierCurveTo(x + bw * 0.75, y - size * 0.3, x + bw * 0.55, y + size * 0.3, x + bw * 0.45, y + size * 0.42);
+  ctx.lineTo(x - bw * 0.45, y + size * 0.42);
+  ctx.bezierCurveTo(x - bw * 0.55, y + size * 0.3, x - bw * 0.75, y - size * 0.3, x, y - size * 0.55);
+  ctx.fill();
+
+  /* 창문 — 자리 번호를 크게 */
+  ctx.fillStyle = '#F4F8FF';
+  ctx.beginPath(); ctx.arc(x, y - size * 0.08, bw * 0.38, 0, 6.283); ctx.fill();
+  ctx.fillStyle = '#0B1026';
+  ctx.font = '900 ' + Math.round(Math.max(H * 0.055, bw * 0.42)) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(String(p.seat).slice(0, 3), x, y - size * 0.07);
+
+  /* 방패 */
+  if (p.shield > 0) {
+    ctx.globalAlpha = 0.35 + 0.25 * Math.sin(t / 90);
+    ctx.fillStyle = '#8CC8FF';
+    ctx.beginPath(); ctx.arc(x, y, size * 0.75, 0, 6.283); ctx.fill();
+    ctx.globalAlpha = 1;
+    ctx.strokeStyle = '#8CC8FF'; ctx.lineWidth = H * 0.008;
+    ctx.beginPath(); ctx.arc(x, y, size * 0.75, 0, 6.283); ctx.stroke();
+  }
+
+  /* 높이 숫자 */
+  ctx.fillStyle = '#F4F8FF';
+  ctx.font = '900 ' + Math.round(H * 0.075) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText(p.alt + '', x, y - size * 0.6);
+}
+
+function drawMeteors(H) {
+  meteors.forEach(function (m) {
+    ctx.strokeStyle = 'rgba(255,138,122,0.5)';
+    ctx.lineWidth = m.r * 0.9;
+    ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(m.x - m.vx * 0.12, m.y - m.vy * 0.12); ctx.stroke();
+    ctx.fillStyle = '#B5653F';
+    ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill();
+    ctx.fillStyle = '#8A4A2E';
+    ctx.beginPath(); ctx.arc(m.x - m.r * 0.3, m.y - m.r * 0.2, m.r * 0.3, 0, 6.283); ctx.fill();
+  });
+}
+
+function drawWarn(W, H, t) {
+  const k = (t - phaseAt) / WARN_MS;
+  const blink = 0.5 + 0.5 * Math.sin(t / 110);
+  ctx.strokeStyle = 'rgba(255,90,80,' + (0.45 + 0.45 * blink) + ')';
+  ctx.lineWidth = H * 0.03;
+  ctx.strokeRect(0, 0, W, H);
+  ctx.fillStyle = 'rgba(20,10,30,0.55)';
+  ctx.fillRect(W * 0.18, H * 0.06, W * 0.64, H * 0.2);
+  ctx.fillStyle = '#FF8A7A';
+  ctx.font = '900 ' + Math.round(H * 0.1) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('운석 경보! 앉아요!', W / 2, H * 0.16, W * 0.6);
+  /* 남은 시간 막대 */
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  ctx.fillRect(W * 0.2, H * 0.24, W * 0.6, H * 0.015);
+  ctx.fillStyle = '#FF8A7A';
+  ctx.fillRect(W * 0.2, H * 0.24, W * 0.6 * Math.max(0, 1 - k), H * 0.015);
+}
+
+function drawIdleText(W, H) {
+  ctx.fillStyle = 'rgba(244,248,255,0.92)';
+  ctx.font = '900 ' + Math.round(H * 0.085) + 'px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  const msg = over ? '모두 잘했어요!' : (order.length ? '점프하면 로켓이 올라가요' : '카메라 앞에 서 주세요');
+  ctx.fillText(msg, W / 2, H * 0.2, W * 0.9);
+}
+
+function shade(hex, amt) {
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || ''));
+  if (!m) return hex;
+  const n = parseInt(m[1], 16);
+  const f = function (c) { return Math.max(0, Math.min(255, Math.round(c + c * amt))); };
+  const r = f(n >> 16 & 255), g = f(n >> 8 & 255), b = f(n & 255);
+  return 'rgb(' + r + ',' + g + ',' + b + ')';
+}
+
+/* dfz.ui.canvas()는 resize 때만 크기를 맞춘다 — 처음 뜰 때 판 크기가 0일 수 있어 매 장면 확인한다 */
+function fitCanvas() {
+  const r = canvas.parentNode.getBoundingClientRect();
+  const w = Math.max(1, Math.round(r.width)), h = Math.max(1, Math.round(r.height));
+  if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; }
+}
+
+let last = 0;
+function frame(t) {
+  const dt = last ? Math.min(0.1, (t - last) / 1000) : 0;
+  last = t;
+  fitCanvas();
+  update(dt, t);
+  const W = canvas.width, H = canvas.height;
+  drawSky(W, H, t);
+  drawHeightLines(W, H);
+  drawGround(W, H);
+  order.forEach(function (p) { drawRocket(p, W, H, t); });
+  if (phase === 'shower') drawMeteors(H);
+  if (phase === 'warn') drawWarn(W, H, t);
+  if (!playing) drawIdleText(W, H);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script></body></html>

@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>콩콩이 · 6색 7자세 미리보기</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#202B3D;color:#F4F8FF;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif}main{padding:28px;min-width:360px}h1{margin:0 0 8px;font-size:28px}p{margin:0 0 24px;color:#c5d4e6}.scroll{overflow:auto;border:1px solid #52667c;border-radius:18px}canvas{display:block;width:1600px;height:2100px}small{display:block;margin-top:16px;color:#c5d4e6}
+</style>
+</head>
+<body><main><h1>콩콩이 동작 도감</h1><p>6가지 자리 색 × 7가지 자세 · 색마다 위 200px / 아래 44px · 좌우로 스크롤하세요.</p><div class="scroll"><canvas id="preview" aria-label="콩콩이 6색과 7자세를 200픽셀과 44픽셀로 비교하는 애니메이션"></canvas></div><small>기울기는 좌우로 바뀌며, 숨쉬기와 눈깜빡임은 시간에 따라 움직입니다.</small></main>
+<script src="../templates/buddy.js"></script>
+<script>
+(function () {
+  'use strict';
+  var canvas = document.getElementById('preview');
+  var ctx = canvas.getContext('2d');
+  var colors = ['#D1F58E','#A4F0D7','#FFD66B','#FF8A7A','#8CC8FF','#C7A4FF'];
+  var names = ['서기','두 팔 만세','쪼그려 앉기','공중 점프','옆으로 기울기','정답 기뻐함','오답 어질어질'];
+  var ratio = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = 1600 * ratio;
+  canvas.height = 2100 * ratio;
+  function frame(t) {
+    ctx.setTransform(ratio,0,0,ratio,0,0);
+    ctx.fillStyle = '#202B3D';
+    ctx.fillRect(0,0,1600,2100);
+    ctx.font = "bold 17px 'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    Buddy.POSES.forEach(function (pose, col) {
+      ctx.fillStyle = '#F4F8FF';
+      ctx.fillText(names[col] + ' · ' + pose, 100 + col * 225, 28);
+    });
+    colors.forEach(function (color, row) {
+      var top = 56 + row * 338;
+      Buddy.POSES.forEach(function (pose, col) {
+        var x = 100 + col * 225;
+        ctx.fillStyle = '#30435A';
+        ctx.fillRect(x - 96, top, 192, 320);
+        ctx.fillStyle = color;
+        ctx.font = "bold 13px 'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+        ctx.fillText((row + 1) + '번 · ' + color, x, top + 19);
+        [200,44].forEach(function (size) {
+          Buddy.draw(ctx,{x:x,y:top + (size === 200 ? 238 : 303),size:size,color:color,pose:pose,lean:Math.sin(t / 1100),t:t,label:String(row + 1)});
+        });
+      });
+    });
+    window.requestAnimationFrame(frame);
+  }
+  window.requestAnimationFrame(frame);
+})();
+</script></body></html>

@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "1.0",
+  "ruleSetId": "0ab397b1-608a-4c93-a025-642f6010cbdf",
+  "title": "로켓 점프",
+  "description": "점프할 때마다 내 로켓이 올라간다. 운석 경보가 뜨면 앉아서 방패를 켠다.",
+  "category": "Endurance",
+  "players": {
+    "min": 1,
+    "max": 6,
+    "teams": {
+      "enabled": false
+    }
+  },
+  "duration": {
+    "mode": "Timed",
+    "seconds": 60,
+    "countdownSeconds": 3
+  },
+  "inputs": {
+    "required": [
+      "Jump",
+      "Squat"
+    ],
+    "deviceKinds": [
+      "Camera"
+    ],
+    "minMagnitude": 0.2
+  },
+  "flow": {
+    "type": "Web",
+    "web": {
+      "entry": "web/game.html",
+      "people": 6,
+      "bridge": "players"
+    }
+  },
+  "scoring": {
+    "rules": [
+      {
+        "id": "reported",
+        "trigger": "OnAction",
+        "when": {
+          "action": "Jump",
+          "minMagnitude": 0.0,
+          "cooldownMs": 0
+        },
+        "award": {
+          "points": 1,
+          "target": "Player"
+        }
+      }
+    ],
+    "aggregation": "Sum",
+    "teamAggregation": "Average",
+    "allowNegative": true
+  },
+  "victory": {
+    "condition": "HighestScore",
+    "scope": "Individual",
+    "tieBreak": [
+      "Draw"
+    ],
+    "showRanking": 5
+  },
+  "difficulty": {
+    "default": "Normal"
+  },
+  "guide": {
+    "ko": {
+      "moves": [
+        {
+          "action": "Jump",
+          "effect": "제자리에서 뛰면 내 로켓이 한 칸 올라간다"
+        },
+        {
+          "action": "Squat",
+          "effect": "운석 경보가 떴을 때 앉으면 방패가 켜진다"
+        }
+      ],
+      "scoring": [
+        {
+          "rule": "reported",
+          "text": "로켓 높이가 곧 점수다"
+        },
+        {
+          "text": "경보 중에 앉으면 2칸 더, 못 막으면 3칸 내려간다"
+        }
+      ],
+      "cautions": [
+        "옆 사람과 팔 하나 이상 떨어져서 뛴다",
+        "무릎이 아프면 얕게 앉아도 된다"
+      ]
+    }
+  }
+}

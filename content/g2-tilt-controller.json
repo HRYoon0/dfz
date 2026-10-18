@@ -1,0 +1,19 @@
+{
+  "kind": "controller", "grade": 2, "title": "2학년 기울여 맞추기",
+  "description": "문제의 길이를 0~10 cm 자에서 찾는다. 기울이면 1 cm씩, 누르면 확정.",
+  "seconds": 120, "answerSec": 12,
+  "source": "885 기획안 기울기센서형 — 길이의 단위 cm, 곱셈의 의미, 받아내림 뺄셈 (수치 조절·비교)",
+  "scales": {
+    "cm": { "view": "bar", "unit": "cm", "stops": ["0","1","2","3","4","5","6","7","8","9","10"] }
+  },
+  "items": [
+    { "ask": "3 cm와 4 cm를 이으면?", "scale": "cm", "answer": "7" },
+    { "ask": "10 cm에서 6 cm를 빼면?", "scale": "cm", "answer": "4" },
+    { "ask": "2 cm씩 3번", "scale": "cm", "answer": "6" },
+    { "ask": "5 cm씩 2번", "scale": "cm", "answer": "10" },
+    { "ask": "1 cm가 9번", "scale": "cm", "answer": "9" },
+    { "ask": "8 cm보다 3 cm 짧게", "scale": "cm", "answer": "5" },
+    { "ask": "4 cm씩 2번", "scale": "cm", "answer": "8" },
+    { "ask": "12 cm − 9 cm", "scale": "cm", "answer": "3" }
+  ]
+}
