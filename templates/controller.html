@@ -161,7 +161,9 @@ function drawScale(x, y, w, h, H) {
   const widest = Math.max.apply(null, sc.stops.map(function (s, i) { return ctx.measureText(lab(i)).width; }));
   /* 건너뛰는 간격은 칸 수의 약수로 — 그래야 마지막 글자가 바로 앞 글자와 겹치지 않는다 */
   const step = w / n, need = Math.max(1, Math.ceil(widest * 1.25 / step));
-  let every = need;
+  /* 칸 수에서 멈춘다 — 한 칸 폭에 글자가 아예 안 들어가면 need가 칸 수보다 커지는데,
+     그때 약수를 찾아 늘리면 끝이 없다(n % every가 늘 n). 칸 수 자체가 약수이므로 처음·끝 글자만 남는다 */
+  let every = Math.min(need, n);
   while (n % every) every++;
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   sc.stops.forEach(function (s, i) {
