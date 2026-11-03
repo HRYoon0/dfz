@@ -63,6 +63,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-04 08:56</span><span>확인 페이지 사본 — 체험판에서 짝을 보여 주는 동안 「Infinity초」가 찍히던 것 고침(C# 판정 해당 없음)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/72d2e29a6">72d2e29</a></li>
 <li><span class="when">2026-11-04 08:55</span><span>처음 변환 — 폰·컨트롤러로 조준, 모둠 차례전(사수 자동 교대), 짝 +1 · 한 번 더, 카드 그림은 모양과 색</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/d99f17bf1">d99f17b</a></li>
 </ul>
 <!--@/HISTORY@-->
@@ -435,7 +436,7 @@ var Buddy = (function () {
     circle(H * .05, H * .065, H * .02, TEAM[shooter.team]);
     ctx.font = font(H * .055); ctx.textAlign = "left"; ctx.fillStyle = "#F4F8FF"; ctx.fillText(TEAMNAME[shooter.team] + " 차례 · P" + shooter.seat + " 사수", H * .09, H * .085);
     var left = cards.filter(function (k) { return !k.matched; }).length / 2;
-    ctx.font = font(H * .045); ctx.textAlign = "right"; ctx.fillStyle = "#CCDCE9"; ctx.fillText("남은 짝 " + left + " / " + S.pairs + " · " + Math.max(0, Math.ceil(deadline - clock)) + "초", W - H * .03, H * .085);
+    ctx.font = font(H * .045); ctx.textAlign = "right"; ctx.fillStyle = "#CCDCE9"; ctx.fillText("남은 짝 " + left + " / " + S.pairs + (phase === "aim" ? " · " + Math.max(0, Math.ceil(deadline - clock)) + "초" : ""), W - H * .03, H * .085);
     var bx = W * .87, foot = H * .62, size = H * .34, recent = cheers.some(function (c) { return c.text === "+1" && clock - c.at < 1.2; });
     ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.beginPath(); ctx.ellipse(bx, foot, size * .3, size * .06, 0, 0, 7); ctx.fill();
     Buddy.draw(ctx, { x: bx, y: foot, size: size, color: SEAT[(shooter.seat - 1) % SEAT.length], pose: phase === "reveal" ? "oops" : recent ? "cheer" : "raise", t: performance.now(), label: "P" + shooter.seat });
