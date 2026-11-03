@@ -47,6 +47,7 @@ ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14p
 ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
 ul.log .game{font-weight:700}
 .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+ul.log .note{color:var(--muted);font-size:14px;white-space:nowrap}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;align-content:start}
 .card h3{margin:0;font-size:19px}
@@ -59,17 +60,23 @@ ul.log .game{font-weight:700}
 
 
 def build_index():
-    by_day = defaultdict(list)
+    # 날짜별에는 그날 손댄 게임만 한 줄씩 — 세세한 고친 기록은 게임 페이지의 「변환 기록」에 있다
+    by_day = defaultdict(dict)
     for g in DATA["games"]:
-        for i, h in enumerate(g["history"]):
-            by_day[h["date"]].append((h.get("time", ""), i, g, h))
+        first = min(h["date"] for h in g["history"])
+        for h in g["history"]:
+            day = by_day[h["date"]].setdefault(g["slug"], {"game": g, "count": 0, "last": "", "new": h["date"] == first})
+            day["count"] += 1
+            day["last"] = max(day["last"], h.get("time", ""))
 
     days = []
     for d in sorted(by_day, reverse=True):
-        items = sorted(by_day[d], key=lambda x: (x[0], x[1]), reverse=True)
+        items = sorted(by_day[d].values(), key=lambda x: x["last"], reverse=True)
         lis = "\n".join(
-            f'<li><span class="when">{E(t)}</span><span><a class="game" href="{E(g["page"])}">{E(g["title"])}</a> — {E(h["text"])}</span>{commit_link(h.get("commit", ""))}</li>'
-            for t, _, g, h in items)
+            f'<li><span class="when">{"새 변환" if x["new"] else "업데이트"}</span>'
+            f'<span><a class="game" href="{E(x["game"]["page"])}">{E(x["game"]["title"])}</a></span>'
+            f'<span class="note">{x["count"]}건 · 마지막 {E(x["last"])}</span></li>'
+            for x in items)
         days.append(f'<h3>{day_label(d)}</h3>\n<ul class="log">\n{lis}\n</ul>')
 
     cards = []
@@ -101,7 +108,7 @@ def build_index():
 <body>
 <main>
 <h1>디지털 핏 존 변환 기록</h1>
-<p class="lead">여러 사람이 만든 게임을 <a href="{GH}">{E(REPO)}</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)가 있고, 기준 브랜치 <code>{E(DATA['base'])}</code>에는 아직 합치지 않았습니다. 게임 이름을 누르면 그 게임의 확인 페이지(달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
+<p class="lead">여러 사람이 만든 게임을 <a href="{GH}">{E(REPO)}</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)가 있고, 기준 브랜치 <code>{E(DATA['base'])}</code>에는 아직 합치지 않았습니다. 날짜별에는 그날 변환하거나 고친 게임만 나옵니다. 게임 이름을 누르면 그 게임의 확인 페이지(고친 기록, 달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
 <h2>날짜별</h2>
 {chr(10).join(days) if days else '<p class="empty">아직 기록이 없습니다.</p>'}
 <h2>게임별 ({len(DATA['games'])}개)</h2>
