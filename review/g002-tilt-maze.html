@@ -357,7 +357,7 @@ var Buddy = (function () {
   var route = path(1, 1, 18, 11), STARS = [];
   for (var i = 1; i <= 3; i++) { var c = route[Math.min(route.length - 1, Math.floor(route.length * i / 4))]; STARS.push({ x: c[0] + 0.5, y: c[1] + 0.5 }); }
 
-  var balls = [], clock = 0, cheers = [], last = 0, over = false;
+  var balls = [], clock = 0, acc = 0, cheers = [], last = 0, over = false;
   function ball(seat, bot) { return { seat: seat, bot: bot, x: START.x, y: START.y, vx: 0, vy: 0, tx: 0, ty: 0, tAt: -1e9, taken: [0, 0, 0], score: 0, laps: 0, exitAt: -1e9 }; }
   function reset() {
     balls = [ball(1, false)];
@@ -454,8 +454,10 @@ var Buddy = (function () {
   }
   function frame(t) {
     var now = t / 1000; if (!last) last = now;
-    var target = clock + Math.min(0.25, now - last); last = now;
-    while (!over && clock + STEP <= target) {
+    /* 남은 시간을 쌓아 두고 1/60초씩 꺼낸다 — 화면이 120Hz면 한 장면이 한 걸음보다 짧다 */
+    acc += Math.min(0.25, now - last); last = now;
+    while (!over && acc >= STEP) {
+      acc -= STEP;
       clock += STEP;
       controlP1(balls[0]);
       for (var i = 0; i < balls.length; i++) { if (balls[i].bot) autopilot(balls[i]); advance(balls[i]); }
