@@ -73,6 +73,24 @@
           "text": "확인 페이지 사본 — 체험판이 120Hz 화면에서 공을 못 움직이던 걸음 셈 고침(C# 판정은 해당 없음)"
         }
       ]
+    },
+    {
+      "slug": "g015-pair-archery",
+      "title": "G015 짝카드 활쏘기",
+      "author": "",
+      "source": "짝카드 활쏘기 (claude.ai 아티팩트 https://claude.ai/artifact/Eu4nAPYRmiGsQf7YAvy6Ag — 2~4모둠 차례, 마우스·터치로 활 조준, 소스는 못 읽고 놀아 보며 규칙 확인)",
+      "result": "C# 판정·감독·무대 + 검사 30건, 규칙 파일 초안 1개(모둠 2, 보통). 폰·컨트롤러 조준, 모둠 차례전, 짝 +1",
+      "branch": "claude/g015-pair-archery-native",
+      "page": "g015-pair-archery.html",
+      "status": "브랜치 — 앱 연결 전",
+      "history": [
+        {
+          "date": "2026-11-04",
+          "time": "08:55",
+          "commit": "d99f17bf1",
+          "text": "처음 변환 — 폰·컨트롤러로 조준, 모둠 차례전(사수 자동 교대), 짝 +1 · 한 번 더, 카드 그림은 모양과 색"
+        }
+      ]
     }
   ]
 }

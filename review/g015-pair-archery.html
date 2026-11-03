@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G015 짝카드 활쏘기 — C# 이식 확인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#202B3D; --surface:#30435A; --line:#46607E; --ink:#F4F8FF; --muted:#CCDCE9;
+  --lime:#D1F58E; --coral:#FF8A7A; --sun:#FFD66B;
+  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
+h2{font-size:22px;margin:44px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
+p{margin:0 0 12px}
+a{color:var(--lime)}
+.lead{color:var(--muted);max-width:46em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.chip b{color:var(--lime)}
+code{font-family:Consolas,'D2Coding',Menlo,monospace;font-size:.92em;background:#18212F;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-size:13px;font-weight:700}
+.wrap{overflow-x:auto}
+.demo{background:#141C29;border:1px solid var(--line);border-radius:14px;padding:12px}
+.demo canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:#1B2536;touch-action:none;cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button{font:inherit;font-weight:650;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 14px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.score{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:14px;font-weight:600}
+.score span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:14px}
+.ok{color:var(--lime);font-weight:700}
+.no{color:var(--coral);font-weight:700}
+ol li,ul li{margin-bottom:6px}
+.back{display:inline-block;margin-bottom:14px;font-weight:650;text-decoration:none}
+ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 변환 기록 전체</a>
+  <h1>G015 짝카드 활쏘기 — C# 이식 확인</h1>
+  <p class="lead">HTML 게임 「짝카드 활쏘기」(<a href="https://claude.ai/artifact/Eu4nAPYRmiGsQf7YAvy6Ag">원본</a>)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b> 그래서 아직 앱 목록에는 안 뜹니다. 원본 소스는 claude.ai가 격리된 틀 안에서만 보여 줘서 읽지 못했고, 실제로 놀아 보며 규칙과 화면을 읽었습니다(화면에 안 나온 값은 「가정」).</p>
+  <div class="chips">
+    <span class="chip">브랜치 <b>claude/g015-pair-archery-native</b></span>
+    <span class="chip">기준 <b>feature/stage-1-4a</b></span>
+    <span class="chip">새 파일 <b>11개</b>(+ .meta 9개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">검사 <b>30건 통과</b> · Unity 밖</span>
+  </div>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g015-pair-archery-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/feature/stage-1-4a...claude/g015-pair-archery-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g015-pair-archery-native/docs/progress/2026-11-04-g015-pair-archery-native.md">진행 기록</a></p>
+
+  <h2>변환 기록</h2>
+  <!--@HISTORY@-->
+<ul class="log">
+<li><span class="when">2026-11-04 08:55</span><span>처음 변환 — 폰·컨트롤러로 조준, 모둠 차례전(사수 자동 교대), 짝 +1 · 한 번 더, 카드 그림은 모양과 색</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/d99f17bf1">d99f17b</a></li>
+</ul>
+<!--@/HISTORY@-->
+
+  <h2>직접 해 보기</h2>
+  <p class="note">C# 판정과 같은 규칙과 숫자(화살 2발, 짝이면 +1·한 번 더, 아니면 3초 뒤 덮고 다음 모둠, 모둠 안 사수 교대, 20초 시간 넘김, 조준선 빠르기 0.7·문턱 0.12)로 움직입니다. 지금 사수의 폰 대신 <b>방향키</b>로 조준선을 기울이고 <b>스페이스</b>로 쏩니다. 또는 판을 <b>누른 채 끌어</b> 조준하고 <b>떼면</b> 쏩니다. 모둠마다 두 사람씩(P1·P3은 1모둠, P2·P4는 2모둠 — 앱처럼 합류 순서대로) 섭니다.</p>
+  <div class="demo">
+    <canvas id="cv" width="1600" height="900" aria-label="짝카드 활쏘기 체험판"></canvas>
+    <div class="controls">
+      <span class="note">모둠</span>
+      <button data-teams="2" aria-pressed="true">2모둠</button>
+      <button data-teams="3" aria-pressed="false">3모둠</button>
+      <button data-teams="4" aria-pressed="false">4모둠</button>
+      <span class="note" style="margin-left:8px">난이도</span>
+      <button data-mode="easy" aria-pressed="false">쉬움 · 6쌍</button>
+      <button data-mode="normal" aria-pressed="true">보통 · 8쌍</button>
+      <button data-mode="hard" aria-pressed="false">어려움 · 10쌍 · 흔들림</button>
+      <button id="restart" style="margin-left:auto">다시</button>
+    </div>
+    <div class="score" id="score"></div>
+  </div>
+
+  <h2>HTML판에서 달라진 것</h2>
+  <div class="wrap"><table>
+    <tr><th>HTML판</th><th>앱판</th><th>까닭</th></tr>
+    <tr><td>마우스·전자칠판 터치로 조준해 쏘기</td><td><b>폰·컨트롤러를 기울여 조준선</b>, 누르기·톡·흔들기로 쏘기. 사수의 폰만 받음</td><td>회원님 「폰·컨트롤러」. 콕콕 분류와 같은 기울이기 커서</td></tr>
+    <tr><td>2~4모둠, 앱 안에서 이름 입력</td><td><b>앱의 모둠 기능</b>(합류 순서대로 나눔). 짝 1점은 쏜 사람 점수, 앱이 모둠 합계로</td><td>회원님 「모둠 차례전」</td></tr>
+    <tr><td>사수 교대는 사람이 알아서</td><td>모둠 차례가 올 때마다 다음 사람이 자동으로 사수</td><td>앱이 누구 폰을 받을지 알아야 함</td></tr>
+    <tr><td>사수를 언제까지든 기다림</td><td>20초 안에 안 쏘면 열린 카드를 덮고 다음 모둠</td><td>선생님 손 없이도 돌게. 가정</td></tr>
+    <tr><td>짝을 다 찾으면 경기 끝</td><td>새 판을 깔고 같은 사수가 이어 쏨</td><td>판 시간을 앱이 쥠. 가정</td></tr>
+    <tr><td>동물 그림(이모지)</td><td>모양과 색 10가지(모양만으로도, 색만으로도 갈림)</td><td>이모지는 윈도·맥이 다르게 그림</td></tr>
+    <tr><td>교사 판정 모드</td><td>옮기지 않음</td><td>앱에는 선생님이 화면을 누르는 길이 없음</td></tr>
+    <tr><td>—</td><td>열린 카드·판 밖을 쏘면 「빗나감」, 화살은 그대로</td><td>흔들림 때문에 억울하지 않게. 가정</td></tr>
+  </table></div>
+  <p class="note">그대로 옮긴 것: 화살 2발로 카드 2장, 짝이면 1점 + 한 번 더, 아니면 3초 보여 준 뒤 덮고 다음 모둠, 보통 8쌍 4×4, 쉬움 6쌍, 어려움 10쌍 + 조준선 흔들림, 카드 번호(기억 도우미가 말로 돕는 놀이), 과녁 그림, 짝 찾은 카드의 모둠 색 테두리·이름, 모둠 색. 쉬움 4×3·어려움 5×4 판 모양과 흔들림 크기(칸의 35%)·빠르기는 가정입니다.</p>
+
+  <h2>새 파일</h2>
+  <div class="wrap"><table id="files">
+    <tr><th>파일</th><th>무엇</th></tr>
+  </table></div>
+
+  <h2>검증한 것과 안 한 것</h2>
+  <ul>
+    <li><span class="ok">통과</span> 판정·감독 검사 27건과 무대 검사 3건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 넷, <code>MatchActorKey</code>, 모둠 나누기가 든 <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었습니다.</li>
+    <li><span class="ok">기울기만으로 조준</span> 검사는 조준선을 직접 놓지 않고 기울기 입력만으로 카드 위에 옮긴 뒤 쏩니다.</li>
+    <li><span class="ok">빨간불 확인</span> 판정 규칙 18개(사수만 조준·쏘기 · 문턱 · 빗나감 · 짝이면 한 번 더 · 보여 주기 · 덮기 · 사수 교대 · 다음 모둠 · 예정 시각 · 시간 넘김 · 새 판 · 사수 나감 · 빈 판 합류 · 흔들림 · 약한 흔들기 · 짝만 점수 · 모둠 넘기기)를 하나씩 끄면 각각 검사가 실패했고, 되돌리면 모두 다시 통과했습니다.</li>
+    <li><span class="ok">컴파일</span> 무대 <code>UguiPairArcheryStage</code>를 이 저장소의 실제 <code>QuizArt.cs</code>와, 나머지 원본 함수의 실제 선언과 같은 모양의 대역에 대고 컴파일했습니다(경고 0, 오류 0).</li>
+    <li><span class="no">안 함</span> 원본 소스 대조(읽지 못함), Unity 실행기, 실제 엔진 컴파일, 앱 화면 촬영, 실물 폰·컨트롤러, 윈도 PC.</li>
+  </ul>
+
+  <h2>앱에 붙이려면</h2>
+  <ol>
+    <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>PairArchery</code>, <code>GameRuleSet</code>에 <code>flow.pairArcheryMode</code>(<code>easy</code>·<code>normal</code>·<code>hard</code>), 검증기와 스키마(장치 Phone·Controller, 모둠전 허용).</li>
+    <li><b>세션</b>: <code>IsNativeActivity</code>에 넣어 기기 입력이 점수로 바로 가지 않게. 감독의 <code>Award</code>만 <code>HandleActivityInput</code>으로 — 모둠 합계는 기존 팀 집계가 합니다.</li>
+    <li><b>화면</b>: <code>UguiNativeActivities</code>에 감독·무대. 라우터 입력은 <code>HandleInput</code>, 장면마다 <code>SyncRoster</code> → <code>Tick</code> → <code>Sync</code>. 모둠 배정이 <code>SyncRoster</code>보다 먼저여야 합니다.</li>
+    <li><b>폰 화면</b>: 사수가 아닌 사람의 폰에 「지금은 ○○ 모둠 P3 차례」를 띄우면 좋습니다. 폰 페이지는 공용이라 이번엔 안 건드렸습니다.</li>
+    <li><b>출시</b>: <code>GameTitles</code>(제목에 「G015」), 표지, 출시 목록 검사, 포털 사본. 규칙 파일 초안(모둠 2, 300초)을 <code>StreamingAssets/games/g015-pair-archery/</code>로.</li>
+    <li><b>말 표</b> 12개 언어: <code>pairArchery.hint</code>·<code>turn</code>·<code>pairsLeft</code>·<code>miss</code>·<code>wide</code>·<code>timeout</code>·<code>cleared</code>·<code>team.blue/red/yellow/purple</code>(진행 기록에 ko·en).</li>
+  </ol>
+
+  <h2>실물에서 봐 주셨으면 하는 것</h2>
+  <ul>
+    <li><b>앞뒤 방향</b> — 콕콕 분류와 같이 앞뒤 기울기 +1을 판의 아래로 두었습니다(<code>TiltFlipY</code>). 같은 날 옮긴 G002 기울기 미로는 반대로 가정했습니다. 실물 한 번으로 둘 다 정해야 합니다.</li>
+    <li>조준선 빠르기와 어려움의 흔들림 크기가 알맞은지.</li>
+    <li>20초 시간 넘김이 기억 도우미가 말로 돕는 시간을 줄이지 않는지.</li>
+  </ul>
+</main>
+<script>
+/* 콩콩이 — HRYoon0/dfz templates/buddy.js 그대로 */
+var Buddy = (function () {
+  'use strict';
+  var POSES = ['idle', 'raise', 'squat', 'jump', 'lean', 'cheer', 'oops'];
+  var ink = '#13202F';
+  var rim = 'rgba(255,255,255,.55)';
+  function oval(c, x, y, rx, ry, fill, edge) {
+    c.beginPath();
+    c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    c.fillStyle = fill;
+    c.fill();
+    if (edge) { c.strokeStyle = edge; c.stroke(); }
+  }
+  function line(c, points, color, width) {
+    c.beginPath();
+    c.moveTo(points[0], points[1]);
+    for (var i = 2; i < points.length; i += 2) c.lineTo(points[i], points[i + 1]);
+    c.strokeStyle = color;
+    c.lineWidth = width;
+    c.stroke();
+  }
+  function body(c) {
+    c.beginPath();
+    c.moveTo(-29, -48);
+    c.bezierCurveTo(-29, -73, -15, -87, 1, -87);
+    c.bezierCurveTo(21, -87, 30, -69, 29, -51);
+    c.bezierCurveTo(39, -24, 23, -9, 1, -10);
+    c.bezierCurveTo(-24, -8, -39, -23, -29, -48);
+    c.closePath();
+  }
+  /* 발바닥 중앙이 원점인 높이 100의 설계 좌표. 모든 변형은 호출 안에서 복원한다. */
+  function draw(ctx, o) {
+    o = o || {};
+    var size = Number(o.size);
+    if (!(size > 0) || !isFinite(size)) return;
+    var pose = POSES.indexOf(o.pose) >= 0 ? o.pose : 'idle';
+    var t = typeof o.t === 'number' && isFinite(o.t) ? o.t : 0;
+    var color = o.color || '#D1F58E';
+    var mood = o.mood || (pose === 'oops' ? 'sad' : pose === 'idle' || pose === 'lean' || pose === 'squat' ? 'calm' : 'happy');
+    var breath = Math.sin(t / 650) * .012;
+    var blink = t > 0 && t % 3900 > 3750;
+    var crouch = pose === 'squat';
+    var airborne = pose === 'jump';
+    var angle = pose === 'lean' ? Math.max(-1, Math.min(1, Number(o.lean) || 0)) * .32 : pose === 'oops' ? Math.sin(t / 180) * .045 : 0;
+    ctx.save();
+    try {
+      ctx.translate(Number(o.x) || 0, Number(o.y) || 0);
+      ctx.scale(size / 100, size / 100);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.translate(0, airborne ? -10 - (1 + Math.sin(t / 240)) * 2 : 0);
+      ctx.rotate(angle);
+      ctx.scale(crouch ? 1.12 : 1 - breath / 2, crouch ? .73 : 1 + breath);
+      ctx.lineWidth = 2.2;
+      oval(ctx, -15, -6, 9, 5, color, rim);
+      oval(ctx, 15, -6, 9, 5, color, rim);
+      /* 팔은 몸 뒤에서 연결하고 둥근 끝을 사용한다. */
+      var lifted = pose === 'raise' || pose === 'cheer' || airborne;
+      [-1, 1].forEach(function (side) {
+        var endY = lifted ? (pose === 'raise' ? -80 : -68) : crouch ? -22 : -30;
+        line(ctx, [side * 25, -48, side * 39, endY], rim, 13);
+        line(ctx, [side * 25, -48, side * 39, endY], color, 9);
+      });
+      body(ctx);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.save();
+      try {
+        ctx.clip();
+        oval(ctx, 0, -10, 38, 12, 'rgba(0,0,0,.18)');
+      } finally { ctx.restore(); }
+      body(ctx);
+      ctx.strokeStyle = rim;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      /* 짧은 새싹 한 개와 잎 한 장. */
+      line(ctx, [0, -87, 0, -95], '#D1F58E', 2.8);
+      ctx.beginPath();
+      ctx.moveTo(0, -94);
+      ctx.bezierCurveTo(2, -100, 10, -99, 11, -97);
+      ctx.bezierCurveTo(9, -91, 3, -91, 0, -94);
+      ctx.fillStyle = '#D1F58E';
+      ctx.fill();
+      oval(ctx, -19, -49, 5, 3, '#FF8A7A');
+      oval(ctx, 19, -49, 5, 3, '#FF8A7A');
+      [-1, 1].forEach(function (side) {
+        var x = side * 11;
+        if (pose === 'oops') {
+          line(ctx, [x - 3, -63, x + 3, -57], ink, 2.8);
+          line(ctx, [x + 3, -63, x - 3, -57], ink, 2.8);
+        } else if (blink || pose === 'cheer') {
+          ctx.beginPath();
+          ctx.moveTo(x - 4, -58);
+          ctx.quadraticCurveTo(x, blink ? -58 : -65, x + 4, -58);
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 2.8;
+          ctx.stroke();
+        } else oval(ctx, x, -60, 3.8, 5, ink);
+      });
+      ctx.beginPath();
+      ctx.moveTo(-4, -48);
+      ctx.quadraticCurveTo(0, mood === 'sad' ? -53 : -42, 4, -48);
+      if (mood === 'happy') {
+        ctx.quadraticCurveTo(0, -36, -4, -48);
+        ctx.fillStyle = ink;
+        ctx.fill();
+        oval(ctx, 0, -43, 2.3, 1.4, '#FF8A7A');
+      } else {
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 2.3;
+        ctx.stroke();
+      }
+      if (o.label !== undefined && o.label !== null && String(o.label)) {
+        oval(ctx, 0, -27, 11, 10, 'rgba(255,255,255,.75)');
+        ctx.fillStyle = ink;
+        ctx.font = "bold 11px 'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Array.from(String(o.label)).slice(0, 3).join(''), 0, -26, 19);
+      }
+      if (crouch || airborne) {
+        ctx.lineWidth = 2.2;
+        oval(ctx, -17, -12, 8, 7, color, rim);
+        oval(ctx, 17, -12, 8, 7, color, rim);
+      }
+      if (pose === 'cheer') {
+        [-1, 1].forEach(function (s) {
+          line(ctx, [s * 35, -87, s * 40, -92], '#FFD66B', 3);
+          line(ctx, [s * 43, -77, s * 48, -79], '#FFD66B', 3);
+        });
+      }
+      if (pose === 'oops') {
+        ctx.beginPath();
+        for (var j = 0; j <= 24; j++) {
+          var a = j * .39;
+          var r = 1 + j * .17;
+          var px = 38 + Math.cos(a) * r;
+          var py = -83 + Math.sin(a) * r;
+          if (!j) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = '#F4F8FF';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+      }
+    } finally { ctx.restore(); }
+  }
+  return { draw: draw, POSES: POSES.slice() };
+})();
+
+</script>
+<script>
+/* 새 파일 목록 */
+(function(){
+  var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/g015-pair-archery-native/";
+  var rows = [
+    ["unity/Assets/DigitalFitZone/Game/Play/PairArchery/PairArcherySettings.cs", "놀이 값, 모드(easy·normal·hard)"],
+    ["unity/Assets/DigitalFitZone/Game/Play/PairArchery/PairArcheryRound.cs", "판: 섞기, 조준선, 쏘기, 짝·아쉬움·빗나감, 모둠 차례·사수 교대, 시간 넘김, 새 판"],
+    ["unity/Assets/DigitalFitZone/Game/Play/PairArchery/PairArcheryScoring.cs", "짝 → Raise(+1)"],
+    ["unity/Assets/DigitalFitZone/UI/Session/PairArcheryDirector.cs", "감독: 명단·모둠 맞추기, 입력, Award, 알림"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiPairArcheryStage.cs", "무대: 차례 띠, 과녁 카드, 모양 앞면, 조준선, 사수 콩콩이, 화살"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/PairArcheryRoundTests.cs", "판 검사 20건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/PairArcheryDirectorTests.cs", "감독 검사 7건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/PairArcheryStageTests.cs", "무대 검사 3건"],
+    ["docs/progress/2026-11-04-g015-pair-archery-native.md", "진행 기록, 붙이는 길, 말 표"],
+    ["docs/progress/g015-pair-archery-rulesets/g015-pair-archery.ruleset.json", "규칙 파일 초안(모둠 2, 보통)"],
+    ["docs/progress/g015-pair-archery-review.html", "이 페이지 사본"]
+  ];
+  var t = document.getElementById("files");
+  rows.forEach(function(r){
+    var tr = document.createElement("tr"), a = document.createElement("a"), td1 = document.createElement("td"), td2 = document.createElement("td");
+    a.href = base + r[0]; a.textContent = r[0].replace("unity/Assets/DigitalFitZone/", "");
+    td1.appendChild(a); td2.textContent = r[1]; tr.appendChild(td1); tr.appendChild(td2); t.appendChild(tr);
+  });
+})();
+
+/* 체험판 — PairArcheryRound.cs 와 같은 규칙 */
+(function(){
+  "use strict";
+  var MODES = { easy: { pairs: 6, cols: 4, rows: 3, wobble: false }, normal: { pairs: 8, cols: 4, rows: 4, wobble: false }, hard: { pairs: 10, cols: 5, rows: 4, wobble: true } };
+  var ARROWS = 2, REVEAL = 3, TIMEOUT = 20, SMOOTH = 14, SPEED = 0.7, DEAD = 0.12, HOLD = 0.3, WOB = 0.35, WHX = 0.6, WHY = 0.83;
+  var TEAM = ["#4A7FE0", "#E0574C", "#E8B82A", "#A97BE0"], TEAMNAME = ["파랑 모둠", "빨강 모둠", "노랑 모둠", "보라 모둠"];
+  var SEAT = ["#D1F58E", "#8CC8FF", "#FFD66B", "#C7A4FF", "#FF8A7A", "#A4F0D7", "#F5B3E1", "#B8E0A0"];
+  var FACE = ["#E5484D", "#3E7BFA", "#E0A100", "#2FB36B", "#9B6BF2", "#F2843A", "#13A3B5", "#E0559A", "#9A6B3F", "#2D3E8F"];
+  var mode = "normal", teams = 2, S, players, cards, phase, phaseAt, shooter, arrows, first, second, deadline, rotation, lastKey, clock, cx, cy, tx, ty, vx, vy, vAt, cheers, board, seed = 15;
+  function rnd(s) { return function () { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; }
+  function deal() {
+    board++;
+    var f = [], r = rnd(seed * 31 + board), i, j, t;
+    for (i = 0; i < S.pairs * 2; i++) f.push(i >> 1);
+    for (i = f.length - 1; i > 0; i--) { j = Math.floor(r() * (i + 1)); t = f[i]; f[i] = f[j]; f[j] = t; }
+    cards = f.map(function (x) { return { face: x, up: false, matched: false, team: -1 }; });
+    first = second = -1;
+  }
+  function reset() {
+    S = MODES[mode]; clock = 0; board = 0; cheers = []; rotation = {}; lastKey = -1e9;
+    players = []; for (var i = 0; i < teams * 2; i++) players.push({ seat: i + 1, team: i % teams, pairs: 0 });
+    deal(); nextTurn(0);
+  }
+  function nextTurn(at) {
+    phase = "aim"; phaseAt = at; arrows = ARROWS; first = second = -1; cx = cy = tx = ty = 0.5; vAt = -1e9;
+    var keys = players.map(function (p) { return p.team; }), next = Infinity, low = Math.min.apply(null, keys);
+    keys.forEach(function (k) { if (k > lastKey && k < next) next = k; });
+    if (next === Infinity) next = low;
+    var members = players.filter(function (p) { return p.team === next; }), turn = rotation[next] || 0;
+    shooter = members[turn % members.length]; rotation[next] = turn + 1; lastKey = next; deadline = at + TIMEOUT;
+  }
+  function closeOpened() { [first, second].forEach(function (c) { if (c >= 0 && !cards[c].matched) cards[c].up = false; }); first = second = -1; }
+  function aimPoint() {
+    var x = cx, y = cy;
+    if (S.wobble) { var t = clock - phaseAt; x = Math.min(1, Math.max(0, x + WOB / S.cols * Math.sin(2 * Math.PI * WHX * t))); y = Math.min(1, Math.max(0, y + WOB / S.rows * Math.sin(2 * Math.PI * WHY * t + 1))); }
+    return [x, y];
+  }
+  function cardAt(x, y) { if (x < 0 || y < 0 || x >= 1 || y >= 1) return -1; return Math.floor(y * S.rows) * S.cols + Math.floor(x * S.cols); }
+  function cheer(text, color, card) { cheers.push({ text: text, color: color, card: card, at: clock }); }
+  function shoot() {
+    if (phase !== "aim" || arrows <= 0) return;
+    var a = aimPoint(), c = cardAt(a[0], a[1]);
+    if (c < 0 || cards[c].up) { cheer("빗나감", "#FFD66B", -1); return; }
+    cards[c].up = true; arrows--; deadline = clock + TIMEOUT;
+    if (first < 0) { first = c; return; }
+    second = c;
+    if (cards[first].face === cards[second].face) {
+      cards[first].matched = cards[second].matched = true; cards[first].team = cards[second].team = shooter.team;
+      shooter.pairs++; cheer("+1", "#D1F58E", c); first = second = -1; arrows = ARROWS;
+      if (cards.every(function (k) { return k.matched; })) { cheer("새 판!", "#D1F58E", -1); deal(); }
+      return;
+    }
+    cheer("아쉬워요!", "#FF8A7A", -1); phase = "reveal"; phaseAt = clock; deadline = Infinity;
+  }
+  function step(dt) {
+    clock += dt;
+    if (clock - vAt < HOLD) { tx = Math.min(1, Math.max(0, tx + vx * SPEED * dt)); ty = Math.min(1, Math.max(0, ty + vy * SPEED * dt)); }
+    var k = 1 - Math.exp(-SMOOTH * dt); cx += (tx - cx) * k; cy += (ty - cy) * k;
+    if (phase === "reveal" && clock >= phaseAt + REVEAL) { var at = phaseAt + REVEAL; closeOpened(); nextTurn(at); }
+    else if (phase === "aim" && clock >= deadline) { cheer("시간 넘김", "#FFD66B", -1); var d = deadline; closeOpened(); nextTurn(d); }
+  }
+  function tilt(x, y) { vx = Math.abs(x) < DEAD ? 0 : Math.max(-1, Math.min(1, x)); vy = Math.abs(y) < DEAD ? 0 : Math.max(-1, Math.min(1, y)); vAt = clock; }
+
+  var keys = {}, drag = null;
+  addEventListener("keydown", function (e) {
+    if (/^Arrow/.test(e.key)) { keys[e.key] = 1; e.preventDefault(); }
+    if (e.key === " " || e.key === "Enter") { if (document.activeElement && document.activeElement.tagName === "BUTTON") document.activeElement.blur(); shoot(); e.preventDefault(); }
+  });
+  addEventListener("keyup", function (e) { keys[e.key] = 0; });
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var B = { x: H * 0.03, y: H * 0.14, w: W * 0.74 - H * 0.03, h: H * 0.83 };
+  function toBoard(e) { var r = cv.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width * W - B.x) / B.w, y: ((e.clientY - r.top) / r.height * H - B.y) / B.h }; }
+  cv.addEventListener("pointerdown", function (e) { drag = toBoard(e); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", function (e) { if (drag) drag = toBoard(e); });
+  cv.addEventListener("pointerup", function () { if (drag) { drag = null; shoot(); } });
+  cv.addEventListener("pointercancel", function () { drag = null; });
+  function control() {
+    var x = (keys.ArrowRight ? 1 : 0) - (keys.ArrowLeft ? 1 : 0), y = (keys.ArrowDown ? 1 : 0) - (keys.ArrowUp ? 1 : 0);
+    if (drag) { x = Math.max(-1, Math.min(1, (drag.x - tx) * 4)); y = Math.max(-1, Math.min(1, (drag.y - ty) * 4)); }
+    if (x || y) tilt(x, y);
+  }
+
+  function rr(x, y, w, h, r, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); }
+  function circle(x, y, r, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
+  function poly(x, y, r, n, start, inner, c) { ctx.beginPath(); for (var i = 0; i < n; i++) { var a = start + Math.PI * 2 * i / n, q = inner < 1 && i % 2 ? r * inner : r; ctx.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } ctx.closePath(); ctx.fillStyle = c; ctx.fill(); }
+  function face(x, y, r, f) {
+    var c = FACE[f % 10];
+    switch (f % 10) {
+      case 0: circle(x, y, r, c); break;
+      case 1: rr(x - r * .85, y - r * .85, r * 1.7, r * 1.7, r * .15, c); break;
+      case 2: poly(x, y + r * .15, r * 1.1, 3, -Math.PI / 2, 1, c); break;
+      case 3: poly(x, y, r * 1.05, 4, -Math.PI / 2, 1, c); break;
+      case 4: poly(x, y, r * 1.1, 10, -Math.PI / 2, .45, c); break;
+      case 5: poly(x, y, r, 6, 0, 1, c); break;
+      case 6: ctx.fillStyle = c; ctx.fillRect(x - r * .3, y - r, r * .6, r * 2); ctx.fillRect(x - r, y - r * .3, r * 2, r * .6); break;
+      case 7: ctx.strokeStyle = c; ctx.lineWidth = r * .38; ctx.beginPath(); ctx.arc(x, y, r * .8, 0, 7); ctx.stroke(); break;
+      case 8: circle(x - r * .45, y - r * .25, r * .52, c); circle(x + r * .45, y - r * .25, r * .52, c); ctx.beginPath(); ctx.moveTo(x - r * .95, y - r * .05); ctx.lineTo(x + r * .95, y - r * .05); ctx.lineTo(x, y + r * .95); ctx.fill(); break;
+      default: poly(x, y + r * .05, r * 1.05, 5, -Math.PI / 2, 1, c);
+    }
+  }
+  function font(px) { return "800 " + Math.round(px) + "px 'Pretendard Variable', sans-serif"; }
+  function draw() {
+    ctx.fillStyle = "#1B2A22"; ctx.fillRect(0, 0, W, H);
+    var cw = B.w / S.cols, ch = B.h / S.rows;
+    cards.forEach(function (k, i) {
+      var x = B.x + (i % S.cols) * cw + cw * .04, y = B.y + Math.floor(i / S.cols) * ch + ch * .05, w = cw * .92, h = ch * .9, r = Math.min(w, h) * .08;
+      if (!k.up) {
+        rr(x, y, w, h, r, "#B9A46E"); rr(x + 2, y + 2, w - 4, h - 4, r, "#D8C694");
+        var R = Math.min(w, h) * .42, X = x + w / 2, Y = y + h / 2;
+        [["#FAF6EA", 1], ["#1C1C1C", .82], ["#4A7FE0", .64], ["#D04E3C", .42], ["#ECC445", .21]].forEach(function (q) { circle(X, Y, R * q[1], q[0]); });
+      } else {
+        var b = k.matched ? Math.min(w, h) * .05 : 2;
+        rr(x, y, w, h, r, k.matched ? TEAM[k.team] : "#B9A46E"); rr(x + b, y + b, w - b * 2, h - b * 2, r, "#F7F2E4");
+        face(x + w / 2, y + h * .47, Math.min(w, h) * .3, k.face);
+        if (k.matched) { ctx.font = font(h * .13); ctx.textAlign = "right"; ctx.fillStyle = k.team === 2 ? "#8A6600" : TEAM[k.team]; ctx.fillText(TEAMNAME[k.team], x + w - b * 2, y + h - b * 2.2); }
+      }
+      ctx.font = font(h * .12); ctx.textAlign = "left"; ctx.fillStyle = "rgba(28,28,28,.7)"; ctx.fillText(String(i + 1), x + h * .05, y + h * .15);
+    });
+    if (phase === "aim") {
+      var a = aimPoint(), X = B.x + a[0] * B.w, Y = B.y + a[1] * B.h, R = Math.min(cw, ch) * .26, col = SEAT[(shooter.seat - 1) % SEAT.length];
+      [["#fff", R * .25], [col, R * .14]].forEach(function (q) {
+        ctx.strokeStyle = q[0]; ctx.lineWidth = q[1]; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.arc(X, Y, R, 0, 7); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(X - R * 1.4, Y); ctx.lineTo(X + R * 1.4, Y); ctx.moveTo(X, Y - R * 1.4); ctx.lineTo(X, Y + R * 1.4); ctx.stroke();
+      });
+    }
+    circle(H * .05, H * .065, H * .02, TEAM[shooter.team]);
+    ctx.font = font(H * .055); ctx.textAlign = "left"; ctx.fillStyle = "#F4F8FF"; ctx.fillText(TEAMNAME[shooter.team] + " 차례 · P" + shooter.seat + " 사수", H * .09, H * .085);
+    var left = cards.filter(function (k) { return !k.matched; }).length / 2;
+    ctx.font = font(H * .045); ctx.textAlign = "right"; ctx.fillStyle = "#CCDCE9"; ctx.fillText("남은 짝 " + left + " / " + S.pairs + " · " + Math.max(0, Math.ceil(deadline - clock)) + "초", W - H * .03, H * .085);
+    var bx = W * .87, foot = H * .62, size = H * .34, recent = cheers.some(function (c) { return c.text === "+1" && clock - c.at < 1.2; });
+    ctx.fillStyle = "rgba(0,0,0,.25)"; ctx.beginPath(); ctx.ellipse(bx, foot, size * .3, size * .06, 0, 0, 7); ctx.fill();
+    Buddy.draw(ctx, { x: bx, y: foot, size: size, color: SEAT[(shooter.seat - 1) % SEAT.length], pose: phase === "reveal" ? "oops" : recent ? "cheer" : "raise", t: performance.now(), label: "P" + shooter.seat });
+    for (var i = 0; i < ARROWS; i++) {
+      var ax = bx + (i - (ARROWS - 1) / 2) * H * .045, ay = foot + H * .06, on = i < arrows;
+      ctx.globalAlpha = on ? 1 : .25; ctx.strokeStyle = "#F4F8FF"; ctx.lineWidth = H * .008; ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ax, ay + H * .14); ctx.stroke();
+      ctx.fillStyle = "#F4F8FF"; ctx.beginPath(); ctx.moveTo(ax, ay - H * .018); ctx.lineTo(ax - H * .012, ay + H * .008); ctx.lineTo(ax + H * .012, ay + H * .008); ctx.fill();
+      ctx.fillStyle = "#FF8A7A"; ctx.fillRect(ax - H * .01, ay + H * .115, H * .02, H * .025); ctx.globalAlpha = 1;
+    }
+    cheers = cheers.filter(function (c) { return clock - c.at < 1.2; });
+    cheers.forEach(function (c) {
+      var k = (clock - c.at) / 1.2, X = B.x + B.w / 2, Y = B.y + B.h / 2;
+      if (c.card >= 0) { X = B.x + (c.card % S.cols + .5) * cw; Y = B.y + (Math.floor(c.card / S.cols) + .5) * ch; }
+      var sz = B.h * .09; Y -= k * B.h * .05;
+      rr(X - B.w * .18, Y - sz * .6, B.w * .36, sz * 1.2, sz * .6, "#30435A");
+      ctx.globalAlpha = 1 - k; ctx.font = font(sz); ctx.textAlign = "center"; ctx.fillStyle = c.color; ctx.fillText(c.text, X, Y + sz * .35); ctx.globalAlpha = 1;
+    });
+    var sums = []; players.forEach(function (p) { sums[p.team] = (sums[p.team] || 0) + p.pairs; });
+    document.getElementById("score").innerHTML = sums.map(function (s, t) { return "<span style='border-color:" + TEAM[t] + "'>" + TEAMNAME[t] + " " + s + "점 (" + players.filter(function (p) { return p.team === t; }).map(function (p) { return "P" + p.seat + " " + p.pairs; }).join(", ") + ")</span>"; }).join("");
+  }
+  var last = 0;
+  function frame(t) {
+    var now = t / 1000; if (!last) last = now;
+    var dt = Math.min(0.1, now - last); last = now;
+    control(); if (dt > 0) step(dt);
+    draw(); requestAnimationFrame(frame);
+  }
+  function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
+  document.querySelectorAll("[data-teams]").forEach(function (b) { b.onclick = function () { teams = +b.dataset.teams; pick("data-teams", b.dataset.teams); reset(); }; });
+  document.querySelectorAll("[data-mode]").forEach(function (b) { b.onclick = function () { mode = b.dataset.mode; pick("data-mode", mode); reset(); }; });
+  document.getElementById("restart").onclick = reset;
+  reset(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
