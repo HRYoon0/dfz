@@ -24,7 +24,8 @@ def commit_link(sha):
 
 
 def history_rows(game):
-    rows = sorted(game["history"], key=lambda h: (h["date"], h.get("time", "")), reverse=True)
+    # 같은 분이면 나중에 적은 기록이 위 — history는 적은 차례로 쌓는다
+    rows = [h for _, h in sorted(enumerate(game["history"]), key=lambda x: (x[1]["date"], x[1].get("time", ""), x[0]), reverse=True)]
     return "\n".join(
         f'<li><span class="when">{E(h["date"])} {E(h.get("time", ""))}</span><span>{E(h["text"])}</span>{commit_link(h.get("commit", ""))}</li>'
         for h in rows)
@@ -60,15 +61,15 @@ ul.log .game{font-weight:700}
 def build_index():
     by_day = defaultdict(list)
     for g in DATA["games"]:
-        for h in g["history"]:
-            by_day[h["date"]].append((h.get("time", ""), g, h))
+        for i, h in enumerate(g["history"]):
+            by_day[h["date"]].append((h.get("time", ""), i, g, h))
 
     days = []
     for d in sorted(by_day, reverse=True):
-        items = sorted(by_day[d], key=lambda x: x[0], reverse=True)
+        items = sorted(by_day[d], key=lambda x: (x[0], x[1]), reverse=True)
         lis = "\n".join(
             f'<li><span class="when">{E(t)}</span><span><a class="game" href="{E(g["page"])}">{E(g["title"])}</a> — {E(h["text"])}</span>{commit_link(h.get("commit", ""))}</li>'
-            for t, g, h in items)
+            for t, _, g, h in items)
         days.append(f'<h3>{day_label(d)}</h3>\n<ul class="log">\n{lis}\n</ul>')
 
     cards = []
