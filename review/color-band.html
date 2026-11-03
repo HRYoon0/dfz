@@ -43,12 +43,12 @@ ol li,ul li{margin-bottom:6px}
 <body>
 <main>
   <h1>색깔 띠 잡아 오기 — C# 이식 확인</h1>
-  <p class="lead">HTML 게임 「색깔 띠 잡아 오기」를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 학년별 게임 이식(2026-10-22)과 같은 방식이라 <b>기존 파일은 한 줄도 바꾸지 않고 새 파일만 더했습니다.</b> 그래서 아직 앱 목록에는 안 뜹니다. 붙이는 길은 아래 「앱에 붙이려면」에 있습니다.</p>
+  <p class="lead">HTML 게임 「색깔 띠 잡아 오기」를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 학년별 게임 이식(2026-10-22)과 같은 방식이라 <b>새 파일을 더하고, 기존 파일은 캐릭터 그림(<code>QuizArt.cs</code>)에 선택값 하나만 더했습니다.</b> 그래서 아직 앱 목록에는 안 뜹니다. 붙이는 길은 아래 「앱에 붙이려면」에 있습니다.</p>
   <div class="chips">
     <span class="chip">브랜치 <b>claude/color-band-native</b></span>
     <span class="chip">기준 <b>feature/stage-1-4a</b> 7d09173</span>
-    <span class="chip">새 파일 <b>11개</b> (+ .meta)</span>
-    <span class="chip">검사 <b>35건 통과</b> · Unity 밖</span>
+    <span class="chip">새 파일 <b>12개</b> · 고친 파일 <b>1개</b></span>
+    <span class="chip">검사 <b>40건 통과</b> · Unity 밖</span>
   </div>
   <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/color-band-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/feature/stage-1-4a...claude/color-band-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/color-band-native/docs/progress/2026-11-03-color-band-native.md">진행 기록</a></p>
 
@@ -77,7 +77,7 @@ ol li,ul li{margin-bottom:6px}
     <tr><td>음성+색 / 음성만 / 함정</td><td>기본 · 함정 신호(규칙이 문제마다 바뀜) 두 게임</td><td>앱에 글자를 읽어 주는 음성이 없음</td></tr>
     <tr><td>문제 수 5·7·10</td><td>판 시간 90초 동안 계속</td><td>앱은 시간제 판</td></tr>
     <tr><td>누군가 잡을 때까지 신호 유지</td><td>6초 지나면 「아무도 못 잡았어요」</td><td>가정 — 한 문제에 묶이지 않게</td></tr>
-    <tr><td>카메라 영상 위에 띠</td><td>영상 없이 어깨·팔·손목을 그 사람 색으로</td><td>카메라 프레임을 화면 밖으로 내지 않음</td></tr>
+    <tr><td>카메라 영상 위에 띠</td><td>영상 없이 학년별 게임의 캐릭터 「콩콩이」를 그 사람 색으로, 팔은 실제 손목까지 늘어나는 고무팔</td><td>카메라 프레임을 화면 밖으로 내지 않음. 손 위치가 보여야 뻗음</td></tr>
     <tr><td>(없음)</td><td>신호 때 이미 띠에 있던 손은 나갔다 와야 셈</td><td>손목 좌표라 대고 기다리면 잡혀서</td></tr>
   </table></div>
 
@@ -88,8 +88,8 @@ ol li,ul li{margin-bottom:6px}
 
   <h2>검증한 것과 안 한 것</h2>
   <ul>
-    <li><span class="ok">통과</span> 판정·자리 셈·감독 검사 35건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 네 개, <code>MatchActorKey</code>, <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었고, 대역은 <code>Vector2</code>·<code>Vector3</code>·<code>Rect</code>·<code>Mathf.Abs</code>·<code>InterpreterPhase</code>뿐입니다.</li>
-    <li><span class="ok">빨간불 확인</span> 판정 규칙 10개를 하나씩 끄면 각각 검사가 실패했고, 되돌리면 35건이 다시 통과했습니다.</li>
+    <li><span class="ok">통과</span> 판정·자리 셈·감독 검사 35건과 무대(콩콩이 자세·어깨) 검사 5건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 네 개, <code>MatchActorKey</code>, <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었고, 대역은 <code>Vector2</code>·<code>Vector3</code>·<code>Rect</code>·<code>Mathf.Abs</code>·<code>InterpreterPhase</code>뿐입니다.</li>
+    <li><span class="ok">빨간불 확인</span> 판정 규칙 10개와 콩콩이 자세 규칙 1개를 하나씩 끄면 각각 검사가 실패했고, 되돌리면 모두 다시 통과했습니다.</li>
     <li><span class="ok">컴파일</span> 무대 <code>UguiColorBandStage</code>를 원본 함수의 실제 선언과 같은 모양의 대역에 대고 컴파일했습니다(경고 0, 오류 0).</li>
     <li><span class="no">안 함</span> Unity 실행기, 실제 엔진 컴파일, 화면 촬영, 실물 카메라. 이 맥에는 Unity가 없습니다.</li>
   </ul>
@@ -128,6 +128,157 @@ ol li,ul li{margin-bottom:6px}
 </main>
 
 <script>
+/* 콩콩이 — HRYoon0/dfz templates/buddy.js, 팔 끄기(arms: false)만 더함 */
+var Buddy = (function () {
+  'use strict';
+  var POSES = ['idle', 'raise', 'squat', 'jump', 'lean', 'cheer', 'oops'];
+  var ink = '#13202F';
+  var rim = 'rgba(255,255,255,.55)';
+  function oval(c, x, y, rx, ry, fill, edge) {
+    c.beginPath();
+    c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    c.fillStyle = fill;
+    c.fill();
+    if (edge) { c.strokeStyle = edge; c.stroke(); }
+  }
+  function line(c, points, color, width) {
+    c.beginPath();
+    c.moveTo(points[0], points[1]);
+    for (var i = 2; i < points.length; i += 2) c.lineTo(points[i], points[i + 1]);
+    c.strokeStyle = color;
+    c.lineWidth = width;
+    c.stroke();
+  }
+  function body(c) {
+    c.beginPath();
+    c.moveTo(-29, -48);
+    c.bezierCurveTo(-29, -73, -15, -87, 1, -87);
+    c.bezierCurveTo(21, -87, 30, -69, 29, -51);
+    c.bezierCurveTo(39, -24, 23, -9, 1, -10);
+    c.bezierCurveTo(-24, -8, -39, -23, -29, -48);
+    c.closePath();
+  }
+  /* 발바닥 중앙이 원점인 높이 100의 설계 좌표. 모든 변형은 호출 안에서 복원한다. */
+  function draw(ctx, o) {
+    o = o || {};
+    var size = Number(o.size);
+    if (!(size > 0) || !isFinite(size)) return;
+    var pose = POSES.indexOf(o.pose) >= 0 ? o.pose : 'idle';
+    var t = typeof o.t === 'number' && isFinite(o.t) ? o.t : 0;
+    var color = o.color || '#D1F58E';
+    var mood = o.mood || (pose === 'oops' ? 'sad' : pose === 'idle' || pose === 'lean' || pose === 'squat' ? 'calm' : 'happy');
+    var breath = Math.sin(t / 650) * .012;
+    var blink = t > 0 && t % 3900 > 3750;
+    var crouch = pose === 'squat';
+    var airborne = pose === 'jump';
+    var angle = pose === 'lean' ? Math.max(-1, Math.min(1, Number(o.lean) || 0)) * .32 : pose === 'oops' ? Math.sin(t / 180) * .045 : 0;
+    ctx.save();
+    try {
+      ctx.translate(Number(o.x) || 0, Number(o.y) || 0);
+      ctx.scale(size / 100, size / 100);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.translate(0, airborne ? -10 - (1 + Math.sin(t / 240)) * 2 : 0);
+      ctx.rotate(angle);
+      ctx.scale(crouch ? 1.12 : 1 - breath / 2, crouch ? .73 : 1 + breath);
+      ctx.lineWidth = 2.2;
+      oval(ctx, -15, -6, 9, 5, color, rim);
+      oval(ctx, 15, -6, 9, 5, color, rim);
+      /* 팔은 몸 뒤에서 연결하고 둥근 끝을 사용한다. */
+      var lifted = pose === 'raise' || pose === 'cheer' || airborne;
+      if (o.arms !== false) [-1, 1].forEach(function (side) {
+        var endY = lifted ? (pose === 'raise' ? -80 : -68) : crouch ? -22 : -30;
+        line(ctx, [side * 25, -48, side * 39, endY], rim, 13);
+        line(ctx, [side * 25, -48, side * 39, endY], color, 9);
+      });
+      body(ctx);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.save();
+      try {
+        ctx.clip();
+        oval(ctx, 0, -10, 38, 12, 'rgba(0,0,0,.18)');
+      } finally { ctx.restore(); }
+      body(ctx);
+      ctx.strokeStyle = rim;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      /* 짧은 새싹 한 개와 잎 한 장. */
+      line(ctx, [0, -87, 0, -95], '#D1F58E', 2.8);
+      ctx.beginPath();
+      ctx.moveTo(0, -94);
+      ctx.bezierCurveTo(2, -100, 10, -99, 11, -97);
+      ctx.bezierCurveTo(9, -91, 3, -91, 0, -94);
+      ctx.fillStyle = '#D1F58E';
+      ctx.fill();
+      oval(ctx, -19, -49, 5, 3, '#FF8A7A');
+      oval(ctx, 19, -49, 5, 3, '#FF8A7A');
+      [-1, 1].forEach(function (side) {
+        var x = side * 11;
+        if (pose === 'oops') {
+          line(ctx, [x - 3, -63, x + 3, -57], ink, 2.8);
+          line(ctx, [x + 3, -63, x - 3, -57], ink, 2.8);
+        } else if (blink || pose === 'cheer') {
+          ctx.beginPath();
+          ctx.moveTo(x - 4, -58);
+          ctx.quadraticCurveTo(x, blink ? -58 : -65, x + 4, -58);
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 2.8;
+          ctx.stroke();
+        } else oval(ctx, x, -60, 3.8, 5, ink);
+      });
+      ctx.beginPath();
+      ctx.moveTo(-4, -48);
+      ctx.quadraticCurveTo(0, mood === 'sad' ? -53 : -42, 4, -48);
+      if (mood === 'happy') {
+        ctx.quadraticCurveTo(0, -36, -4, -48);
+        ctx.fillStyle = ink;
+        ctx.fill();
+        oval(ctx, 0, -43, 2.3, 1.4, '#FF8A7A');
+      } else {
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 2.3;
+        ctx.stroke();
+      }
+      if (o.label !== undefined && o.label !== null && String(o.label)) {
+        oval(ctx, 0, -27, 11, 10, 'rgba(255,255,255,.75)');
+        ctx.fillStyle = ink;
+        ctx.font = "bold 11px 'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Array.from(String(o.label)).slice(0, 3).join(''), 0, -26, 19);
+      }
+      if (crouch || airborne) {
+        ctx.lineWidth = 2.2;
+        oval(ctx, -17, -12, 8, 7, color, rim);
+        oval(ctx, 17, -12, 8, 7, color, rim);
+      }
+      if (pose === 'cheer') {
+        [-1, 1].forEach(function (s) {
+          line(ctx, [s * 35, -87, s * 40, -92], '#FFD66B', 3);
+          line(ctx, [s * 43, -77, s * 48, -79], '#FFD66B', 3);
+        });
+      }
+      if (pose === 'oops') {
+        ctx.beginPath();
+        for (var j = 0; j <= 24; j++) {
+          var a = j * .39;
+          var r = 1 + j * .17;
+          var px = 38 + Math.cos(a) * r;
+          var py = -83 + Math.sin(a) * r;
+          if (!j) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = '#F4F8FF';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+      }
+    } finally { ctx.restore(); }
+  }
+  return { draw: draw, POSES: POSES.slice() };
+})();
+
+</script>
+<script>
 /* 새 파일 목록 */
 (function(){
   var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/color-band-native/";
@@ -137,7 +288,9 @@ ol li,ul li{margin-bottom:6px}
     ["unity/Assets/DigitalFitZone/Game/Play/ColorBand/ColorBandRound.cs", "판: 준비 → 신호 → 결과, 손목 머문 시간, 잡기·잠김"],
     ["unity/Assets/DigitalFitZone/Game/Play/ColorBand/ColorBandScoring.cs", "먼저 잡음 → 빌린 동작 Touch(+1)"],
     ["unity/Assets/DigitalFitZone/UI/Session/ColorBandDirector.cs", "감독: 명단 맞추기, 골격 → 판의 몸, Award"],
-    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiColorBandStage.cs", "무대: 띠, 어깨·팔·손목, 신호판, 규칙 알약"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiColorBandStage.cs", "무대: 콩콩이와 고무팔, 띠, 신호판, 규칙 알약"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/QuizArt.cs", "고침: DrawBuddy에 arms 선택값(기본 켜짐), BuddyShoulder·DrawBuddyArm 추가"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/ColorBandStageTests.cs", "무대 검사 5건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/ColorBandRoundTests.cs", "판 검사 21건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/BandGeometryTests.cs", "자리 셈 검사 7건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/ColorBandDirectorTests.cs", "감독 검사 7건"],
@@ -247,20 +400,26 @@ ol li,ul li{margin-bottom:6px}
         var k = Math.min(1, p.hold[i] * 1000 / DWELL);
         if (k > 0){ ctx.strokeStyle = "#fff"; ctx.lineWidth = H * 0.008; ctx.beginPath(); ctx.arc(x + w / 2, y + h / 2, Math.max(w, h) * 0.62, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); ctx.stroke(); }
       });
-      var sx = px(p.x), sy = py(p.y), u = p.u * H, c = SEAT[pi];
-      ctx.strokeStyle = c; ctx.lineWidth = H * 0.012; ctx.lineCap = "round";
-      var lS = [sx - u * 0.35, sy], rS = [sx + u * 0.35, sy];
-      ctx.beginPath(); ctx.moveTo(lS[0], lS[1]); ctx.lineTo(rS[0], rS[1]); ctx.stroke();
-      var right = p.hand && p.hand.x > p.x, reachS = right ? rS : lS, restS = right ? lS : rS, side = right ? -1 : 1;
-      var hand = p.hand ? [px(p.hand.x), py(p.hand.y)] : [lS[0] - u * 0.1, sy + u * 1.2];
-      ctx.beginPath(); ctx.moveTo(reachS[0], reachS[1]); ctx.lineTo(hand[0], hand[1]); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(restS[0], restS[1]); ctx.lineTo(restS[0] + side * u * 0.1, sy + u * 1.2); ctx.stroke();
-      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(sx, sy - u * 0.45, u * 0.22, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#13202F"; ctx.font = font(u * 0.2, 800); ctx.fillText("P" + (pi + 1), sx, sy - u * 0.45);
-      ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(hand[0], hand[1], H * 0.026, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = c; ctx.beginPath(); ctx.arc(hand[0], hand[1], H * 0.019, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#F4F8FF"; ctx.font = font(H * 0.04); ctx.fillText(p.score + "점", sx, H * 0.96);
-      if (p.locked && phase === "signal"){ ctx.fillStyle = "#FF8A7A"; ctx.font = font(H * 0.045); ctx.fillText("다른 색! 잠금", sx, sy - u * 0.9); }
+      /* 콩콩이 — 어깨 가운데에 콩콩이 어깨(±25, −48)를 맞추고, 팔만 실제 손목까지 고무팔로(UguiColorBandStage와 같다) */
+      var c = SEAT[pi], size = p.u * 1.6 * H, fx = px(p.x), fy = py(p.y) + 0.48 * size, k = size / 100;
+      var right = p.hand && p.hand.x > p.x;
+      [-1, 1].forEach(function(side){
+        var sx = fx + side * 0.25 * size, sy = fy - 0.48 * size;
+        var reach = p.hand && (side === 1) === right;
+        var tx = reach ? px(p.hand.x) : fx + side * 0.39 * size, ty = reach ? py(p.hand.y) : fy - 0.30 * size;
+        ctx.lineCap = "round";
+        ctx.strokeStyle = "rgba(255,255,255,.55)"; ctx.lineWidth = 13 * k; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty); ctx.stroke();
+        ctx.strokeStyle = c; ctx.lineWidth = 9 * k; ctx.beginPath(); ctx.moveTo(sx, sy); ctx.lineTo(tx, ty); ctx.stroke();
+      });
+      var pose = phase === "result" && winner === pi ? "cheer" : p.locked ? "oops" : "idle";
+      Buddy.draw(ctx, { x:fx, y:fy, size:size, color:c, pose:pose, t:now + pi * 700, label:String(pi + 1), arms:false });
+      if (p.hand){
+        ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(px(p.hand.x), py(p.hand.y), H * 0.026, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = c; ctx.beginPath(); ctx.arc(px(p.hand.x), py(p.hand.y), H * 0.019, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = "#F4F8FF"; ctx.font = font(H * 0.04); ctx.fillText(p.score + "점", fx, H * 0.96);
+      if (p.locked && phase === "signal"){ ctx.fillStyle = "#FF8A7A"; ctx.font = font(H * 0.045); ctx.fillText("다른 색! 잠금", fx, fy - size - H * 0.03); }
     });
     var bw = W * 0.3, bh = H * 0.2, bx = (W - bw) / 2, by = H * 0.976 - bh - H * 0.06;
     ctx.fillStyle = phase === "signal" && !cue.rule ? PAL[cue.word][1] : "#30435A"; rr(bx, by, bw, bh, H * 0.03); ctx.fill();
