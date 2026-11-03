@@ -1,0 +1,474 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G002 몸으로 탈출! 기울기 미로 — C# 이식 확인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#202B3D; --surface:#30435A; --line:#46607E; --ink:#F4F8FF; --muted:#CCDCE9;
+  --lime:#D1F58E; --coral:#FF8A7A; --sun:#FFD66B;
+  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
+h2{font-size:22px;margin:44px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
+p{margin:0 0 12px}
+a{color:var(--lime)}
+.lead{color:var(--muted);max-width:46em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.chip b{color:var(--lime)}
+code{font-family:Consolas,'D2Coding',Menlo,monospace;font-size:.92em;background:#18212F;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-size:13px;font-weight:700}
+.wrap{overflow-x:auto}
+.demo{background:#141C29;border:1px solid var(--line);border-radius:14px;padding:12px}
+.demo canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:#1B2536;touch-action:none;cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button{font:inherit;font-weight:650;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 14px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.score{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:14px;font-weight:600}
+.score span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:14px}
+.ok{color:var(--lime);font-weight:700}
+.no{color:var(--coral);font-weight:700}
+ol li,ul li{margin-bottom:6px}
+.back{display:inline-block;margin-bottom:14px;font-weight:650;text-decoration:none}
+ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 변환 기록 전체</a>
+  <h1>G002 몸으로 탈출! 기울기 미로 — C# 이식 확인</h1>
+  <p class="lead">HTML 게임 「G002 기울기 미로 팀 챌린지」(<a href="https://graceful-sprite-e19918.netlify.app/">원본</a>)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 「색깔 띠 잡아 오기」와 같은 방식으로 <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b> 그래서 아직 앱 목록에는 안 뜹니다. 붙이는 길은 아래 「앱에 붙이려면」에 있습니다.</p>
+  <div class="chips">
+    <span class="chip">브랜치 <b>claude/g002-tilt-maze-native</b></span>
+    <span class="chip">기준 <b>feature/stage-1-4a</b></span>
+    <span class="chip">새 파일 <b>12개</b>(+ .meta 10개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">검사 <b>32건 통과</b> · Unity 밖</span>
+  </div>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g002-tilt-maze-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/feature/stage-1-4a...claude/g002-tilt-maze-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-tilt-maze-native/docs/progress/2026-11-04-g002-tilt-maze-native.md">진행 기록</a></p>
+
+  <h2>변환 기록</h2>
+  <!--@HISTORY@-->
+<ul class="log">
+<li><span class="when">2026-11-04 08:27</span><span>처음 변환 — 1~30명 동시 개인전(폰·컨트롤러 기울기), 별 +1 · 출구 +5 · 다시 출발</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/30a16a350">30a16a3</a></li>
+</ul>
+<!--@/HISTORY@-->
+
+  <h2>직접 해 보기</h2>
+  <p class="note">C# 판정과 같은 숫자(미로, 공 반지름 0.325칸, 보통 6.25칸/초, 따라가기 9, 문턱 0.11, 1/60초 고정 걸음)로 움직입니다. <b>방향키</b>나 <b>WASD</b>, 또는 미로를 <b>누른 채 끌면</b> P1이 그쪽으로 기웁니다(폰 기울기 대신). 친구 공은 가장 짧은 길로 가는 자동 조종입니다. 앱 화면 그대로가 아니라 판정을 눈으로 보는 용도입니다.</p>
+  <div class="demo">
+    <canvas id="cv" width="1600" height="900" aria-label="기울기 미로 체험판"></canvas>
+    <div class="controls">
+      <span class="note">자동 친구</span>
+      <button data-bots="0" aria-pressed="true">없음</button>
+      <button data-bots="2" aria-pressed="false">2명</button>
+      <button data-bots="5" aria-pressed="false">5명</button>
+      <span class="note" style="margin-left:8px">빠르기</span>
+      <button data-speed="5.25" aria-pressed="false">쉬움</button>
+      <button data-speed="6.25" aria-pressed="true">보통</button>
+      <button data-speed="7.25" aria-pressed="false">어려움</button>
+      <button id="restart" style="margin-left:auto">다시 90초</button>
+    </div>
+    <div class="score" id="score"></div>
+  </div>
+
+  <h2>HTML판에서 달라진 것</h2>
+  <div class="wrap"><table>
+    <tr><th>HTML판</th><th>앱판</th><th>까닭</th></tr>
+    <tr><td>2~4팀이 한 기기로 차례대로, 팀마다 제한시간</td><td><b>모두 같은 미로에서 동시에</b>, 저마다 제 공(1~30명), 판 90초. 공끼리는 안 부딪힘</td><td>앱은 개인 점수제. 회원님 「모두 동시 개인전」</td></tr>
+    <tr><td>순위: 완주 → 빠른 시간 → 별 → 이동 거리</td><td><b>별 +1, 출구 +5</b>, 탈출하면 출발점에서 별이 다시 놓인 다음 바퀴</td><td>회원님 「별 +1, 출구 +5, 다시 출발」. 빠를수록 바퀴가 늘어 시간이 점수에 녹음</td></tr>
+    <tr><td>폰 기울기 · micro:bit 시리얼 · 키보드</td><td>폰·컨트롤러 기울기(<code>Tilt</code>의 <code>Vector</code> x 좌우, y 앞뒤)</td><td>앱의 입력 계약. 영점·권한은 앱이 맡음</td></tr>
+    <tr><td>쉬움·보통·어려움(빠르기만 다름)</td><td><code>ForMode("easy"/"normal"/"hard")</code>, 규칙 파일 초안은 보통 하나</td><td>필요하면 모드만 바꾼 규칙 파일 둘을 더함</td></tr>
+    <tr><td>주황 공, ⭐·🏁 이모지</td><td>콩콩이(자리 색, 기울인 쪽으로 기움, 탈출하면 환호), 도형 별·깃발</td><td>앱의 다른 기울이기 게임과 같은 캐릭터, 윈도·맥이 같게</td></tr>
+    <tr><td>길이 막히면 벽을 헐어 길 내기</td><td>옮기지 않음(길이 있는지 검사가 붙듦)</td><td>고정 미로라 쓰일 일이 없음</td></tr>
+    <tr><td>—</td><td>기울기 소식이 0.5초 끊기면 기울이지 않은 것으로</td><td>폰이 끊겼을 때 공이 끝까지 굴러가지 않게</td></tr>
+    <tr><td>장면 간격으로 밀기(최대 0.05초)</td><td>1/60초 고정 걸음, 예정 시각에서 세기</td><td>장면 빠르기와 상관없이 같은 결과</td></tr>
+  </table></div>
+  <p class="note">그대로 옮긴 것: 미로 20×13(한 글자도 같음), 공 반지름·닿는 거리·빠르기(HTML판 픽셀 ÷ 40), 따라가기 계수 9, 문턱 0.11, 대각선 길이 1, 축마다 따로 움직여 벽에 막힌 축만 멈춤(튕기지 않음), 공 둘레 여덟 점으로 벽 보기, 별 세 개를 가장 짧은 길의 1/4·1/2·3/4 자리에(길 찾기 방향 차례도 같음), 바닥·벽·출구 색.</p>
+
+  <h2>새 파일</h2>
+  <div class="wrap"><table id="files">
+    <tr><th>파일</th><th>무엇</th></tr>
+  </table></div>
+
+  <h2>검증한 것과 안 한 것</h2>
+  <ul>
+    <li><span class="ok">통과</span> 판정·감독 검사 29건과 무대 검사 3건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 네 개, <code>MatchActorKey</code>, <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었고, 대역은 <code>Vector2</code>·<code>Vector3</code>·<code>Rect</code>·<code>Mathf.Abs</code>·<code>InterpreterPhase</code>뿐입니다.</li>
+    <li><span class="ok">자동 조종 완주</span> 가장 짧은 길로 기울이는 자동 조종이 원본 미로에서 별 셋을 줍고 탈출한 뒤, 다음 바퀴에서도 별 셋을 다시 줍습니다.</li>
+    <li><span class="ok">빨간불 확인</span> 판정 규칙 14개(벽 · 문턱 · 기울기 끊김 · 대각선 · 앞뒤 방향 · 별은 바퀴에 한 번 · 다시 출발 · 고정 걸음 · 시작 전 · 새 판 · 별 자리 · 출구 동작 · 기울기만 받기 · 명단)를 하나씩 끄면 각각 검사가 실패했고, 되돌리면 모두 다시 통과했습니다.</li>
+    <li><span class="ok">컴파일</span> 무대 <code>UguiTiltMazeStage</code>를 이 저장소의 실제 <code>QuizArt.cs</code>와, 나머지 원본 함수의 실제 선언과 같은 모양의 대역에 대고 컴파일했습니다(경고 0, 오류 0).</li>
+    <li><span class="no">안 함</span> Unity 실행기, 실제 엔진 컴파일, 앱 화면 촬영, 실물 폰·컨트롤러, 윈도 PC. 이 맥에는 Unity가 없습니다.</li>
+  </ul>
+
+  <h2>앱에 붙이려면</h2>
+  <ol>
+    <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>TiltMaze</code>, <code>GameRuleSet</code>에 <code>flow.tiltMazeMode</code>(<code>easy</code>·<code>normal</code>·<code>hard</code>), 검증기와 JSON 스키마 갱신(장치 Phone·Controller, 인원 ≤ 30, 개인전).</li>
+    <li><b>세션</b>: <code>SessionRunner</code>의 <code>IsNativeActivity</code>에 이 흐름을 넣어 기기 입력이 점수로 바로 가지 않게. 감독의 <code>Award</code>만 <code>HandleActivityInput</code>으로.</li>
+    <li><b>화면</b>: <code>UguiNativeActivities</code>에 감독·무대. 라우터 입력은 <code>HandleInput</code>, 장면마다(<code>RunsNow</code>일 때) <code>SyncRoster</code> → <code>Tick(경기 시간, 판 번호)</code> → <code>Sync</code>. 시계는 일시정지를 뺀 경기 시간. 끝나면 <code>Close</code>, 떠나면 <code>Reset</code>.</li>
+    <li><b>대결</b>: 공통 경기 상태를 지원하지 않으므로 단독 경기만.</li>
+    <li><b>출시</b>: <code>GameTitles</code>(제목에 「G002」 번호를 붙여 둠), 표지, 출시 목록 검사, 포털 내장 게임 사본. 규칙 파일 초안을 <code>StreamingAssets/games/g002-tilt-maze/</code>로.</li>
+    <li><b>말 표</b> 12개 언어: <code>tiltMaze.hint</code>(폰을 기울여 공을 굴려요 / Tilt your phone to roll). 이미 있는 <code>native.wellDone</code>도 씀.</li>
+  </ol>
+
+  <h2>실물에서 봐 주셨으면 하는 것</h2>
+  <ul>
+    <li><b>앞뒤 방향</b> — 가정: 기울기 <code>Vector.y</code> +1이 「앞으로」(스키와 같음)라 미로에서 위로 갑니다. 반대로 느껴지면 <code>TiltMazeSettings.ForwardSign</code>만 +1로 바꿉니다.</li>
+    <li>끝까지 기울였을 때 6.25칸/초가 폰 기울기 범위에서 다루기 알맞은지(앱의 중력 거르개 시간 상수 약 0.31초).</li>
+    <li>30명이 한 미로에 겹칠 때 자기 공을 찾을 수 있는지. 처음엔 모두 출발점에 겹쳐 섭니다.</li>
+    <li>1920×1080에서 칸이 약 80px라, 콩콩이 번호판 글자가 글자 하한(<code>QuizArt.MinText</code>)에 걸려 칸보다 클 수 있습니다.</li>
+  </ul>
+</main>
+<script>
+/* 콩콩이 — HRYoon0/dfz templates/buddy.js 그대로 */
+var Buddy = (function () {
+  'use strict';
+  var POSES = ['idle', 'raise', 'squat', 'jump', 'lean', 'cheer', 'oops'];
+  var ink = '#13202F';
+  var rim = 'rgba(255,255,255,.55)';
+  function oval(c, x, y, rx, ry, fill, edge) {
+    c.beginPath();
+    c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    c.fillStyle = fill;
+    c.fill();
+    if (edge) { c.strokeStyle = edge; c.stroke(); }
+  }
+  function line(c, points, color, width) {
+    c.beginPath();
+    c.moveTo(points[0], points[1]);
+    for (var i = 2; i < points.length; i += 2) c.lineTo(points[i], points[i + 1]);
+    c.strokeStyle = color;
+    c.lineWidth = width;
+    c.stroke();
+  }
+  function body(c) {
+    c.beginPath();
+    c.moveTo(-29, -48);
+    c.bezierCurveTo(-29, -73, -15, -87, 1, -87);
+    c.bezierCurveTo(21, -87, 30, -69, 29, -51);
+    c.bezierCurveTo(39, -24, 23, -9, 1, -10);
+    c.bezierCurveTo(-24, -8, -39, -23, -29, -48);
+    c.closePath();
+  }
+  /* 발바닥 중앙이 원점인 높이 100의 설계 좌표. 모든 변형은 호출 안에서 복원한다. */
+  function draw(ctx, o) {
+    o = o || {};
+    var size = Number(o.size);
+    if (!(size > 0) || !isFinite(size)) return;
+    var pose = POSES.indexOf(o.pose) >= 0 ? o.pose : 'idle';
+    var t = typeof o.t === 'number' && isFinite(o.t) ? o.t : 0;
+    var color = o.color || '#D1F58E';
+    var mood = o.mood || (pose === 'oops' ? 'sad' : pose === 'idle' || pose === 'lean' || pose === 'squat' ? 'calm' : 'happy');
+    var breath = Math.sin(t / 650) * .012;
+    var blink = t > 0 && t % 3900 > 3750;
+    var crouch = pose === 'squat';
+    var airborne = pose === 'jump';
+    var angle = pose === 'lean' ? Math.max(-1, Math.min(1, Number(o.lean) || 0)) * .32 : pose === 'oops' ? Math.sin(t / 180) * .045 : 0;
+    ctx.save();
+    try {
+      ctx.translate(Number(o.x) || 0, Number(o.y) || 0);
+      ctx.scale(size / 100, size / 100);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.translate(0, airborne ? -10 - (1 + Math.sin(t / 240)) * 2 : 0);
+      ctx.rotate(angle);
+      ctx.scale(crouch ? 1.12 : 1 - breath / 2, crouch ? .73 : 1 + breath);
+      ctx.lineWidth = 2.2;
+      oval(ctx, -15, -6, 9, 5, color, rim);
+      oval(ctx, 15, -6, 9, 5, color, rim);
+      /* 팔은 몸 뒤에서 연결하고 둥근 끝을 사용한다. */
+      var lifted = pose === 'raise' || pose === 'cheer' || airborne;
+      [-1, 1].forEach(function (side) {
+        var endY = lifted ? (pose === 'raise' ? -80 : -68) : crouch ? -22 : -30;
+        line(ctx, [side * 25, -48, side * 39, endY], rim, 13);
+        line(ctx, [side * 25, -48, side * 39, endY], color, 9);
+      });
+      body(ctx);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.save();
+      try {
+        ctx.clip();
+        oval(ctx, 0, -10, 38, 12, 'rgba(0,0,0,.18)');
+      } finally { ctx.restore(); }
+      body(ctx);
+      ctx.strokeStyle = rim;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      /* 짧은 새싹 한 개와 잎 한 장. */
+      line(ctx, [0, -87, 0, -95], '#D1F58E', 2.8);
+      ctx.beginPath();
+      ctx.moveTo(0, -94);
+      ctx.bezierCurveTo(2, -100, 10, -99, 11, -97);
+      ctx.bezierCurveTo(9, -91, 3, -91, 0, -94);
+      ctx.fillStyle = '#D1F58E';
+      ctx.fill();
+      oval(ctx, -19, -49, 5, 3, '#FF8A7A');
+      oval(ctx, 19, -49, 5, 3, '#FF8A7A');
+      [-1, 1].forEach(function (side) {
+        var x = side * 11;
+        if (pose === 'oops') {
+          line(ctx, [x - 3, -63, x + 3, -57], ink, 2.8);
+          line(ctx, [x + 3, -63, x - 3, -57], ink, 2.8);
+        } else if (blink || pose === 'cheer') {
+          ctx.beginPath();
+          ctx.moveTo(x - 4, -58);
+          ctx.quadraticCurveTo(x, blink ? -58 : -65, x + 4, -58);
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 2.8;
+          ctx.stroke();
+        } else oval(ctx, x, -60, 3.8, 5, ink);
+      });
+      ctx.beginPath();
+      ctx.moveTo(-4, -48);
+      ctx.quadraticCurveTo(0, mood === 'sad' ? -53 : -42, 4, -48);
+      if (mood === 'happy') {
+        ctx.quadraticCurveTo(0, -36, -4, -48);
+        ctx.fillStyle = ink;
+        ctx.fill();
+        oval(ctx, 0, -43, 2.3, 1.4, '#FF8A7A');
+      } else {
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 2.3;
+        ctx.stroke();
+      }
+      if (o.label !== undefined && o.label !== null && String(o.label)) {
+        oval(ctx, 0, -27, 11, 10, 'rgba(255,255,255,.75)');
+        ctx.fillStyle = ink;
+        ctx.font = "bold 11px 'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Array.from(String(o.label)).slice(0, 3).join(''), 0, -26, 19);
+      }
+      if (crouch || airborne) {
+        ctx.lineWidth = 2.2;
+        oval(ctx, -17, -12, 8, 7, color, rim);
+        oval(ctx, 17, -12, 8, 7, color, rim);
+      }
+      if (pose === 'cheer') {
+        [-1, 1].forEach(function (s) {
+          line(ctx, [s * 35, -87, s * 40, -92], '#FFD66B', 3);
+          line(ctx, [s * 43, -77, s * 48, -79], '#FFD66B', 3);
+        });
+      }
+      if (pose === 'oops') {
+        ctx.beginPath();
+        for (var j = 0; j <= 24; j++) {
+          var a = j * .39;
+          var r = 1 + j * .17;
+          var px = 38 + Math.cos(a) * r;
+          var py = -83 + Math.sin(a) * r;
+          if (!j) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = '#F4F8FF';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+      }
+    } finally { ctx.restore(); }
+  }
+  return { draw: draw, POSES: POSES.slice() };
+})();
+
+</script>
+<script>
+/* 새 파일 목록 */
+(function(){
+  var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-tilt-maze-native/";
+  var rows = [
+    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeSettings.cs", "놀이 값, 원본 미로, 모드(easy·normal·hard)"],
+    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/MazeMap.cs", "미로: 벽, 출발·출구, 가장 짧은 길, 별 자리, 공이 설 수 있는가"],
+    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeRound.cs", "판: 기울기 → 속도, 고정 걸음, 벽, 별·출구, 다시 출발"],
+    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeScoring.cs", "별 → Raise(+1), 출구 → Squat(+5)"],
+    ["unity/Assets/DigitalFitZone/UI/Session/TiltMazeDirector.cs", "감독: 명단 맞추기, 기울기만 판에, Award, 알림"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiTiltMazeStage.cs", "무대: 미로, 별·깃발, 콩콩이, +1·+5"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/TiltMazeRoundTests.cs", "판 검사 21건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/TiltMazeDirectorTests.cs", "감독 검사 8건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/TiltMazeStageTests.cs", "무대 검사 3건"],
+    ["docs/progress/2026-11-04-g002-tilt-maze-native.md", "진행 기록, 붙이는 길"],
+    ["docs/progress/g002-tilt-maze-rulesets/g002-tilt-maze.ruleset.json", "규칙 파일 초안(보통)"],
+    ["docs/progress/g002-tilt-maze-review.html", "이 페이지 사본"]
+  ];
+  var t = document.getElementById("files");
+  rows.forEach(function(r){
+    var tr = document.createElement("tr"), a = document.createElement("a"), td1 = document.createElement("td"), td2 = document.createElement("td");
+    a.href = base + r[0]; a.textContent = r[0].replace("unity/Assets/DigitalFitZone/", "");
+    td1.appendChild(a); td2.textContent = r[1]; tr.appendChild(td1); tr.appendChild(td2); t.appendChild(tr);
+  });
+})();
+
+/* 체험판 — TiltMazeRound.cs 와 같은 숫자 */
+(function(){
+  "use strict";
+  var MAP = [
+    "####################",
+    "#S.....#...........#",
+    "#.###..#.######.##.#",
+    "#...#..#..#.....#..#",
+    "###.#.....#.###.#.##",
+    "#...###.###.#...#..#",
+    "#.#.....#...#.###..#",
+    "#.#.#####.###......#",
+    "#.#...#...#...####.#",
+    "#.###.#.###.#......#",
+    "#.....#.....#.####.#",
+    "#.................E#",
+    "####################"];
+  var COLS = 20, ROWS = 13, R = 0.325, PICK = 0.625, RESP = 9, DEAD = 0.11, HOLD = 0.5, STEP = 1 / 60, ROUND = 90;
+  var SEAT = ["#D1F58E", "#8CC8FF", "#FFD66B", "#C7A4FF", "#FF8A7A", "#A4F0D7"];
+  var speed = 6.25, bots = 0;
+  function wallCell(x, y) { return x < 0 || y < 0 || x >= COLS || y >= ROWS || MAP[y][x] === "#"; }
+  function wallAt(x, y) { return x < 0 || y < 0 || wallCell(Math.floor(x), Math.floor(y)); }
+  function fits(x, y) {
+    return !(wallAt(x - R, y - R) || wallAt(x + R, y - R) || wallAt(x - R, y + R) || wallAt(x + R, y + R) ||
+             wallAt(x, y - R) || wallAt(x, y + R) || wallAt(x - R, y) || wallAt(x + R, y));
+  }
+  var DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
+  function path(fx, fy, tx, ty) {
+    var q = [[fx, fy]], seen = {}, prev = {};
+    seen[fx + "," + fy] = 1;
+    while (q.length) {
+      var c = q.shift();
+      if (c[0] === tx && c[1] === ty) {
+        var out = [c], k = c[0] + "," + c[1];
+        while (prev[k]) { out.unshift(prev[k]); k = prev[k][0] + "," + prev[k][1]; }
+        return out;
+      }
+      for (var d = 0; d < 4; d++) {
+        var nx = c[0] + DX[d], ny = c[1] + DY[d], nk = nx + "," + ny;
+        if (wallCell(nx, ny) || seen[nk]) continue;
+        seen[nk] = 1; prev[nk] = c; q.push([nx, ny]);
+      }
+    }
+    return null;
+  }
+  var START = { x: 1.5, y: 1.5 }, EXIT = { x: 18.5, y: 11.5 };
+  var route = path(1, 1, 18, 11), STARS = [];
+  for (var i = 1; i <= 3; i++) { var c = route[Math.min(route.length - 1, Math.floor(route.length * i / 4))]; STARS.push({ x: c[0] + 0.5, y: c[1] + 0.5 }); }
+
+  var balls = [], clock = 0, cheers = [], last = 0, over = false;
+  function ball(seat, bot) { return { seat: seat, bot: bot, x: START.x, y: START.y, vx: 0, vy: 0, tx: 0, ty: 0, tAt: -1e9, taken: [0, 0, 0], score: 0, laps: 0, exitAt: -1e9 }; }
+  function reset() {
+    balls = [ball(1, false)];
+    for (var i = 0; i < bots; i++) balls.push(ball(i + 2, true));
+    clock = 0; cheers = []; over = false;
+  }
+  function steer(b) {
+    if (clock - b.tAt > HOLD) return [0, 0];
+    var ax = Math.abs(b.tx) < DEAD ? 0 : b.tx, ay = Math.abs(b.ty) < DEAD ? 0 : b.ty, l = Math.hypot(ax, ay);
+    return l > 1 ? [ax / l, ay / l] : [ax, ay];
+  }
+  function advance(b) {
+    var s = steer(b), k = Math.min(1, STEP * RESP);
+    b.vx += (s[0] * speed - b.vx) * k; b.vy += (s[1] * speed - b.vy) * k;
+    var nx = b.x + b.vx * STEP; if (fits(nx, b.y)) b.x = nx; else b.vx = 0;
+    var ny = b.y + b.vy * STEP; if (fits(b.x, ny)) b.y = ny; else b.vy = 0;
+    for (var i = 0; i < 3; i++) {
+      if (!b.taken[i] && Math.hypot(b.x - STARS[i].x, b.y - STARS[i].y) < PICK) { b.taken[i] = 1; b.score += 1; cheers.push({ x: STARS[i].x, y: STARS[i].y, t: "+1", at: clock, exit: false }); }
+    }
+    if (Math.hypot(b.x - EXIT.x, b.y - EXIT.y) < PICK) {
+      b.score += 5; b.laps++; b.exitAt = clock; cheers.push({ x: EXIT.x, y: EXIT.y, t: "+5", at: clock, exit: true });
+      b.x = START.x; b.y = START.y; b.vx = b.vy = 0; b.taken = [0, 0, 0];
+    }
+  }
+  function autopilot(b) {
+    var p = path(Math.floor(b.x), Math.floor(b.y), 18, 11), n = p.length > 1 ? p[1] : p[0];
+    var dx = n[0] + 0.5 - b.x, dy = n[1] + 0.5 - b.y, l = Math.hypot(dx, dy) || 1;
+    var slow = 0.55 + b.seat * 0.07;   // 친구마다 빠르기를 조금씩 다르게
+    b.tx = dx / l * slow; b.ty = dy / l * slow; b.tAt = clock;
+  }
+
+  /* P1 조종: 방향키·WASD, 또는 누른 채 끌기 */
+  var keys = {}, drag = null;
+  addEventListener("keydown", function (e) { if (/^Arrow|^[wasd]$/i.test(e.key)) { keys[e.key.toLowerCase()] = 1; e.preventDefault(); } });
+  addEventListener("keyup", function (e) { keys[e.key.toLowerCase()] = 0; });
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var pad = H * 0.02, tile = Math.min((W - pad * 2) / COLS, (H - pad * 2) / ROWS), ox = (W - tile * COLS) / 2, oy = (H - tile * ROWS) / 2;
+  function toMaze(e) { var r = cv.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width * W - ox) / tile, y: ((e.clientY - r.top) / r.height * H - oy) / tile }; }
+  cv.addEventListener("pointerdown", function (e) { drag = toMaze(e); cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener("pointermove", function (e) { if (drag) drag = toMaze(e); });
+  ["pointerup", "pointercancel"].forEach(function (n) { cv.addEventListener(n, function () { drag = null; }); });
+  function controlP1(b) {
+    var x = (keys.arrowright || keys.d ? 1 : 0) - (keys.arrowleft || keys.a ? 1 : 0);
+    var y = (keys.arrowdown || keys.s ? 1 : 0) - (keys.arrowup || keys.w ? 1 : 0);
+    if (drag) { x = (drag.x - b.x) / 1.5; y = (drag.y - b.y) / 1.5; x = Math.max(-1, Math.min(1, x)); y = Math.max(-1, Math.min(1, y)); }
+    if (x || y) { b.tx = x; b.ty = y; b.tAt = clock; }
+  }
+
+  function px(x) { return ox + x * tile; }
+  function py(y) { return oy + y * tile; }
+  function drawStar(cx, cy, r) {
+    ctx.beginPath();
+    for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + Math.PI * i / 5, rr = i % 2 ? r * 0.45 : r; ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); }
+    ctx.closePath(); ctx.fillStyle = "#FFC83D"; ctx.fill(); ctx.lineWidth = r * 0.12; ctx.strokeStyle = "#B97A0E"; ctx.stroke();
+  }
+  function draw() {
+    var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#34507F"); g.addColorStop(0.45, "#1A2944"); g.addColorStop(1, "#111B2E");
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) {
+      var X = px(x), Y = py(y);
+      if (wallCell(x, y)) {
+        ctx.fillStyle = "#426E83"; ctx.fillRect(X, Y, tile + .5, tile + .5);
+        ctx.fillStyle = "#78B7C0"; ctx.fillRect(X + tile * .1, Y + tile * .1, tile * .8, tile * .175);
+        ctx.fillStyle = "#31596D"; ctx.fillRect(X + tile * .125, Y + tile * .325, tile * .75, tile * .55);
+      } else { ctx.fillStyle = (x + y) % 2 ? "#E9F7E5" : "#DCF2D9"; ctx.fillRect(X, Y, tile + .5, tile + .5); }
+    }
+    var s = tile * .9, ex = px(EXIT.x), ey = py(EXIT.y);
+    ctx.fillStyle = "#51B668"; ctx.beginPath(); ctx.roundRect(ex - s / 2, ey - s / 2, s, s, s * .25); ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = s * .07; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(ex - s * .18, ey - s * .32); ctx.lineTo(ex - s * .18, ey + s * .32); ctx.stroke();
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(ex - s * .18, ey - s * .32); ctx.lineTo(ex + s * .24, ey - s * .18); ctx.lineTo(ex - s * .18, ey - s * .04); ctx.fill();
+    var now = performance.now();
+    STARS.forEach(function (st, i) { drawStar(px(st.x), py(st.y), tile * .36 * (1 + .06 * Math.sin(now / 333 + i))); });
+    balls.slice().reverse().forEach(function (b) {
+      var st = steer(b), size = tile * 1.05, cheer = clock - b.exitAt < 0.9 || over;
+      ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.ellipse(px(b.x), py(b.y) + size * .42, size * .32, size * .08, 0, 0, 7); ctx.fill();
+      Buddy.draw(ctx, { x: px(b.x), y: py(b.y) + size * .45, size: size, color: SEAT[(b.seat - 1) % SEAT.length],
+        pose: cheer ? "cheer" : (st[0] || st[1]) ? "lean" : "idle", lean: st[0], t: now + b.seat * 700, label: "P" + b.seat });
+    });
+    cheers = cheers.filter(function (c) { return clock - c.at < 0.9; });
+    cheers.forEach(function (c) {
+      var k = (clock - c.at) / 0.9; ctx.globalAlpha = 1 - k;
+      ctx.font = "800 " + Math.round(tile * (c.exit ? .9 : .7)) + "px Pretendard Variable, sans-serif"; ctx.textAlign = "center";
+      ctx.fillStyle = c.exit ? "#1F7A3A" : "#B97A0E"; ctx.fillText(c.t, px(c.x), py(c.y) - tile * .8 - k * tile);
+      ctx.globalAlpha = 1;
+    });
+    var left = Math.max(0, ROUND - clock);
+    ctx.font = "800 " + Math.round(H * .045) + "px Pretendard Variable, sans-serif"; ctx.textAlign = "left";
+    ctx.fillStyle = "#F4F8FF"; ctx.fillText(Math.ceil(left) + "초", H * .03, H * .07);
+    if (over) {
+      ctx.fillStyle = "#30435A"; ctx.beginPath(); ctx.roundRect(W * .3, H * .42, W * .4, H * .14, H * .07); ctx.fill();
+      ctx.fillStyle = "#F4F8FF"; ctx.textAlign = "center"; ctx.font = "800 " + Math.round(H * .06) + "px Pretendard Variable, sans-serif"; ctx.fillText("잘했어요!", W / 2, H * .515);
+    }
+    document.getElementById("score").innerHTML = balls.map(function (b) { return "<span>P" + b.seat + " " + b.score + "점 · 탈출 " + b.laps + "</span>"; }).join("");
+  }
+  function frame(t) {
+    var now = t / 1000; if (!last) last = now;
+    var target = clock + Math.min(0.25, now - last); last = now;
+    while (!over && clock + STEP <= target) {
+      clock += STEP;
+      controlP1(balls[0]);
+      for (var i = 0; i < balls.length; i++) { if (balls[i].bot) autopilot(balls[i]); advance(balls[i]); }
+      if (clock >= ROUND) over = true;
+    }
+    draw(); requestAnimationFrame(frame);
+  }
+  function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
+  document.querySelectorAll("[data-bots]").forEach(function (b) { b.onclick = function () { bots = +b.dataset.bots; pick("data-bots", b.dataset.bots); reset(); }; });
+  document.querySelectorAll("[data-speed]").forEach(function (b) { b.onclick = function () { speed = +b.dataset.speed; pick("data-speed", b.dataset.speed); reset(); }; });
+  document.getElementById("restart").onclick = reset;
+  reset(); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
