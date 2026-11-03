@@ -5,3 +5,4 @@ tools/out/
 __pycache__/
 .DS_Store
 port/
+.claude/

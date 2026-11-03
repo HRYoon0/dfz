@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>디지털 핏 존 변환 기록</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{--bg:#202B3D;--surface:#30435A;--line:#46607E;--ink:#F4F8FF;--muted:#CCDCE9;--lime:#D1F58E;
+--font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
+h2{font-size:22px;margin:40px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
+h3{font-size:17px;margin:20px 0 8px;font-weight:700;color:var(--lime)}
+a{color:var(--lime)}
+.lead{color:var(--muted);max-width:46em;margin:0}
+ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+ul.log .game{font-weight:700}
+.sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:grid;gap:6px;align-content:start}
+.card h3{margin:0;font-size:19px}
+.card dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 10px;font-size:14px}
+.card dt{color:var(--muted);font-weight:600}
+.card dd{margin:0;overflow-wrap:anywhere}
+.empty{color:var(--muted)}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<main>
+<h1>디지털 핏 존 변환 기록</h1>
+<p class="lead">여러 사람이 만든 게임을 <a href="https://github.com/EduFit-Tech/digitalpe">EduFit-Tech/digitalpe</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)가 있고, 기준 브랜치 <code>feature/stage-1-4a</code>에는 아직 합치지 않았습니다. 게임 이름을 누르면 그 게임의 확인 페이지(달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
+<h2>날짜별</h2>
+<h3>2026년 11월 3일 (화)</h3>
+<ul class="log">
+<li><span class="when">22:53</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a> — 확인 페이지에 변환 기록 칸과 목록 링크 (커밋 제목이 앞 커밋 것으로 잘못 들어감 — 내용은 확인 페이지 한 파일)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/809b23f49">809b23f</a></li>
+<li><span class="when">22:46</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a> — 사람을 콩콩이로 — 팔만 실제 손목까지 고무팔 (QuizArt.cs에 선택값 추가)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/812e37137">812e371</a></li>
+<li><span class="when">22:36</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a> — 정원 4명 → 3명(4명이면 띠가 38%까지 줄어듦)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/e8076a296">e8076a2</a></li>
+<li><span class="when">22:32</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a> — 개발자 확인 페이지, 인원별 띠 크기 메모</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/740f9fd94">740f9fd</a></li>
+<li><span class="when">22:28</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a> — 처음 변환 — 1~4명 동시, 카메라 손목으로 잡기, 기본·함정 신호</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/6b8906976">6b89069</a></li>
+</ul>
+<h2>게임별 (1개)</h2>
+<div class="cards">
+<article class="card">
+<h3><a href="color-band.html">색깔 띠 잡아 오기</a></h3>
+<dl>
+<dt>만든 사람</dt><dd>미기재</dd>
+<dt>원본</dt><dd>색깔띠_잡아오기.html (HTML 게임, 웹캠·리모컨 1:1 대결)</dd>
+<dt>변환 결과</dt><dd>C# 판정·감독·무대 + 검사 40건, 규칙 파일 초안 2개(기본·함정 신호)</dd>
+<dt>상태</dt><dd>브랜치 — 앱 연결 전</dd>
+<dt>처음 · 마지막</dt><dd>2026-11-03 · 2026-11-03 (고친 횟수 5)</dd>
+<dt>브랜치</dt><dd><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/color-band-native">claude/color-band-native</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/feature/stage-1-4a...claude/color-band-native">기준과 비교</a></dd>
+</dl>
+</article>
+</div>
+</main>
+</body>
+</html>
