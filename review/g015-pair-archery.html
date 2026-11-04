@@ -55,14 +55,15 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <div class="chips">
     <span class="chip">브랜치 <b>claude/g015-pair-archery-native</b></span>
     <span class="chip">기준 <b>feature/stage-1-4a</b></span>
-    <span class="chip">새 파일 <b>11개</b>(+ .meta 9개) · 고친 파일 <b>0개</b></span>
-    <span class="chip">검사 <b>30건 통과</b> · Unity 밖</span>
+    <span class="chip">새 파일 <b>13개</b>(+ .meta 9개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">검사 <b>31건 통과</b> · Unity 밖</span>
   </div>
   <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g015-pair-archery-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/feature/stage-1-4a...claude/g015-pair-archery-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g015-pair-archery-native/docs/progress/2026-11-04-g015-pair-archery-native.md">진행 기록</a></p>
 
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-04 09:02</span><span>앞으로 기울이면 조준선이 위로(G002와 같은 방향, ↑ 키가 아래로 가던 것 바로잡음), 3·4모둠 규칙 파일 추가</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/19cbba27e">19cbba2</a></li>
 <li><span class="when">2026-11-04 08:56</span><span>확인 페이지 사본 — 체험판에서 짝을 보여 주는 동안 「Infinity초」가 찍히던 것 고침(C# 판정 해당 없음)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/72d2e29a6">72d2e29</a></li>
 <li><span class="when">2026-11-04 08:55</span><span>처음 변환 — 폰·컨트롤러로 조준, 모둠 차례전(사수 자동 교대), 짝 +1 · 한 번 더, 카드 그림은 모양과 색</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/d99f17bf1">d99f17b</a></li>
 </ul>
@@ -107,9 +108,9 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
 
   <h2>검증한 것과 안 한 것</h2>
   <ul>
-    <li><span class="ok">통과</span> 판정·감독 검사 27건과 무대 검사 3건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 넷, <code>MatchActorKey</code>, 모둠 나누기가 든 <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었습니다.</li>
+    <li><span class="ok">통과</span> 판정·감독 검사 28건과 무대 검사 3건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 넷, <code>MatchActorKey</code>, 모둠 나누기가 든 <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었습니다.</li>
     <li><span class="ok">기울기만으로 조준</span> 검사는 조준선을 직접 놓지 않고 기울기 입력만으로 카드 위에 옮긴 뒤 쏩니다.</li>
-    <li><span class="ok">빨간불 확인</span> 판정 규칙 18개(사수만 조준·쏘기 · 문턱 · 빗나감 · 짝이면 한 번 더 · 보여 주기 · 덮기 · 사수 교대 · 다음 모둠 · 예정 시각 · 시간 넘김 · 새 판 · 사수 나감 · 빈 판 합류 · 흔들림 · 약한 흔들기 · 짝만 점수 · 모둠 넘기기)를 하나씩 끄면 각각 검사가 실패했고, 되돌리면 모두 다시 통과했습니다.</li>
+    <li><span class="ok">빨간불 확인</span> 판정 규칙 19개(사수만 조준·쏘기 · 앞뒤 방향 · 문턱 · 빗나감 · 짝이면 한 번 더 · 보여 주기 · 덮기 · 사수 교대 · 다음 모둠 · 예정 시각 · 시간 넘김 · 새 판 · 사수 나감 · 빈 판 합류 · 흔들림 · 약한 흔들기 · 짝만 점수 · 모둠 넘기기)를 하나씩 끄면 각각 검사가 실패했고, 되돌리면 모두 다시 통과했습니다.</li>
     <li><span class="ok">컴파일</span> 무대 <code>UguiPairArcheryStage</code>를 이 저장소의 실제 <code>QuizArt.cs</code>와, 나머지 원본 함수의 실제 선언과 같은 모양의 대역에 대고 컴파일했습니다(경고 0, 오류 0).</li>
     <li><span class="no">안 함</span> 원본 소스 대조(읽지 못함), Unity 실행기, 실제 엔진 컴파일, 앱 화면 촬영, 실물 폰·컨트롤러, 윈도 PC.</li>
   </ul>
@@ -120,13 +121,13 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
     <li><b>세션</b>: <code>IsNativeActivity</code>에 넣어 기기 입력이 점수로 바로 가지 않게. 감독의 <code>Award</code>만 <code>HandleActivityInput</code>으로 — 모둠 합계는 기존 팀 집계가 합니다.</li>
     <li><b>화면</b>: <code>UguiNativeActivities</code>에 감독·무대. 라우터 입력은 <code>HandleInput</code>, 장면마다 <code>SyncRoster</code> → <code>Tick</code> → <code>Sync</code>. 모둠 배정이 <code>SyncRoster</code>보다 먼저여야 합니다.</li>
     <li><b>폰 화면</b>: 사수가 아닌 사람의 폰에 「지금은 ○○ 모둠 P3 차례」를 띄우면 좋습니다. 폰 페이지는 공용이라 이번엔 안 건드렸습니다.</li>
-    <li><b>출시</b>: <code>GameTitles</code>(제목에 「G015」), 표지, 출시 목록 검사, 포털 사본. 규칙 파일 초안(모둠 2, 300초)을 <code>StreamingAssets/games/g015-pair-archery/</code>로.</li>
+    <li><b>출시</b>: <code>GameTitles</code>(제목에 「G015」), 표지, 출시 목록 검사, 포털 사본. 규칙 파일 초안 셋(2·3·4모둠, 300초)을 <code>StreamingAssets/games/</code> 아래로.</li>
     <li><b>말 표</b> 12개 언어: <code>pairArchery.hint</code>·<code>turn</code>·<code>pairsLeft</code>·<code>miss</code>·<code>wide</code>·<code>timeout</code>·<code>cleared</code>·<code>team.blue/red/yellow/purple</code>(진행 기록에 ko·en).</li>
   </ol>
 
   <h2>실물에서 봐 주셨으면 하는 것</h2>
   <ul>
-    <li><b>앞뒤 방향</b> — 콕콕 분류와 같이 앞뒤 기울기 +1을 판의 아래로 두었습니다(<code>TiltFlipY</code>). 같은 날 옮긴 G002 기울기 미로는 반대로 가정했습니다. 실물 한 번으로 둘 다 정해야 합니다.</li>
+    <li><b>앞뒤 방향</b> — 앞으로 기울이면 조준선이 <b>위로</b> 갑니다(G002 기울기 미로와 같음). 앱 계약에서 기울기 y는 「앞으로 +」이고 방향키 장치의 ↑ 키도 +라서, 처음 판(콕콕 분류를 따른 +1)은 ↑ 키가 아래로 갔습니다. 같은 까닭으로 기존 「콕콕 분류」도 반대로 갈 것으로 보입니다(공용이라 안 고침). 폰 앞뒤 축은 실물로 재 본 적이 없어, 실물이 반대면 <code>TiltFlipY</code> 하나만 바꿉니다.</li>
     <li>조준선 빠르기와 어려움의 흔들림 크기가 알맞은지.</li>
     <li>20초 시간 넘김이 기억 도우미가 말로 돕는 시간을 줄이지 않는지.</li>
   </ul>
@@ -292,11 +293,13 @@ var Buddy = (function () {
     ["unity/Assets/DigitalFitZone/Game/Play/PairArchery/PairArcheryScoring.cs", "짝 → Raise(+1)"],
     ["unity/Assets/DigitalFitZone/UI/Session/PairArcheryDirector.cs", "감독: 명단·모둠 맞추기, 입력, Award, 알림"],
     ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiPairArcheryStage.cs", "무대: 차례 띠, 과녁 카드, 모양 앞면, 조준선, 사수 콩콩이, 화살"],
-    ["unity/Assets/DigitalFitZone/Tests/EditMode/PairArcheryRoundTests.cs", "판 검사 20건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/PairArcheryRoundTests.cs", "판 검사 21건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/PairArcheryDirectorTests.cs", "감독 검사 7건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/PairArcheryStageTests.cs", "무대 검사 3건"],
     ["docs/progress/2026-11-04-g015-pair-archery-native.md", "진행 기록, 붙이는 길, 말 표"],
-    ["docs/progress/g015-pair-archery-rulesets/g015-pair-archery.ruleset.json", "규칙 파일 초안(모둠 2, 보통)"],
+    ["docs/progress/g015-pair-archery-rulesets/g015-pair-archery.ruleset.json", "규칙 파일 초안 — 2모둠"],
+    ["docs/progress/g015-pair-archery-rulesets/g015-pair-archery-3teams.ruleset.json", "규칙 파일 초안 — 3모둠"],
+    ["docs/progress/g015-pair-archery-rulesets/g015-pair-archery-4teams.ruleset.json", "규칙 파일 초안 — 4모둠"],
     ["docs/progress/g015-pair-archery-review.html", "이 페이지 사본"]
   ];
   var t = document.getElementById("files");
