@@ -45,6 +45,26 @@ ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14p
 ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
 ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
 @media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+
+.stagewrap{position:relative}
+.start{position:absolute;inset:0;border-radius:10px;background:#1B2536;display:grid;grid-template-columns:1.15fr .85fr;gap:20px;padding:22px 26px;overflow:auto;align-content:start}
+.start[hidden]{display:none}
+.start .eyebrow{color:var(--lime);font-weight:800;font-size:13px;letter-spacing:1px}
+.start h3{font-size:clamp(22px,2.6vw,32px);margin:4px 0 6px;font-weight:800;line-height:1.2}
+.start .lead2{margin:0 0 8px;color:var(--muted);font-size:15px;line-height:1.55}
+.start .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.start .tags span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:650}
+.start .how{background:#141C29;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.start .how b{font-size:14px}
+.start ol{margin:6px 0 0;padding-left:20px;font-size:15px;line-height:1.5}
+.start ol li{margin-bottom:3px}
+.start .set{display:grid;gap:12px;align-content:start}
+.start .set h4{margin:0;font-size:17px;font-weight:800}
+.start .opt>span{display:block;font-weight:700;font-size:14px;margin-bottom:4px;color:var(--muted)}
+.start .opt .controls{margin:0}
+.start .go{font:inherit;font-weight:800;font-size:18px;background:var(--lime);color:#13202F;border:0;border-radius:12px;padding:12px 18px;cursor:pointer}
+.start .safe{font-size:13px;color:var(--muted);background:#141C29;border:1px solid var(--line);border-radius:10px;padding:8px 10px;line-height:1.5;margin:0}
+@media (max-width:760px){.start{position:static;grid-template-columns:1fr;margin-bottom:10px}}
 </style>
 </head>
 <body>
@@ -69,18 +89,45 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
 <!--@/HISTORY@-->
 
   <h2>직접 해 보기</h2>
-  <p class="note">C# 판정과 같은 숫자(미로, 공 반지름 0.325칸, 보통 6.25칸/초, 따라가기 9, 문턱 0.11, 1/60초 고정 걸음)로 움직입니다. <b>방향키</b>나 <b>WASD</b>, 또는 미로를 <b>누른 채 끌면</b> P1이 그쪽으로 기웁니다(폰 기울기 대신). 친구 공은 가장 짧은 길로 가는 자동 조종입니다. 앱 화면 그대로가 아니라 판정을 눈으로 보는 용도입니다.</p>
+  <!--start-screen-->
+<p class="note">C# 판정과 같은 숫자(미로, 공 반지름 0.325칸, 보통 6.25칸/초, 따라가기 9, 문턱 0.11, 1/60초 고정 걸음)로 움직입니다. 원본처럼 <b>시작 화면</b>에서 난이도를 고르고 시작합니다. 경기가 돌면 <b>방향키</b>나 <b>WASD</b>, 또는 미로를 <b>누른 채 끌면</b> P1이 그쪽으로 기웁니다(폰 기울기 대신). 친구 공은 가장 짧은 길로 가는 자동 조종입니다.</p>
   <div class="demo">
-    <canvas id="cv" width="1600" height="900" aria-label="기울기 미로 체험판"></canvas>
+    <div class="stagewrap">
+      <canvas id="cv" width="1600" height="900" aria-label="기울기 미로 체험판"></canvas>
+      <div class="start" id="start">
+        <div>
+          <div class="eyebrow">G002 · 체육 · 모두 함께 개인 도전</div>
+          <h3>몸으로 탈출! 기울기 미로</h3>
+          <p class="lead2">몸을 기울여 별을 모으고 출구까지! 폰을 기울여 내 공을 굴려 미로를 탈출하세요. 벽에 부딪히면 튕기지 않고 멈춥니다. 모두 같은 미로에서 동시에 도전합니다.</p>
+          <div class="tags"><span>균형과 움직임 조절</span><span>공간 판단</span><span>끝까지 도전</span></div>
+          <div class="how"><b>진행 방법</b>
+            <ol>
+              <li>난이도를 정합니다.</li>
+              <li>폰을 기울이면 내 공이 움직입니다. 앞으로 기울이면 위로 갑니다.</li>
+              <li>별을 주우면 1점, 초록 출구에 닿으면 5점! 출발점에서 다시 돕니다.</li>
+              <li>90초가 끝나면 점수가 높은 사람이 이깁니다.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="set">
+          <h4>경기 설정</h4>
+          <div class="opt"><span>미로 난이도</span><div class="controls">
+            <button data-speed="5.25" aria-pressed="false">쉬움</button>
+            <button data-speed="6.25" aria-pressed="true">보통</button>
+            <button data-speed="7.25" aria-pressed="false">어려움</button>
+          </div></div>
+          <div class="opt"><span>자동 친구 (체험판)</span><div class="controls">
+            <button data-bots="0" aria-pressed="true">없음</button>
+            <button data-bots="2" aria-pressed="false">2명</button>
+            <button data-bots="5" aria-pressed="false">5명</button>
+          </div></div>
+          <button class="go" id="go">게임 시작 →</button>
+          <p class="safe"><b>안전</b> 제자리에서 작은 범위로 몸을 기울이고 주변 공간을 확보하세요.</p>
+        </div>
+      </div>
+    </div>
     <div class="controls">
-      <span class="note">자동 친구</span>
-      <button data-bots="0" aria-pressed="true">없음</button>
-      <button data-bots="2" aria-pressed="false">2명</button>
-      <button data-bots="5" aria-pressed="false">5명</button>
-      <span class="note" style="margin-left:8px">빠르기</span>
-      <button data-speed="5.25" aria-pressed="false">쉬움</button>
-      <button data-speed="6.25" aria-pressed="true">보통</button>
-      <button data-speed="7.25" aria-pressed="false">어려움</button>
+      <button id="home" hidden>처음 화면</button>
       <button id="restart" style="margin-left:auto">다시 90초</button>
     </div>
     <div class="score" id="score"></div>
@@ -358,7 +405,7 @@ var Buddy = (function () {
   var route = path(1, 1, 18, 11), STARS = [];
   for (var i = 1; i <= 3; i++) { var c = route[Math.min(route.length - 1, Math.floor(route.length * i / 4))]; STARS.push({ x: c[0] + 0.5, y: c[1] + 0.5 }); }
 
-  var balls = [], clock = 0, acc = 0, cheers = [], last = 0, over = false;
+  var balls = [], clock = 0, acc = 0, cheers = [], last = 0, over = false, started = false;
   function ball(seat, bot) { return { seat: seat, bot: bot, x: START.x, y: START.y, vx: 0, vy: 0, tx: 0, ty: 0, tAt: -1e9, taken: [0, 0, 0], score: 0, laps: 0, exitAt: -1e9 }; }
   function reset() {
     balls = [ball(1, false)];
@@ -456,7 +503,7 @@ var Buddy = (function () {
   function frame(t) {
     var now = t / 1000; if (!last) last = now;
     /* 남은 시간을 쌓아 두고 1/60초씩 꺼낸다 — 화면이 120Hz면 한 장면이 한 걸음보다 짧다 */
-    acc += Math.min(0.25, now - last); last = now;
+    acc += started ? Math.min(0.25, now - last) : 0; last = now;   /* 시작 화면에서는 멈춰 있다 */
     while (!over && acc >= STEP) {
       acc -= STEP;
       clock += STEP;
@@ -470,7 +517,17 @@ var Buddy = (function () {
   document.querySelectorAll("[data-bots]").forEach(function (b) { b.onclick = function () { bots = +b.dataset.bots; pick("data-bots", b.dataset.bots); reset(); }; });
   document.querySelectorAll("[data-speed]").forEach(function (b) { b.onclick = function () { speed = +b.dataset.speed; pick("data-speed", b.dataset.speed); reset(); }; });
   document.getElementById("restart").onclick = reset;
+  window.__startDemo = function () { reset(); acc = 0; started = true; };
+  window.__stopDemo = function () { started = false; reset(); };
   reset(); requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* 시작 화면 — 「경기 시작」을 누르면 체험판이 돈다, 「처음 화면」이면 멈추고 돌아온다 */
+(function(){
+  var start = document.getElementById("start"), go = document.getElementById("go"), home = document.getElementById("home");
+  go.addEventListener("click", function(){ start.hidden = true; home.hidden = false; window.__startDemo(); });
+  home.addEventListener("click", function(){ window.__stopDemo(); start.hidden = false; home.hidden = true; go.focus(); });
 })();
 </script>
 </body>
