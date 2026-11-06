@@ -91,7 +91,7 @@ def build_index():
 <dt>변환 결과</dt><dd>{E(g['result'])}</dd>
 <dt>상태</dt><dd>{E(g['status'])}</dd>
 <dt>처음 · 마지막</dt><dd>{first} · {last} (고친 횟수 {len(g['history'])})</dd>
-<dt>브랜치</dt><dd><a href="{GH}/tree/{E(g['branch'])}">{E(g['branch'])}</a> · <a href="{GH}/compare/{E(DATA['base'])}...{E(g['branch'])}">기준과 비교</a></dd>
+<dt>브랜치</dt><dd><a href="{GH}/tree/{E(g['branch'])}">{E(g['branch'])}</a> · <a href="{GH}/compare/{E(DATA['base'])}...{E(g['branch'])}">기준과 비교</a>{f' · <a href="{GH}/pull/{g["pr"]}">PR #{g["pr"]}</a>' if g.get('pr') else ''}</dd>
 </dl>
 </article>""")
 
@@ -108,7 +108,7 @@ def build_index():
 <body>
 <main>
 <h1>디지털 핏 존 변환 기록</h1>
-<p class="lead">여러 사람이 만든 게임을 <a href="{GH}">{E(REPO)}</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)가 있고, 기준 브랜치 <code>{E(DATA['base'])}</code>에는 아직 합치지 않았습니다. 날짜별에는 그날 변환하거나 고친 게임만 나옵니다. 게임 이름을 누르면 그 게임의 확인 페이지(고친 기록, 달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
+<p class="lead">여러 사람이 만든 게임을 <a href="{GH}">{E(REPO)}</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)를 기준 브랜치 <code>{E(DATA['base'])}</code>에서 만들고, <code>{E(DATA['base'])}</code> 대상 PR로 올려 주개발자가 검토·병합합니다(2026-11-06부터 — 그전 기준은 <code>feature/stage-1-4a</code>). 날짜별에는 그날 변환하거나 고친 게임만 나옵니다. 게임 이름을 누르면 그 게임의 확인 페이지(고친 기록, 달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
 <h2>날짜별</h2>
 {chr(10).join(days) if days else '<p class="empty">아직 기록이 없습니다.</p>'}
 <h2>게임별 ({len(DATA['games'])}개)</h2>

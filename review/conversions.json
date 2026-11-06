@@ -1,6 +1,6 @@
 {
   "repo": "EduFit-Tech/digitalpe",
-  "base": "feature/stage-1-4a",
+  "base": "main",
   "games": [
     {
       "slug": "color-band",
@@ -66,7 +66,8 @@
           "commit": "PR #43",
           "text": "본줄기가 main으로 바뀌어 main을 합쳐 최신으로 맞추고 main 대상 PR을 열었다(server-checks 통과, 충돌 없음) — QuizArt.cs는 main의 DrawBuddyHalo 위에 팔 선택값만 얹어 충돌을 풀었다"
         }
-      ]
+      ],
+      "pr": 43
     },
     {
       "slug": "g002-tilt-maze",
@@ -108,7 +109,8 @@
           "commit": "PR #44",
           "text": "본줄기가 main으로 바뀌어 main을 합쳐 최신으로 맞추고 main 대상 PR을 열었다(server-checks 통과, 충돌 없음)"
         }
-      ]
+      ],
+      "pr": 44
     },
     {
       "slug": "g015-pair-archery",
@@ -156,7 +158,8 @@
           "commit": "PR #45",
           "text": "본줄기가 main으로 바뀌어 main을 합쳐 최신으로 맞추고 main 대상 PR을 열었다(server-checks 통과, 충돌 없음)"
         }
-      ]
+      ],
+      "pr": 45
     },
     {
       "slug": "g017-answer-mole",
@@ -198,7 +201,8 @@
           "commit": "PR #46",
           "text": "본줄기가 main으로 바뀌어 main을 합쳐 최신으로 맞추고 main 대상 PR을 열었다(server-checks 통과, 충돌 없음)"
         }
-      ]
+      ],
+      "pr": 46
     }
   ]
 }
