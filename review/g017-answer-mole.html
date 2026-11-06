@@ -616,10 +616,10 @@ var Buddy = (function () {
       rr(bx, by + H * .012, bw, bh, H * .035, "#6E4329"); rr(bx, by, bw, bh, H * .035, "#8B5A3C"); rr(bx + H * .007, by + H * .007, bw - H * .014, bh - H * .014, H * .03, "#FFF6DC");
       ctx.textAlign = "center";
       ctx.fillStyle = "#2B1D12"; ctx.font = font(H * .07); ctx.fillText("잘했어요!", W / 2, by + H * .07);
-      var rank = pts.map(function (p, k) { return k; }).sort(function (x, y) { return pts[y] - pts[x]; }), rowH = (bh - H * .13) / teams;
+      var rank = pts.map(function (p, k) { return k; }).sort(function (x, y) { return pts[y] - pts[x]; }), rowH = (bh - H * .15) / teams;
       rank.forEach(function (k, i) {
         var place = 1 + pts.filter(function (p) { return p > pts[k]; }).length;   // 같은 점수는 같은 등수
-        ctx.fillStyle = TEAMINK[k]; ctx.font = font(Math.min(H * .05, rowH * .7)); ctx.fillText(place + "등  " + TEAMNAME[k] + "  " + pts[k] + "점", W / 2, by + H * .14 + rowH * (i + .5));
+        ctx.fillStyle = TEAMINK[k]; ctx.font = font(Math.min(H * .05, rowH * .7)); ctx.fillText(place + "등  " + TEAMNAME[k] + "  " + pts[k] + "점", W / 2, by + H * .12 + rowH * (i + .5));
       });
     }
     document.getElementById("score").innerHTML = pts.map(function (p, t) { return "<span style='border-color:" + TEAM[t] + "'>" + TEAMNAME[t] + (t === mine ? "(마우스)" : botsOn ? "(자동)" : "") + " " + p + "점 (정답 " + ok[t] + " · 오답 " + bad[t] + ")</span>"; }).join("");
