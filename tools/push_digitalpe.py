@@ -1,12 +1,13 @@
 # 복제 없이 GitHub API로 EduFit-Tech/digitalpe의 작업 브랜치에 커밋한다.
 # 사용: python3 -I tools/push_digitalpe.py <이식 폴더> <브랜치> <커밋 메시지 파일>
 #   이식 폴더(port/<slug>) 안의 파일을 저장소의 같은 경로로 올린다. 브랜치가 없으면 기준 브랜치에서 새로 판다.
-#   보호 브랜치(feature/stage-1-4a, main)에는 올리지 않는다.
+#   보호 브랜치(main, 옛 본줄기 feature/stage-1-4a)에는 올리지 않는다 — main으로는 PR로만 들어간다.
+#   2026-11-06 저장소 본줄기가 main으로 바뀌었다(주개발자 「main에서 가지 만들고 PR 대상도 main」).
 import base64, json, os, subprocess, sys
 
 REPO = "EduFit-Tech/digitalpe"
-BASE = "feature/stage-1-4a"
-PROTECTED = {BASE, "main"}
+BASE = "main"
+PROTECTED = {BASE, "feature/stage-1-4a"}
 
 
 def api(path, method="GET", body=None):
