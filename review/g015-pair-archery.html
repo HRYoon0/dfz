@@ -83,6 +83,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-06 10:31</span><span>배경 그림 — 가을 한국 전통 활터(기와 정자·단풍, 앱 무궁화 마당과 같은 손그림 화풍, GPT 생성). 그림이 없으면 지금처럼 초록 단색, 체험판에도 깔림</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/d65066303">d650663</a></li>
 <li><span class="when">2026-11-04 09:11</span><span>확인 페이지 체험판에 원본 같은 시작 화면(설명·진행 방법·설정·경기 시작·안전), 시작 전에는 멈춰 있음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/cc46b1045">cc46b10</a></li>
 <li><span class="when">2026-11-04 09:02</span><span>앞으로 기울이면 조준선이 위로(G002와 같은 방향, ↑ 키가 아래로 가던 것 바로잡음), 3·4모둠 규칙 파일 추가</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/19cbba27e">19cbba2</a></li>
 <li><span class="when">2026-11-04 08:56</span><span>확인 페이지 사본 — 체험판에서 짝을 보여 주는 동안 「Infinity초」가 찍히던 것 고침(C# 판정 해당 없음)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/72d2e29a6">72d2e29</a></li>
@@ -458,8 +459,11 @@ var Buddy = (function () {
     }
   }
   function font(px) { return "800 " + Math.round(px) + "px 'Pretendard Variable', sans-serif"; }
+  // 배경 그림 — 앱 규칙 파일 assets.background와 같은 그림(2026-11-06). 아직 안 왔으면 지금 색을 그린다.
+  var BG = typeof Image === "undefined" ? null : new Image(); if (BG) BG.src = "img/g015-pair-archery-bg.jpg";
+  function backdrop() { if (BG && BG.complete && BG.naturalWidth) { ctx.drawImage(BG, 0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(0, 0, W, H); var sh = ctx.createLinearGradient(0, 0, 0, H * 0.2); sh.addColorStop(0, "rgba(0,0,0,.45)"); sh.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H * 0.2); return true; } return false; }
   function draw() {
-    ctx.fillStyle = "#1B2A22"; ctx.fillRect(0, 0, W, H);
+    if (!backdrop()) { ctx.fillStyle = "#1B2A22"; ctx.fillRect(0, 0, W, H); }
     var cw = B.w / S.cols, ch = B.h / S.rows;
     cards.forEach(function (k, i) {
       var x = B.x + (i % S.cols) * cw + cw * .04, y = B.y + Math.floor(i / S.cols) * ch + ch * .05, w = cw * .92, h = ch * .9, r = Math.min(w, h) * .08;

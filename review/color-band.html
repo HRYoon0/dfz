@@ -82,6 +82,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-06 10:31</span><span>배경 그림 — 무지개 리본·풍선 아치로 꾸민 실내 체육관(앱 무궁화 마당과 같은 손그림 화풍, GPT 생성). 그림이 없으면 지금처럼 밤하늘, 체험판에도 깔림</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/f1511fb8c">f1511fb</a></li>
 <li><span class="when">2026-11-04 09:11</span><span>확인 페이지 체험판에 원본 같은 시작 화면(설명·진행 방법·설정·경기 시작·안전), 시작 전에는 멈춰 있음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/c3867b4cd">c3867b4</a></li>
 <li><span class="when">2026-11-03 22:53</span><span>위 커밋 제목 실수를 기록에 바로잡음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/3c7ac79bc">3c7ac79</a></li>
 <li><span class="when">2026-11-03 22:53</span><span>확인 페이지에 변환 기록 칸과 목록 링크 (커밋 제목이 앞 커밋 것으로 잘못 들어감 — 내용은 확인 페이지 한 파일)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/809b23f49">809b23f</a></li>
@@ -450,8 +451,11 @@ var Buddy = (function () {
   function rr(x, y, w, h, r){ ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); }
   function font(s, w){ return (w || 700) + " " + Math.round(s) + "px 'Pretendard Variable','Malgun Gothic',sans-serif"; }
 
+  // 배경 그림 — 앱 규칙 파일 assets.background와 같은 그림(2026-11-06). 아직 안 왔으면 지금 색을 그린다.
+  var BG = typeof Image === "undefined" ? null : new Image(); if (BG) BG.src = "img/color-band-bg.jpg";
+  function backdrop() { if (BG && BG.complete && BG.naturalWidth) { ctx.drawImage(BG, 0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(0, 0, W, H); var sh = ctx.createLinearGradient(0, 0, 0, H * 0.2); sh.addColorStop(0, "rgba(0,0,0,.45)"); sh.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H * 0.2); return true; } return false; }
   function draw(now){
-    ctx.fillStyle = "#202B3D"; ctx.fillRect(0, 0, W, H);
+    if (!backdrop()) { ctx.fillStyle = "#202B3D"; ctx.fillRect(0, 0, W, H); }
     people.forEach(function(p, pi){
       var a = phase === "signal" ? 1 : 0.4; if (p.locked) a = 0.25;
       tapes.forEach(function(t, i){
