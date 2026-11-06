@@ -75,14 +75,15 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <div class="chips">
     <span class="chip">브랜치 <b>claude/g017-answer-mole-native</b></span>
     <span class="chip">기준 <b>feature/stage-1-4a</b></span>
-    <span class="chip">새 파일 <b>14개</b>(+ .meta 9개) · 고친 파일 <b>0개</b></span>
-    <span class="chip">검사 <b>35건 통과</b> · Unity 밖</span>
+    <span class="chip">새 파일 <b>18개</b>(+ .meta 9개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">검사 <b>36건 통과</b> · Unity 밖</span>
   </div>
   <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g017-answer-mole-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/feature/stage-1-4a...claude/g017-answer-mole-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g017-answer-mole-native/docs/progress/2026-11-06-g017-answer-mole-native.md">진행 기록</a></p>
 
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-06 11:20</span><span>두더지(올라옴·잡힘·메롱)와 장난감 망치를 GPT로 그려 오린 그림으로 — 구멍에서 올라오게 흙선 아래를 잘라 보임, 그림이 없으면 코드 도형</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/cba044f8f">cba044f</a></li>
 <li><span class="when">2026-11-06 11:06</span><span>처음 변환 — 카메라 손목으로 손 대고 0.3초 잡기, 모둠 차례전(차례 모둠 손만), 정답 +10·보너스·오답 −5, 문항 세트 넷, 봄 농장 밭 배경(GPT)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/471feb0ab">471feb0</a></li>
 </ul>
 <!--@/HISTORY@-->
@@ -151,7 +152,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
     <tr><td>모둠 점수(0점 밑으로 안 감)</td><td>잡은 사람 점수로 붙고 앱이 모둠 합계로. 0점 바닥은 사람마다</td><td>앱 점수표(<code>ScoreBook</code>)가 사람 점수를 0 밑으로 안 내린다</td></tr>
     <tr><td>정답 +10 + 보너스(10 − 지난 초)</td><td>정답 Touch +10, 보너스는 Press +1을 보너스만큼, 오답 Shake −5</td><td>앱 규칙 파일은 동작마다 점수가 정해져 있다</td></tr>
     <tr><td>설정: 구멍 6·9·12, 45·60초, 문항 세트 넷</td><td>규칙 파일 <code>flow.answerMoleHoles</code>·<code>answerMoleTurnSeconds</code>·<code>answerMoleSet</code>(초안은 9개·60초·구구단)</td><td>설정 값은 규칙 파일이 쥔다</td></tr>
-    <tr><td>사람 캐릭터(팔이 손을 따라옴)</td><td>콩콩이(모둠 색), 손 자리에 망치</td><td>앱 기본 캐릭터. 팔을 그리려면 공용 <code>QuizArt</code>를 고쳐야 해서 안 함</td></tr>
+    <tr><td>사람 캐릭터(팔이 손을 따라옴), 두더지·망치는 코드 도형</td><td>콩콩이(모둠 색). <b>두더지(올라옴·잡힘·메롱)와 장난감 망치는 GPT로 그려 오린 그림</b>, 그림이 없으면 코드 도형</td><td>앱 기본 캐릭터. 팔을 그리려면 공용 <code>QuizArt</code>를 고쳐야 해서 안 함</td></tr>
     <tr><td>배경 내 모습 흐리게</td><td>옮기지 않음, 대신 봄 농장 밭 배경 그림</td><td>카메라 화면을 저장·표시하지 않는 앱 규칙</td></tr>
   </table></div>
   <p class="note">그대로 옮긴 것: 구멍 배치(6·9·12), 난이도 세 단계 값, 올라온 시간 ×0.9~1.1, 정답이 2.2초 넘게 안 나왔으면 꼭 정답·아니면 38%, 같은 보기 겹침 없음, 정답 하나만, 정답을 잡으면 나머지 내려가고 0.45초 뒤 다음 문제·0.55초 새 두더지 없음, 올라온 정도 45% 넘어야 잡힘, 잡는 자리 모양, 문항 세트 넷(구구단·영어 단어·맞춤법·체육 용어), 모둠 색 넷.</p>
@@ -163,7 +164,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
 
   <h2>검증한 것과 안 한 것</h2>
   <ul>
-    <li><span class="ok">통과</span> 판정·감독 검사 32건과 무대 검사 3건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 넷, <code>MatchActorKey</code>, <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었습니다.</li>
+    <li><span class="ok">통과</span> 판정·감독 검사 32건과 무대 검사 4건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 넷, <code>MatchActorKey</code>, <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었습니다.</li>
     <li><span class="ok">골격으로 잡기</span> 감독 검사는 손을 직접 놓지 않고 골격 손목 좌표만 넣어 정답 두더지를 잡은 뒤, Touch 1번과 보너스만큼의 Press가 흘러가는지 봅니다.</li>
     <li><span class="ok">빨간불 확인</span> 판정 규칙 27개(쉬는 시간 · 예정 시각 · 차례 끝 · 마지막 차례 · 차례 끝 내려감 · 최대 마릿수 · 간격 · 정답 뒤 잠금 · 정답 꼭 나오기 · 정답 하나만 · 보기 겹침 · 기다리기 · 같은 두더지에만 쌓기 · 차례 모둠만 · 보너스 셈 · 보너스 0 바닥 · 다른 두더지 내려감 · 다음 문제 · 오답 0점 바닥 · 올라와야 잡힘 · 손목 위아래 · 정원 · 보너스 Press 여러 번 · 차례 순간 · 모둠 넘기기 · 손목 신뢰도 · 보너스 알림)를 하나씩 끄면 각각 검사가 실패했고, 되돌리면 모두 다시 통과했습니다.</li>
     <li><span class="ok">컴파일</span> 무대 <code>UguiAnswerMoleStage</code>를 이 저장소의 실제 <code>QuizArt.cs</code>와, 나머지 원본 함수의 실제 선언과 같은 모양의 대역에 대고 컴파일했습니다(경고 0, 오류 0).</li>
@@ -174,8 +175,8 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <ol>
     <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>AnswerMole</code>, <code>GameRuleSet</code>에 <code>flow.answerMoleMode</code>(<code>easy</code>·<code>normal</code>·<code>hard</code>)·<code>answerMoleSet</code>(<code>times</code>·<code>english</code>·<code>spelling</code>·<code>pe</code>)·<code>answerMoleHoles</code>·<code>answerMoleTurnSeconds</code>, 검증기와 스키마(장치 Camera, 모둠전 허용, 감점 규칙).</li>
     <li><b>세션</b>: <code>IsNativeActivity</code>에 넣어 기기 입력이 점수로 바로 가지 않게. 감독의 <code>Award</code>만 <code>HandleActivityInput</code>으로 — 모둠 합계는 기존 팀 집계가 합니다.</li>
-    <li><b>화면</b>: <code>UguiNativeActivities</code>에 감독·무대. 장면마다 <code>SyncRoster</code> → <code>SyncPoses</code>(골격·자리 번호, 색깔 띠와 같은 <code>SnapshotPlayPoses</code>) → <code>Tick</code> → <code>Sync</code>, 그리고 <code>stage.Backdrop = _hud.StageArt;</code>. 모둠 배정이 <code>SyncRoster</code>보다 먼저여야 합니다.</li>
-    <li><b>출시</b>: <code>GameTitles</code>(제목에 「G017」), 표지, 출시 목록 검사, 포털 사본. 규칙 파일 초안 셋(2·3·4모둠)과 배경 <code>assets/images/bg.jpg</code>를 <code>StreamingAssets/games/</code> 아래로.</li>
+    <li><b>화면</b>: <code>UguiNativeActivities</code>에 감독·무대. 장면마다 <code>SyncRoster</code> → <code>SyncPoses</code>(골격·자리 번호, 색깔 띠와 같은 <code>SnapshotPlayPoses</code>) → <code>Tick</code> → <code>Sync</code>, 그리고 <code>stage.Backdrop = _hud.StageArt;</code>, 두더지·망치는 규칙 파일 <code>assets.icons</code>(<code>mole_up</code>·<code>mole_hit</code>·<code>mole_wrong</code>·<code>hammer</code>)를 <code>GameArt</code>로 읽어 <code>MoleUpArt</code>·<code>MoleHitArt</code>·<code>MoleWrongArt</code>·<code>HammerArt</code>에. 모둠 배정이 <code>SyncRoster</code>보다 먼저여야 합니다.</li>
+    <li><b>출시</b>: <code>GameTitles</code>(제목에 「G017」), 표지, 출시 목록 검사, 포털 사본. 규칙 파일 초안 셋(2·3·4모둠)과 그림(배경 <code>bg.jpg</code>, 두더지 셋·망치 <code>assets/images/*.png</code>)을 <code>StreamingAssets/games/</code> 아래로.</li>
     <li><b>말 표</b> 12개 언어: <code>answerMole.hint</code>·<code>ready</code>·<code>time</code>·<code>tally</code>·<code>bonus</code>·<code>wrong</code>·<code>team.blue/red/yellow/purple/all</code>(진행 기록에 ko·en).</li>
   </ol>
 
@@ -183,7 +184,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <ul>
     <li><b>손이 닿는 높이</b> — 손목 좌표를 원본처럼 가운데에서 1.3배 넓혔습니다(<code>HandZoom</code>). 교실 카메라 자리에서 위 줄 구멍까지 팔이 닿는지, 너무 예민하지 않은지.</li>
     <li><b>차례 아닌 모둠</b> — 비켜 서지 않아도 그 사람 손은 무시되지만, 카메라 6명 한도와 인식 순서에 영향이 없는지.</li>
-    <li><b>두더지가 흙 위에서 보이는지</b> — 갈색 두더지와 갈색 밭 배경. 팻말이 크게 떠 있어 읽기는 되지만 교실 화면에서 확인이 필요합니다.</li>
+    <li><b>두더지가 흙 위에서 보이는지</b> — 갈색 두더지 그림과 갈색 밭 배경. 그림에 짙은 윤곽이 있고 팻말이 크게 떠 있지만 교실 화면에서 확인이 필요합니다. 두더지 크기(구멍 반지름의 3.2배)도 손잡이 값입니다.</li>
     <li>모둠 사이 4초가 다음 모둠이 나와 서기에 넉넉한지.</li>
   </ul>
 </main>
@@ -350,12 +351,16 @@ var Buddy = (function () {
     ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiAnswerMoleStage.cs", "무대: 배경, 문제판, 구멍·두더지·보기 팻말, 망치·잡는 원, 콩콩이, 점수·시간, 쉬는 시간 안내"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/AnswerMoleRoundTests.cs", "판 검사 24건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/AnswerMoleDirectorTests.cs", "감독 검사 8건"],
-    ["unity/Assets/DigitalFitZone/Tests/EditMode/AnswerMoleStageTests.cs", "무대 검사 3건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/AnswerMoleStageTests.cs", "무대 검사 4건"],
     ["docs/progress/2026-11-06-g017-answer-mole-native.md", "진행 기록, 붙이는 길, 말 표"],
     ["docs/progress/g017-answer-mole-rulesets/g017-answer-mole.ruleset.json", "규칙 파일 초안 — 2모둠"],
     ["docs/progress/g017-answer-mole-rulesets/g017-answer-mole-3teams.ruleset.json", "규칙 파일 초안 — 3모둠"],
     ["docs/progress/g017-answer-mole-rulesets/g017-answer-mole-4teams.ruleset.json", "규칙 파일 초안 — 4모둠"],
     ["docs/progress/g017-answer-mole-rulesets/assets/images/bg.jpg", "배경 그림 — 봄 채소 농장 밭(GPT 생성)"],
+    ["docs/progress/g017-answer-mole-rulesets/assets/images/mole-up.png", "두더지 — 올라옴(GPT 생성, 오린 투명 PNG)"],
+    ["docs/progress/g017-answer-mole-rulesets/assets/images/mole-hit.png", "두더지 — 정답으로 잡힘(어지러운 눈)"],
+    ["docs/progress/g017-answer-mole-rulesets/assets/images/mole-wrong.png", "두더지 — 오답(메롱)"],
+    ["docs/progress/g017-answer-mole-rulesets/assets/images/hammer.png", "장난감 망치"],
     ["docs/progress/g017-answer-mole-review.html", "이 페이지 사본"]
   ];
   var t = document.getElementById("files");
@@ -494,12 +499,28 @@ var Buddy = (function () {
     if (m.state === "hit") { ctx.strokeStyle = "#2B1D12"; ctx.lineWidth = r * .07; [-1, 1].forEach(function (s) { var ex = x + s * r * .38; ctx.beginPath(); ctx.moveTo(ex - r * .1, top + r * .5); ctx.lineTo(ex + r * .1, top + r * .64); ctx.moveTo(ex + r * .1, top + r * .5); ctx.lineTo(ex - r * .1, top + r * .64); ctx.stroke(); }); }
     else { ell(x - r * .34, top + r * .58, r * .09, r * .09, "#2B1D12"); ell(x + r * .34, top + r * .58, r * .09, r * .09, "#2B1D12"); }
     ell(x, top + r * .8, r * .14, r * .1, "#F28BA0");
-    var sw = r * 2.5, sh = r * .95, sx = x - sw / 2, sy = top - sh - r * .05, e = r * .07;
-    ctx.fillStyle = "#6E4329"; ctx.fillRect(x - r * .59, sy + sh * .6, r * .08, r * .55); ctx.fillRect(x + r * .51, sy + sh * .6, r * .08, r * .55);
+    drawSign(x, top - r * .95 - r * .05, r, m, true);
+    if (m.state === "wrong") cross(x, top + r * .8, r);
+  }
+  function cross(x, cy, r) { ctx.strokeStyle = "#E5484D"; ctx.lineWidth = r * .16; ctx.lineCap = "round"; var d = r * .55; ctx.beginPath(); ctx.moveTo(x - d, cy - d); ctx.lineTo(x + d, cy + d); ctx.moveTo(x + d, cy - d); ctx.lineTo(x - d, cy + d); ctx.stroke(); }
+  function drawSign(x, sy, r, m, legs) {
+    var sw = r * 2.5, sh = r * .95, sx = x - sw / 2, e = r * .07;
+    if (legs) { ctx.fillStyle = "#6E4329"; ctx.fillRect(x - r * .59, sy + sh * .6, r * .08, r * .55); ctx.fillRect(x + r * .51, sy + sh * .6, r * .08, r * .55); }
     rr(sx, sy, sw, sh, r * .18, m.state === "hit" ? "#2FA85A" : m.state === "wrong" ? "#E5484D" : "#6E4329");
     rr(sx + e, sy + e, sw - e * 2, sh - e * 2, r * .14, m.state === "hit" ? "#D8F5DF" : m.state === "wrong" ? "#FFD9D9" : "#FFF6DC");
     ctx.fillStyle = "#2B1D12"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; fit(m.text, sw * .86, sh * .62); ctx.fillText(m.text, x, sy + sh * .53);
-    if (m.state === "wrong") { ctx.strokeStyle = "#E5484D"; ctx.lineWidth = r * .16; ctx.lineCap = "round"; var cy = top + r * .8, d = r * .55; ctx.beginPath(); ctx.moveTo(x - d, cy - d); ctx.lineTo(x + d, cy + d); ctx.moveTo(x + d, cy - d); ctx.lineTo(x - d, cy + d); ctx.stroke(); }
+  }
+  // 그림 두더지 — 무대 C# DrawMoleArt와 같은 배치. 구멍 앞 흙선(y + 0.06r) 아래는 잘라 낸다. 팻말·X는 흙 둔덕 뒤에 따로 그린다.
+  var ART = {};
+  if (typeof Image !== "undefined") ["mole-up", "mole-hit", "mole-wrong", "hammer"].forEach(function (n) { var im = new Image(); im.src = "img/g017-" + n + ".png"; ART[n] = im; });
+  function ready(im) { return im && im.complete && im.naturalWidth; }
+  function drawMoleArt(x, y, r, m, v) {
+    if (v <= 0) return null;
+    var up = ART["mole-up"], tex = m.state === "hit" && ready(ART["mole-hit"]) ? ART["mole-hit"] : m.state === "wrong" && ready(ART["mole-wrong"]) ? ART["mole-wrong"] : up;
+    var w = r * 3.2, upH = w * up.naturalHeight / up.naturalWidth, h = w * tex.naturalHeight / tex.naturalWidth;
+    var foot = y + r * .45 + (1 - v) * upH, top = foot - h, shown = Math.min(h, y + r * .06 - top);
+    if (shown > 0) ctx.drawImage(tex, 0, 0, tex.naturalWidth, tex.naturalHeight * shown / h, x - w / 2, top, w, shown);
+    return { sy: foot - upH - r * .95 * .65, cy: foot - upH * .55 };
   }
   function pose() {
     if (phase === "over") return "cheer";
@@ -512,8 +533,14 @@ var Buddy = (function () {
     holes.forEach(function (h, i) {
       var x = h.x * W, y = h.y * H, r = h.r * H;
       ell(x, y + r * .06, r * 1.25, r * .42, "#6E4329"); ell(x, y, r * 1.05, r * .3, "#2B1D12");
-      moles.forEach(function (m) { if (m.hole === i) drawMole(x, y, r, m, vis(m, clock)); });
+      var later = [];
+      moles.forEach(function (m) {
+        if (m.hole !== i) return;
+        if (ready(ART["mole-up"])) { var at = drawMoleArt(x, y, r, m, vis(m, clock)); if (at) later.push([m, at]); }
+        else drawMole(x, y, r, m, vis(m, clock));
+      });
       ell(x, y + r * .06, r * 1.25, r * .42, "#8B5A3C", true);
+      later.forEach(function (q) { drawSign(x, q[1].sy, r, q[0], false); if (q[0].state === "wrong") cross(x, q[1].cy, r); });
     });
     ctx.textBaseline = "middle";
     if (phase === "play" && q) {
@@ -535,8 +562,13 @@ var Buddy = (function () {
     Buddy.draw(ctx, { x: W / 2, y: foot, size: size, color: TEAM[turn], pose: pose(), t: performance.now() });
     if (phase === "play" && hand.seen) {
       var hx = hand.x * W, hy2 = hand.y * H, tilt = hx < W / 2 ? -1 : 1;
-      ctx.strokeStyle = "#C98A4B"; ctx.lineWidth = H * .014; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(hx, hy2); ctx.lineTo(hx + tilt * H * .035, hy2 - H * .06); ctx.stroke();
-      rr(hx + tilt * H * .045 - H * .035, hy2 - H * .1, H * .07, H * .04, H * .012, "#E5484D");
+      if (ready(ART.hammer)) {
+        var hs = H * .12, hw = hs * ART.hammer.naturalWidth / ART.hammer.naturalHeight;
+        ctx.save(); ctx.translate(hx, hy2 - hs * .95); if (tilt < 0) ctx.scale(-1, 1); ctx.drawImage(ART.hammer, -hw * .22, 0, hw, hs); ctx.restore();
+      } else {
+        ctx.strokeStyle = "#C98A4B"; ctx.lineWidth = H * .014; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(hx, hy2); ctx.lineTo(hx + tilt * H * .035, hy2 - H * .06); ctx.stroke();
+        rr(hx + tilt * H * .045 - H * .035, hy2 - H * .1, H * .07, H * .04, H * .012, "#E5484D");
+      }
       ctx.fillStyle = TEAM[turn]; ctx.beginPath(); ctx.arc(hx, hy2, H * .03, 0, 7); ctx.fill();
       ctx.strokeStyle = "#fff"; ctx.lineWidth = H * .004; ctx.beginPath(); ctx.arc(hx, hy2, H * .045, 0, 7); ctx.stroke();
       if (hand.target && hand.hold > 0) { ctx.lineWidth = H * .008; ctx.beginPath(); ctx.arc(hx, hy2, H * .05, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, hand.hold / DWELL)); ctx.stroke(); }
