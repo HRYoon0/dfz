@@ -74,15 +74,16 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <p class="lead">HTML 게임 「반대로 점프 술래 피하기」(G021, 회원님이 주신 HTML 파일)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 설정은 모두 원본대로 두었습니다(회원님 「모두 원본대로」). 이번부터는 <b>주개발자 게임과 같은 흐름</b>(참가 화면 → 입장 뒤 중요 동작 연습, 시작 자세로 바로 시작 → 게임 시작)을 게임 안에 넣었습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b></p>
   <div class="chips">
     <span class="chip">브랜치 <b>claude/g021-reverse-jump-tag-native</b></span>
-    <span class="chip">기준 <b>main</b> · PR 아직 안 만듦</span>
+    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/81">PR #81</a> 검토 대기</span>
     <span class="chip">새 파일 <b>18개</b>(+ .meta 12개) · 고친 파일 <b>0개</b></span>
     <span class="chip">검사 <b>59건 통과</b> · Unity 밖</span>
   </div>
-  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g021-reverse-jump-tag-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g021-reverse-jump-tag-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g021-reverse-jump-tag-native/docs/progress/2026-11-10-g021-reverse-jump-tag-native.md">진행 기록</a></p>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g021-reverse-jump-tag-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g021-reverse-jump-tag-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/81">PR #81</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g021-reverse-jump-tag-native/docs/progress/2026-11-10-g021-reverse-jump-tag-native.md">진행 기록</a></p>
 
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-10 20:01</span><span>main 대상 PR을 열었다(검토자 주개발자). 검증 대역의 InterpreterPhase를 실제 값으로 고치고 다시 검사 — 지난 #44·#45 Unity 컴파일 오류의 원인</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #81">PR #81</a></li>
 <li><span class="when">2026-11-10 19:55</span><span>확인 페이지 시작 화면: 한 줄에 두 설정이 섞여 읽기 어렵던 것을 항목마다 제목을 단 두 칸 격자로(체험판만 — 앱판 설정은 규칙 파일 칸)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/40c95596a">40c9559</a></li>
 <li><span class="when">2026-11-10 19:47</span><span>처음 변환 — 참가 → 동작 연습(보정·왼쪽·오른쪽·앉기·만세, 전원 통과, 두 팔 ㄴ자 0.25초면 바로 시작) → 3초 → 경기. 원본 설정 모두(1~2명, 난이도 1~3, 반대로·따라 하기·4문제마다, 박자 셋, 목숨·탈락, 글자 말 속임), 성공 +10·빠르기 보너스, 겨울 학교 놀이터 배경·술래 그림(GPT)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/4d7094e00">4d7094e</a></li>
 </ul>
