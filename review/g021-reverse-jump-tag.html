@@ -83,6 +83,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-10 19:55</span><span>확인 페이지 시작 화면: 한 줄에 두 설정이 섞여 읽기 어렵던 것을 항목마다 제목을 단 두 칸 격자로(체험판만 — 앱판 설정은 규칙 파일 칸)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/40c95596a">40c9559</a></li>
 <li><span class="when">2026-11-10 19:47</span><span>처음 변환 — 참가 → 동작 연습(보정·왼쪽·오른쪽·앉기·만세, 전원 통과, 두 팔 ㄴ자 0.25초면 바로 시작) → 3초 → 경기. 원본 설정 모두(1~2명, 난이도 1~3, 반대로·따라 하기·4문제마다, 박자 셋, 목숨·탈락, 글자 말 속임), 성공 +10·빠르기 보너스, 겨울 학교 놀이터 배경·술래 그림(GPT)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/4d7094e00">4d7094e</a></li>
 </ul>
 <!--@/HISTORY@-->
@@ -98,7 +99,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
 
   <h2>직접 해 보기</h2>
   <!--start-screen-->
-<style>.start .set{gap:7px}.start .opt .controls{gap:5px}.start .opt .controls button{padding:5px 11px;font-size:14px}.start .set h4{font-size:16px}</style>
+<style>#start{grid-template-columns:1fr 1fr}.start .set{gap:10px}.start .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}.start .grid2 .wide{grid-column:1/-1}.start .opt .controls{gap:5px}.start .opt .controls button{padding:5px 11px;font-size:14px}.start .set h4{font-size:16px}@media (max-width:760px){.start .grid2{grid-template-columns:1fr}}</style>
 <p class="note">C# 판정과 같은 규칙과 숫자로 움직입니다. 「게임 시작」을 누르면 앱처럼 <b>동작 연습</b>부터 합니다. 카메라 대신 <b>키보드</b>로 자세를 냅니다 — 1번: <b>A</b> 왼쪽 · <b>D</b> 오른쪽 · <b>S</b> 앉기 · <b>W</b> 만세 · <b>Q</b> 시작 자세, 2번: <b>← → ↓ ↑</b> · <b>/</b> 시작 자세(누르고 있는 동안 그 자세). 아무 키도 안 누르면 「선 위에 바르게 서기」입니다. Enter는 선생님의 「바로 시작」. 2번은 <b>자동 대결자</b>(체험판에만 있는 흉내, 0.25~0.7초 뒤 대개 맞게 움직임)로 둘 수 있습니다.</p>
   <div class="demo">
     <div class="stagewrap">
@@ -119,37 +120,45 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
         </div>
         <div class="set">
           <h4>경기 설정</h4>
-          <div class="opt"><span>대결자 · 난이도</span><div class="controls">
+          <div class="grid2">
+          <div class="opt"><span>대결자</span><div class="controls">
             <button data-players="1" aria-pressed="false">1명</button>
             <button data-players="2" aria-pressed="true">2명</button>
-            <button data-level="1" aria-pressed="false" title="좌우만">1단계</button>
-            <button data-level="2" aria-pressed="true" title="4자세 중 하나, 속임 1번">2단계</button>
-            <button data-level="3" aria-pressed="false" title="좌우+앉기/만세, 속임 2번">3단계</button>
           </div></div>
-          <div class="opt"><span>규칙</span><div class="controls">
+          <div class="opt"><span>난이도</span><div class="controls">
+            <button data-level="1" aria-pressed="false">1단계</button>
+            <button data-level="2" aria-pressed="true">2단계</button>
+            <button data-level="3" aria-pressed="false">3단계</button>
+          </div></div>
+          <div class="opt wide"><span>규칙</span><div class="controls">
             <button data-rule="opp" aria-pressed="true">반대로</button>
             <button data-rule="same" aria-pressed="false">따라 하기</button>
             <button data-rule="mix" aria-pressed="false">4문제마다 바뀜</button>
           </div></div>
-          <div class="opt"><span>박자 · 문제 수</span><div class="controls">
+          <div class="opt"><span>박자</span><div class="controls">
             <button data-speed="slow" aria-pressed="false">느림</button>
             <button data-speed="normal" aria-pressed="true">보통</button>
             <button data-speed="fast" aria-pressed="false">빠름</button>
+          </div></div>
+          <div class="opt"><span>문제 수</span><div class="controls">
             <button data-turns="10" aria-pressed="true">10</button>
             <button data-turns="15" aria-pressed="false">15</button>
             <button data-turns="20" aria-pressed="false">20</button>
           </div></div>
-          <div class="opt"><span>목숨 · 말 속임</span><div class="controls">
-            <button data-lives="3" aria-pressed="true">3</button>
-            <button data-lives="5" aria-pressed="false">5</button>
+          <div class="opt"><span>목숨</span><div class="controls">
+            <button data-lives="3" aria-pressed="true">3개</button>
+            <button data-lives="5" aria-pressed="false">5개</button>
             <button data-lives="99" aria-pressed="false">무제한</button>
-            <button data-trick="0" aria-pressed="true">속임 없음</button>
-            <button data-trick="1" aria-pressed="false">글자 속임</button>
           </div></div>
-          <div class="opt"><span>2번 대결자</span><div class="controls">
+          <div class="opt"><span>말 속임(고학년)</span><div class="controls">
+            <button data-trick="0" aria-pressed="true">없음</button>
+            <button data-trick="1" aria-pressed="false">글자로</button>
+          </div></div>
+          <div class="opt wide"><span>2번 대결자</span><div class="controls">
             <button data-bot="1" aria-pressed="true">자동</button>
             <button data-bot="0" aria-pressed="false">방향키</button>
           </div></div>
+          </div>
           <button class="go" id="go">게임 시작</button>
           <p class="safe"><b>안전</b> 착지할 때 무릎을 살짝 굽히기 · 두 대결자 사이 2m 이상 · 미끄럽지 않은 신발</p>
         </div>
