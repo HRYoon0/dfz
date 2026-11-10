@@ -30,6 +30,19 @@ ul.log .note{color:var(--muted);font-size:14px;white-space:nowrap}
 .card dt{color:var(--muted);font-weight:600}
 .card dd{margin:0;overflow-wrap:anywhere}
 .empty{color:var(--muted)}
+ul.games li{grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center}
+ul.games .stage{font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;min-width:9em;text-align:center;white-space:nowrap;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+ul.games .stage.app{background:var(--lime);border-color:var(--lime);color:#13202F}
+ul.games .stage.pr{border-color:#FFD66B;color:#FFD66B}
+ul.games .sub{display:block;color:var(--muted);font-size:14px}
+ul.games .links{font-size:14px;white-space:nowrap}
+ul.games .req{margin:0;justify-content:flex-end}
+.search{display:flex;gap:10px;align-items:center;margin:20px 0 4px}
+.search input{flex:1;font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.search input:focus{outline:2px solid var(--lime);outline-offset:1px}
+.search .count{color:var(--muted);font-size:14px;white-space:nowrap}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}ul.games li{grid-template-columns:minmax(0,1fr)}ul.games .req{justify-content:flex-start}}
+
 .req{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
 .req-btn{font:inherit;font-weight:700;font-size:14px;background:var(--bg);color:var(--ink);border:1px solid var(--lime);border-radius:999px;padding:5px 14px;cursor:pointer}
 .req-btn:hover{background:var(--lime);color:#13202F}
@@ -45,98 +58,44 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 .req-dlg .row button{font:inherit;font-weight:700;border-radius:10px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .req-dlg .row button.send{background:var(--lime);color:#13202F;border-color:var(--lime)}
 .req-dlg .msg{margin-right:auto;font-size:14px;color:#FFB4A8}
-@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
 </style>
 </head>
 <body>
 <main>
 <h1>디지털 핏 존 변환 기록</h1>
-<p class="lead">여러 사람이 만든 게임을 <a href="https://github.com/EduFit-Tech/digitalpe">EduFit-Tech/digitalpe</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)를 기준 브랜치 <code>main</code>에서 만들고, <code>main</code> 대상 PR로 올려 주개발자가 검토·병합합니다(2026-11-06부터 — 그전 기준은 <code>feature/stage-1-4a</code>). 날짜별에는 그날 변환하거나 고친 게임만 나옵니다. 게임 이름을 누르면 그 게임의 확인 페이지(고친 기록, 달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 고칠 점이 있으면 게임 카드의 「수정 요청」을 눌러 보내 주세요 — 요청이 들어온 게임에는 마지막 요청 날짜가 표시됩니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
-<h2>날짜별</h2>
-<h3>2026년 11월 10일 (화)</h3>
-<ul class="log">
-<li><span class="when">새 변환</span><span><a class="game" href="g021-reverse-jump-tag.html">G021 반대로 점프! 술래 피하기</a></span><span class="note">3건 · 마지막 20:01</span></li>
-</ul>
-<h3>2026년 11월 6일 (금)</h3>
-<ul class="log">
-<li><span class="when">업데이트</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a></span><span class="note">2건 · 마지막 19:11</span></li>
-<li><span class="when">업데이트</span><span><a class="game" href="g002-tilt-maze.html">G002 몸으로 탈출! 기울기 미로</a></span><span class="note">2건 · 마지막 19:11</span></li>
-<li><span class="when">업데이트</span><span><a class="game" href="g015-pair-archery.html">G015 짝카드 활쏘기</a></span><span class="note">2건 · 마지막 19:11</span></li>
-<li><span class="when">새 변환</span><span><a class="game" href="g017-answer-mole.html">G017 정답 두더지 잡기</a></span><span class="note">5건 · 마지막 19:11</span></li>
-</ul>
-<h3>2026년 11월 4일 (수)</h3>
-<ul class="log">
-<li><span class="when">업데이트</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a></span><span class="note">1건 · 마지막 09:11</span></li>
-<li><span class="when">새 변환</span><span><a class="game" href="g002-tilt-maze.html">G002 몸으로 탈출! 기울기 미로</a></span><span class="note">3건 · 마지막 09:11</span></li>
-<li><span class="when">새 변환</span><span><a class="game" href="g015-pair-archery.html">G015 짝카드 활쏘기</a></span><span class="note">4건 · 마지막 09:11</span></li>
-</ul>
-<h3>2026년 11월 3일 (화)</h3>
-<ul class="log">
-<li><span class="when">새 변환</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a></span><span class="note">6건 · 마지막 22:53</span></li>
-</ul>
+<p class="lead">여러 사람이 만든 게임을 <a href="https://github.com/EduFit-Tech/digitalpe">EduFit-Tech/digitalpe</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)를 기준 브랜치 <code>main</code>에서 만들고, <code>main</code> 대상 PR로 올려 주개발자가 검토·병합합니다(2026-11-06부터 — 그전 기준은 <code>feature/stage-1-4a</code>). 날짜별에는 그날 변환하거나 고친 게임만 나옵니다. 게임 이름을 누르면 그 게임의 확인 페이지(고친 기록, 달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 고칠 점이 있으면 게임 줄의 「수정 요청」을 눌러 보내 주세요 — 요청이 들어온 게임에는 마지막 요청 날짜가 표시됩니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
+<div class="search"><input type="search" id="q" placeholder="게임 찾기 — 이름, 번호(G021), 만든 사람, 원본" aria-label="게임 찾기"><span class="count" id="q-count"></span></div>
 <h2>게임별 (5개)</h2>
-<div class="cards">
-<article class="card">
-<h3><a href="g021-reverse-jump-tag.html">G021 반대로 점프! 술래 피하기</a></h3>
-<dl>
-<dt>만든 사람</dt><dd>미기재</dd>
-<dt>원본</dt><dd>반대로 점프 술래 피하기 (회원님이 주신 HTML 파일 G021 — 웹캠 자세 인식 1~2명, 보정, 난이도·규칙·박자·목숨·말 속임, 소스 끝까지 읽음)</dd>
-<dt>변환 결과</dt><dd>C# 판정·연습·감독·무대 + 검사 59건, 규칙 파일 초안 1개. 처음으로 주개발자 흐름(참가 → 동작 연습, 시작 자세로 바로 시작 → 게임)을 넣음. 설정은 모두 원본대로, 칸마다 내 자세 콩콩이, 술래 GPT 그림 셋, 겨울 학교 놀이터 배경</dd>
-<dt>상태</dt><dd>PR #81 (main) — 주개발자 검토·병합 대기, 앱 연결 전</dd>
-<dt>처음 · 마지막</dt><dd>2026-11-10 · 2026-11-10 (고친 횟수 3)</dd>
-<dt>브랜치</dt><dd><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g021-reverse-jump-tag-native">claude/g021-reverse-jump-tag-native</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g021-reverse-jump-tag-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/81">PR #81</a></dd>
-</dl>
-<div class="req" data-slug="g021-reverse-jump-tag" data-title="G021 반대로 점프! 술래 피하기" data-page="g021-reverse-jump-tag.html"><button type="button" class="req-btn">수정 요청</button><span class="req-mark" hidden></span></div>
-</article>
-<article class="card">
-<h3><a href="color-band.html">색깔 띠 잡아 오기</a></h3>
-<dl>
-<dt>만든 사람</dt><dd>미기재</dd>
-<dt>원본</dt><dd>색깔띠_잡아오기.html (HTML 게임, 웹캠·리모컨 1:1 대결)</dd>
-<dt>변환 결과</dt><dd>C# 판정·감독·무대 + 검사 40건, 규칙 파일 초안 2개(기본·함정 신호)</dd>
-<dt>상태</dt><dd>PR #43 병합(11-06) → 주개발자가 앱에 연결(PR #59, 11-08) → 설치본 0.9.276부터 앱에 들어 있음</dd>
-<dt>처음 · 마지막</dt><dd>2026-11-03 · 2026-11-06 (고친 횟수 9)</dd>
-<dt>브랜치</dt><dd><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/color-band-native">claude/color-band-native</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/color-band-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/43">PR #43</a></dd>
-</dl>
-<div class="req" data-slug="color-band" data-title="색깔 띠 잡아 오기" data-page="color-band.html"><button type="button" class="req-btn">수정 요청</button><span class="req-mark" hidden></span></div>
-</article>
-<article class="card">
-<h3><a href="g002-tilt-maze.html">G002 몸으로 탈출! 기울기 미로</a></h3>
-<dl>
-<dt>만든 사람</dt><dd>미기재</dd>
-<dt>원본</dt><dd>G002 기울기 미로 팀 챌린지 (HTML 게임, https://graceful-sprite-e19918.netlify.app/ — 팀 교대, 폰 기울기·micro:bit·키보드)</dd>
-<dt>변환 결과</dt><dd>C# 판정·감독·무대 + 검사 32건, 규칙 파일 초안 1개(보통). 1~30명 동시 개인전, 별 +1 · 출구 +5</dd>
-<dt>상태</dt><dd>PR #44 병합(11-06) → 주개발자가 앱에 연결(PR #59, 11-08) → 설치본 0.9.276부터 앱에 들어 있음</dd>
-<dt>처음 · 마지막</dt><dd>2026-11-04 · 2026-11-06 (고친 횟수 5)</dd>
-<dt>브랜치</dt><dd><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g002-tilt-maze-native">claude/g002-tilt-maze-native</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g002-tilt-maze-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/44">PR #44</a></dd>
-</dl>
-<div class="req" data-slug="g002-tilt-maze" data-title="G002 몸으로 탈출! 기울기 미로" data-page="g002-tilt-maze.html"><button type="button" class="req-btn">수정 요청</button><span class="req-mark" hidden></span></div>
-</article>
-<article class="card">
-<h3><a href="g015-pair-archery.html">G015 짝카드 활쏘기</a></h3>
-<dl>
-<dt>만든 사람</dt><dd>미기재</dd>
-<dt>원본</dt><dd>짝카드 활쏘기 (claude.ai 아티팩트 https://claude.ai/artifact/Eu4nAPYRmiGsQf7YAvy6Ag — 2~4모둠 차례, 마우스·터치로 활 조준, 소스는 못 읽고 놀아 보며 규칙 확인)</dd>
-<dt>변환 결과</dt><dd>C# 판정·감독·무대 + 검사 31건, 규칙 파일 초안 3개(2·3·4모둠). 폰·컨트롤러 조준(앞으로 = 위), 모둠 차례전, 짝 +1</dd>
-<dt>상태</dt><dd>PR #45 병합(11-06) → 주개발자가 앱에 연결(PR #59, 11-08) → 설치본 0.9.276부터 앱에 들어 있음</dd>
-<dt>처음 · 마지막</dt><dd>2026-11-04 · 2026-11-06 (고친 횟수 6)</dd>
-<dt>브랜치</dt><dd><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g015-pair-archery-native">claude/g015-pair-archery-native</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g015-pair-archery-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/45">PR #45</a></dd>
-</dl>
-<div class="req" data-slug="g015-pair-archery" data-title="G015 짝카드 활쏘기" data-page="g015-pair-archery.html"><button type="button" class="req-btn">수정 요청</button><span class="req-mark" hidden></span></div>
-</article>
-<article class="card">
-<h3><a href="g017-answer-mole.html">G017 정답 두더지 잡기</a></h3>
-<dl>
-<dt>만든 사람</dt><dd>미기재</dd>
-<dt>원본</dt><dd>정답 두더지 잡기 (회원님이 주신 HTML 파일 G017 — 웹캠 손 인식·터치, 모둠 릴레이, 문항 세트 넷, 소스 끝까지 읽음)</dd>
-<dt>변환 결과</dt><dd>C# 판정·감독·무대 + 검사 39건, 규칙 파일 초안 3개(2·3·4모둠). 카메라 손목으로 손 대고 0.3초, 모든 모둠 동시 진행(한 판·60초, 먼저 잡은 손, 모둠마다 자기 색 콩콩이), 정답 +10·빠르기 보너스·오답 −5, 봄 농장 밭 배경, 두더지·망치 GPT 그림</dd>
-<dt>상태</dt><dd>PR #46 병합(11-06) → 주개발자가 앱에 연결(PR #59, 11-08) → 설치본 0.9.276부터 앱에 들어 있음</dd>
-<dt>처음 · 마지막</dt><dd>2026-11-06 · 2026-11-06 (고친 횟수 5)</dd>
-<dt>브랜치</dt><dd><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g017-answer-mole-native">claude/g017-answer-mole-native</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g017-answer-mole-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/46">PR #46</a></dd>
-</dl>
-<div class="req" data-slug="g017-answer-mole" data-title="G017 정답 두더지 잡기" data-page="g017-answer-mole.html"><button type="button" class="req-btn">수정 요청</button><span class="req-mark" hidden></span></div>
-</article>
-</div>
+<ul class="log games">
+<li data-slug="g021-reverse-jump-tag" data-q="g021 반대로 점프! 술래 피하기 g021-reverse-jump-tag  반대로 점프 술래 피하기 (회원님이 주신 html 파일 g021 — 웹캠 자세 인식 1~2명, 보정, 난이도·규칙·박자·목숨·말 속임, 소스 끝까지 읽음) c# 판정·연습·감독·무대 + 검사 59건, 규칙 파일 초안 1개. 처음으로 주개발자 흐름(참가 → 동작 연습, 시작 자세로 바로 시작 → 게임)을 넣음. 설정은 모두 원본대로, 칸마다 내 자세 콩콩이, 술래 gpt 그림 셋, 겨울 학교 놀이터 배경 pr #81 검토 중"><span class="stage pr" title="PR #81 (main) — 주개발자 검토·병합 대기, 앱 연결 전">PR #81 검토 중</span><span><a class="game" href="g021-reverse-jump-tag.html">G021 반대로 점프! 술래 피하기</a><span class="sub">만든 사람 미기재 · 마지막 2026-11-10 · 고친 3건</span></span><span class="links"><a href="https://github.com/EduFit-Tech/digitalpe/pull/81">PR #81</a> · <a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g021-reverse-jump-tag-native">브랜치</a></span><div class="req" data-slug="g021-reverse-jump-tag" data-title="G021 반대로 점프! 술래 피하기" data-page="g021-reverse-jump-tag.html"><span class="req-mark" hidden></span><button type="button" class="req-btn">수정 요청</button></div></li>
+<li data-slug="color-band" data-q="색깔 띠 잡아 오기 color-band  색깔띠_잡아오기.html (html 게임, 웹캠·리모컨 1:1 대결) c# 판정·감독·무대 + 검사 40건, 규칙 파일 초안 2개(기본·함정 신호) 앱 포함"><span class="stage app" title="PR #43 병합(11-06) → 주개발자가 앱에 연결(PR #59, 11-08) → 설치본 0.9.276부터 앱에 들어 있음">앱 포함</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a><span class="sub">만든 사람 미기재 · 마지막 2026-11-06 · 고친 9건</span></span><span class="links"><a href="https://github.com/EduFit-Tech/digitalpe/pull/43">PR #43</a> · <a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/color-band-native">브랜치</a></span><div class="req" data-slug="color-band" data-title="색깔 띠 잡아 오기" data-page="color-band.html"><span class="req-mark" hidden></span><button type="button" class="req-btn">수정 요청</button></div></li>
+<li data-slug="g002-tilt-maze" data-q="g002 몸으로 탈출! 기울기 미로 g002-tilt-maze  g002 기울기 미로 팀 챌린지 (html 게임, https://graceful-sprite-e19918.netlify.app/ — 팀 교대, 폰 기울기·micro:bit·키보드) c# 판정·감독·무대 + 검사 32건, 규칙 파일 초안 1개(보통). 1~30명 동시 개인전, 별 +1 · 출구 +5 앱 포함"><span class="stage app" title="PR #44 병합(11-06) → 주개발자가 앱에 연결(PR #59, 11-08) → 설치본 0.9.276부터 앱에 들어 있음">앱 포함</span><span><a class="game" href="g002-tilt-maze.html">G002 몸으로 탈출! 기울기 미로</a><span class="sub">만든 사람 미기재 · 마지막 2026-11-06 · 고친 5건</span></span><span class="links"><a href="https://github.com/EduFit-Tech/digitalpe/pull/44">PR #44</a> · <a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g002-tilt-maze-native">브랜치</a></span><div class="req" data-slug="g002-tilt-maze" data-title="G002 몸으로 탈출! 기울기 미로" data-page="g002-tilt-maze.html"><span class="req-mark" hidden></span><button type="button" class="req-btn">수정 요청</button></div></li>
+<li data-slug="g015-pair-archery" data-q="g015 짝카드 활쏘기 g015-pair-archery  짝카드 활쏘기 (claude.ai 아티팩트 https://claude.ai/artifact/eu4napyrmigsqf7yavy6ag — 2~4모둠 차례, 마우스·터치로 활 조준, 소스는 못 읽고 놀아 보며 규칙 확인) c# 판정·감독·무대 + 검사 31건, 규칙 파일 초안 3개(2·3·4모둠). 폰·컨트롤러 조준(앞으로 = 위), 모둠 차례전, 짝 +1 앱 포함"><span class="stage app" title="PR #45 병합(11-06) → 주개발자가 앱에 연결(PR #59, 11-08) → 설치본 0.9.276부터 앱에 들어 있음">앱 포함</span><span><a class="game" href="g015-pair-archery.html">G015 짝카드 활쏘기</a><span class="sub">만든 사람 미기재 · 마지막 2026-11-06 · 고친 6건</span></span><span class="links"><a href="https://github.com/EduFit-Tech/digitalpe/pull/45">PR #45</a> · <a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g015-pair-archery-native">브랜치</a></span><div class="req" data-slug="g015-pair-archery" data-title="G015 짝카드 활쏘기" data-page="g015-pair-archery.html"><span class="req-mark" hidden></span><button type="button" class="req-btn">수정 요청</button></div></li>
+<li data-slug="g017-answer-mole" data-q="g017 정답 두더지 잡기 g017-answer-mole  정답 두더지 잡기 (회원님이 주신 html 파일 g017 — 웹캠 손 인식·터치, 모둠 릴레이, 문항 세트 넷, 소스 끝까지 읽음) c# 판정·감독·무대 + 검사 39건, 규칙 파일 초안 3개(2·3·4모둠). 카메라 손목으로 손 대고 0.3초, 모든 모둠 동시 진행(한 판·60초, 먼저 잡은 손, 모둠마다 자기 색 콩콩이), 정답 +10·빠르기 보너스·오답 −5, 봄 농장 밭 배경, 두더지·망치 gpt 그림 앱 포함"><span class="stage app" title="PR #46 병합(11-06) → 주개발자가 앱에 연결(PR #59, 11-08) → 설치본 0.9.276부터 앱에 들어 있음">앱 포함</span><span><a class="game" href="g017-answer-mole.html">G017 정답 두더지 잡기</a><span class="sub">만든 사람 미기재 · 마지막 2026-11-06 · 고친 5건</span></span><span class="links"><a href="https://github.com/EduFit-Tech/digitalpe/pull/46">PR #46</a> · <a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g017-answer-mole-native">브랜치</a></span><div class="req" data-slug="g017-answer-mole" data-title="G017 정답 두더지 잡기" data-page="g017-answer-mole.html"><span class="req-mark" hidden></span><button type="button" class="req-btn">수정 요청</button></div></li>
+</ul>
+<p class="empty" id="q-empty" hidden>찾는 게임이 없습니다.</p>
+<h2>날짜별</h2>
+<section class="day"><h3>2026년 11월 10일 (화)</h3>
+<ul class="log">
+<li data-slug="g021-reverse-jump-tag"><span class="when">새 변환</span><span><a class="game" href="g021-reverse-jump-tag.html">G021 반대로 점프! 술래 피하기</a></span><span class="note">3건 · 마지막 20:01</span></li>
+</ul></section>
+<section class="day"><h3>2026년 11월 6일 (금)</h3>
+<ul class="log">
+<li data-slug="color-band"><span class="when">업데이트</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a></span><span class="note">2건 · 마지막 19:11</span></li>
+<li data-slug="g002-tilt-maze"><span class="when">업데이트</span><span><a class="game" href="g002-tilt-maze.html">G002 몸으로 탈출! 기울기 미로</a></span><span class="note">2건 · 마지막 19:11</span></li>
+<li data-slug="g015-pair-archery"><span class="when">업데이트</span><span><a class="game" href="g015-pair-archery.html">G015 짝카드 활쏘기</a></span><span class="note">2건 · 마지막 19:11</span></li>
+<li data-slug="g017-answer-mole"><span class="when">새 변환</span><span><a class="game" href="g017-answer-mole.html">G017 정답 두더지 잡기</a></span><span class="note">5건 · 마지막 19:11</span></li>
+</ul></section>
+<section class="day"><h3>2026년 11월 4일 (수)</h3>
+<ul class="log">
+<li data-slug="color-band"><span class="when">업데이트</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a></span><span class="note">1건 · 마지막 09:11</span></li>
+<li data-slug="g002-tilt-maze"><span class="when">새 변환</span><span><a class="game" href="g002-tilt-maze.html">G002 몸으로 탈출! 기울기 미로</a></span><span class="note">3건 · 마지막 09:11</span></li>
+<li data-slug="g015-pair-archery"><span class="when">새 변환</span><span><a class="game" href="g015-pair-archery.html">G015 짝카드 활쏘기</a></span><span class="note">4건 · 마지막 09:11</span></li>
+</ul></section>
+<section class="day"><h3>2026년 11월 3일 (화)</h3>
+<ul class="log">
+<li data-slug="color-band"><span class="when">새 변환</span><span><a class="game" href="color-band.html">색깔 띠 잡아 오기</a></span><span class="note">6건 · 마지막 22:53</span></li>
+</ul></section>
 </main>
 <dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h">
 <form method="dialog">
@@ -183,6 +142,20 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
         msg.textContent = String(err.message) === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 보내 주세요.' : '보내지 못했어요. 다시 보내 주세요.'; });
   });
   load();
+})();
+</script>
+<script>
+(function(){
+  var q = document.getElementById('q'), count = document.getElementById('q-count'), empty = document.getElementById('q-empty');
+  var games = [].slice.call(document.querySelectorAll('ul.games li'));
+  function run(){
+    var words = q.value.toLowerCase().split(/\s+/).filter(Boolean), shown = {}, n = 0;
+    games.forEach(function(li){ var ok = words.every(function(w){ return li.dataset.q.indexOf(w) >= 0; }); li.hidden = !ok; if (ok) { shown[li.dataset.slug] = 1; n++; } });
+    document.querySelectorAll('section.day').forEach(function(sec){
+      var any = false; sec.querySelectorAll('li').forEach(function(li){ var ok = !!shown[li.dataset.slug]; li.hidden = !ok; any = any || ok; }); sec.hidden = !any; });
+    count.textContent = words.length ? n + '개' : ''; empty.hidden = n > 0;
+  }
+  q.addEventListener('input', run);
 })();
 </script>
 </body>

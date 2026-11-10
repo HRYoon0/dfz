@@ -80,6 +80,74 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   </div>
   <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g002-tilt-maze-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g002-tilt-maze-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/44">PR #44</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-tilt-maze-native/docs/progress/2026-11-04-g002-tilt-maze-native.md">진행 기록</a></p>
 
+  <!--@REQUEST@-->
+<style>
+.req{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+.req-btn{font:inherit;font-weight:700;font-size:14px;background:var(--bg);color:var(--ink);border:1px solid var(--lime);border-radius:999px;padding:5px 14px;cursor:pointer}
+.req-btn:hover{background:var(--lime);color:#13202F}
+.req-mark{font-size:14px;font-weight:650;color:#13202F;background:#FFD66B;border-radius:999px;padding:3px 12px}
+.req-mark.done{background:var(--lime)}
+dialog.req-dlg{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:min(520px,92vw)}
+dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
+.req-dlg h3{margin:0 0 4px}
+.req-dlg label{display:grid;gap:4px;margin-top:12px;font-weight:650;font-size:14px;color:var(--muted)}
+.req-dlg input,.req-dlg textarea{font:inherit;font-weight:450;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.req-dlg textarea{min-height:130px;resize:vertical}
+.req-dlg .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;align-items:center}
+.req-dlg .row button{font:inherit;font-weight:700;border-radius:10px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.req-dlg .row button.send{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.req-dlg .msg{margin-right:auto;font-size:14px;color:#FFB4A8}
+</style>
+<div class="req" data-slug="g002-tilt-maze" data-title="G002 몸으로 탈출! 기울기 미로" data-page="g002-tilt-maze.html" style="margin:14px 0 0"><button type="button" class="req-btn">이 게임 수정 요청</button><span class="req-mark" hidden></span></div>
+<dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h">
+<form method="dialog">
+<h3 id="req-h">수정 요청</h3>
+<div class="game" style="font-weight:700"></div>
+<label>요청한 사람(선택)<input name="who" maxlength="40" autocomplete="name"></label>
+<label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요"></textarea></label>
+<div class="row"><span class="msg" role="status"></span><button type="button" class="cancel">취소</button><button type="submit" class="send">보내기</button></div>
+</form>
+</dialog>
+<script>
+(function(){
+  var URL_ = "https://script.google.com/macros/s/AKfycbwRpKn6QXcB_kITjF_YPSyPDp8Dx9tiD84oj90SO8u2FfV6lLIcHy5StBsAhaPeLg-S/exec", PAGES = "https://hryoon0.github.io/dfz/review/";
+  // 응답이 없을 때 「보내는 중」이 영원히 돌지 않게 15초에 끊는다
+  function fetchJSON(url, opts, ms){ var c = new AbortController(), t = setTimeout(function(){ c.abort(); }, ms || 15000);
+    return fetch(url, Object.assign({}, opts, { signal: c.signal })).then(function(r){ return r.json(); }).finally(function(){ clearTimeout(t); }); }
+  function mark(slug, g){
+    var el = document.querySelector('.req[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
+    var day = String(g.last || '').slice(0, 10);
+    el.textContent = (g.status ? g.status + ' · ' : '수정 요청함 · ') + day + (g.count > 1 ? ' (' + g.count + '건)' : '');
+    el.title = '마지막 요청 ' + g.last;
+    el.classList.toggle('done', !!g.status); el.hidden = false;
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); }); }).catch(function(){}); }
+  var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
+  document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
+    cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
+    form.reset(); var n = localStorage.getItem('dfz-req-name'); if (n) W.who.value = n; dlg.showModal(); W.note.focus(); }); });
+  dlg.querySelector('.cancel').addEventListener('click', function(){ dlg.close(); });
+  form.addEventListener('submit', function(e){
+    e.preventDefault(); if (!cur) return;
+    var text = W.note.value.trim(); if (text.length < 2) { msg.textContent = '고칠 점을 적어 주세요.'; return; }
+    send.disabled = true; send.textContent = '보내는 중…'; msg.textContent = '';
+    localStorage.setItem('dfz-req-name', W.who.value.trim());
+    // text/plain — 브라우저가 사전 요청(OPTIONS)을 보내지 않게(Apps Script는 그것을 받지 못한다)
+    fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text }) })
+      .then(function(r){
+        if (!r || !r.ok) throw new Error(r && r.error || 'fail');
+        dlg.close(); load();
+        mark(cur.slug, { count: 1, last: r.at, status: '' });
+      })
+      .catch(function(err){ send.disabled = false; send.textContent = '다시 보내기';
+        msg.textContent = String(err.message) === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 보내 주세요.' : '보내지 못했어요. 다시 보내 주세요.'; });
+  });
+  load();
+})();
+</script>
+<!--@/REQUEST@-->
+
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">

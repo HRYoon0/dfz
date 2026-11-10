@@ -55,6 +55,21 @@ ul.log .note{color:var(--muted);font-size:14px;white-space:nowrap}
 .card dt{color:var(--muted);font-weight:600}
 .card dd{margin:0;overflow-wrap:anywhere}
 .empty{color:var(--muted)}
+ul.games li{grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center}
+ul.games .stage{font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;min-width:9em;text-align:center;white-space:nowrap;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+ul.games .stage.app{background:var(--lime);border-color:var(--lime);color:#13202F}
+ul.games .stage.pr{border-color:#FFD66B;color:#FFD66B}
+ul.games .sub{display:block;color:var(--muted);font-size:14px}
+ul.games .links{font-size:14px;white-space:nowrap}
+ul.games .req{margin:0;justify-content:flex-end}
+.search{display:flex;gap:10px;align-items:center;margin:20px 0 4px}
+.search input{flex:1;font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.search input:focus{outline:2px solid var(--lime);outline-offset:1px}
+.search .count{color:var(--muted);font-size:14px;white-space:nowrap}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}ul.games li{grid-template-columns:minmax(0,1fr)}ul.games .req{justify-content:flex-start}}
+"""
+
+REQUEST_CSS = """
 .req{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
 .req-btn{font:inherit;font-weight:700;font-size:14px;background:var(--bg);color:var(--ink);border:1px solid var(--lime);border-radius:999px;padding:5px 14px;cursor:pointer}
 .req-btn:hover{background:var(--lime);color:#13202F}
@@ -70,7 +85,6 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 .req-dlg .row button{font:inherit;font-weight:700;border-radius:10px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .req-dlg .row button.send{background:var(--lime);color:#13202F;border-color:var(--lime)}
 .req-dlg .msg{margin-right:auto;font-size:14px;color:#FFB4A8}
-@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
 """
 
 # 수정 요청 — Apps Script 웹앱(tools/review-requests/Code.gs)이 구글 시트 「게임 템플릿 100」의 탭 「수정 요청」에 받는다.
@@ -127,6 +141,31 @@ REQUEST_DIALOG = """<dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h"
 </dialog>"""
 
 
+def stage_of(g):
+    """상태 글을 한 낱말로 — 목록 줄 앞 표시. 자세한 글은 마우스를 올리면 보인다."""
+    if "앱에 들어" in g["status"]:
+        return "앱 포함", "app"
+    if g.get("pr"):
+        return f"PR #{g['pr']} 검토 중", "pr"
+    return "브랜치", ""
+
+
+SEARCH_JS = """
+(function(){
+  var q = document.getElementById('q'), count = document.getElementById('q-count'), empty = document.getElementById('q-empty');
+  var games = [].slice.call(document.querySelectorAll('ul.games li'));
+  function run(){
+    var words = q.value.toLowerCase().split(/\\s+/).filter(Boolean), shown = {}, n = 0;
+    games.forEach(function(li){ var ok = words.every(function(w){ return li.dataset.q.indexOf(w) >= 0; }); li.hidden = !ok; if (ok) { shown[li.dataset.slug] = 1; n++; } });
+    document.querySelectorAll('section.day').forEach(function(sec){
+      var any = false; sec.querySelectorAll('li').forEach(function(li){ var ok = !!shown[li.dataset.slug]; li.hidden = !ok; any = any || ok; }); sec.hidden = !any; });
+    count.textContent = words.length ? n + '개' : ''; empty.hidden = n > 0;
+  }
+  q.addEventListener('input', run);
+})();
+"""
+
+
 def build_index():
     # 날짜별에는 그날 손댄 게임만 한 줄씩 — 세세한 고친 기록은 게임 페이지의 「변환 기록」에 있다
     by_day = defaultdict(dict)
@@ -141,28 +180,24 @@ def build_index():
     for d in sorted(by_day, reverse=True):
         items = sorted(by_day[d].values(), key=lambda x: x["last"], reverse=True)
         lis = "\n".join(
-            f'<li><span class="when">{"새 변환" if x["new"] else "업데이트"}</span>'
+            f'<li data-slug="{E(x["game"]["slug"])}"><span class="when">{"새 변환" if x["new"] else "업데이트"}</span>'
             f'<span><a class="game" href="{E(x["game"]["page"])}">{E(x["game"]["title"])}</a></span>'
             f'<span class="note">{x["count"]}건 · 마지막 {E(x["last"])}</span></li>'
             for x in items)
-        days.append(f'<h3>{day_label(d)}</h3>\n<ul class="log">\n{lis}\n</ul>')
+        days.append(f'<section class="day"><h3>{day_label(d)}</h3>\n<ul class="log">\n{lis}\n</ul></section>')
 
-    cards = []
+    rows = []
     for g in sorted(DATA["games"], key=lambda g: max(h["date"] + h.get("time", "") for h in g["history"]), reverse=True):
-        first = min(h["date"] for h in g["history"])
         last = max(h["date"] for h in g["history"])
-        cards.append(f"""<article class="card">
-<h3><a href="{E(g['page'])}">{E(g['title'])}</a></h3>
-<dl>
-<dt>만든 사람</dt><dd>{E(g['author']) or '미기재'}</dd>
-<dt>원본</dt><dd>{E(g['source'])}</dd>
-<dt>변환 결과</dt><dd>{E(g['result'])}</dd>
-<dt>상태</dt><dd>{E(g['status'])}</dd>
-<dt>처음 · 마지막</dt><dd>{first} · {last} (고친 횟수 {len(g['history'])})</dd>
-<dt>브랜치</dt><dd><a href="{GH}/tree/{E(g['branch'])}">{E(g['branch'])}</a> · <a href="{GH}/compare/{E(DATA['base'])}...{E(g['branch'])}">기준과 비교</a>{f' · <a href="{GH}/pull/{g["pr"]}">PR #{g["pr"]}</a>' if g.get('pr') else ''}</dd>
-</dl>
-<div class="req" data-slug="{E(g['slug'])}" data-title="{E(g['title'])}" data-page="{E(g['page'])}"><button type="button" class="req-btn">수정 요청</button><span class="req-mark" hidden></span></div>
-</article>""")
+        label, cls = stage_of(g)
+        pr = f'<a href="{GH}/pull/{g["pr"]}">PR #{g["pr"]}</a> · ' if g.get("pr") else ""
+        q = " ".join([g["title"], g["slug"], g.get("author", ""), g["source"], g["result"], label]).lower()
+        rows.append(
+            f'<li data-slug="{E(g["slug"])}" data-q="{E(q)}"><span class="stage {cls}" title="{E(g["status"])}">{E(label)}</span>'
+            f'<span><a class="game" href="{E(g["page"])}">{E(g["title"])}</a>'
+            f'<span class="sub">만든 사람 {E(g["author"]) or "미기재"} · 마지막 {last} · 고친 {len(g["history"])}건</span></span>'
+            f'<span class="links">{pr}<a href="{GH}/tree/{E(g["branch"])}">브랜치</a></span>'
+            f'<div class="req" data-slug="{E(g["slug"])}" data-title="{E(g["title"])}" data-page="{E(g["page"])}"><span class="req-mark" hidden></span><button type="button" class="req-btn">수정 요청</button></div></li>')
 
     page = f"""<!doctype html>
 <html lang="ko">
@@ -172,36 +207,55 @@ def build_index():
 <title>디지털 핏 존 변환 기록</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<style>{CSS}</style>
+<style>{CSS}{REQUEST_CSS}</style>
 </head>
 <body>
 <main>
 <h1>디지털 핏 존 변환 기록</h1>
-<p class="lead">여러 사람이 만든 게임을 <a href="{GH}">{E(REPO)}</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)를 기준 브랜치 <code>{E(DATA['base'])}</code>에서 만들고, <code>{E(DATA['base'])}</code> 대상 PR로 올려 주개발자가 검토·병합합니다(2026-11-06부터 — 그전 기준은 <code>feature/stage-1-4a</code>). 날짜별에는 그날 변환하거나 고친 게임만 나옵니다. 게임 이름을 누르면 그 게임의 확인 페이지(고친 기록, 달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 고칠 점이 있으면 게임 카드의 「수정 요청」을 눌러 보내 주세요 — 요청이 들어온 게임에는 마지막 요청 날짜가 표시됩니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
+<p class="lead">여러 사람이 만든 게임을 <a href="{GH}">{E(REPO)}</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)를 기준 브랜치 <code>{E(DATA['base'])}</code>에서 만들고, <code>{E(DATA['base'])}</code> 대상 PR로 올려 주개발자가 검토·병합합니다(2026-11-06부터 — 그전 기준은 <code>feature/stage-1-4a</code>). 날짜별에는 그날 변환하거나 고친 게임만 나옵니다. 게임 이름을 누르면 그 게임의 확인 페이지(고친 기록, 달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 고칠 점이 있으면 게임 줄의 「수정 요청」을 눌러 보내 주세요 — 요청이 들어온 게임에는 마지막 요청 날짜가 표시됩니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
+<div class="search"><input type="search" id="q" placeholder="게임 찾기 — 이름, 번호(G021), 만든 사람, 원본" aria-label="게임 찾기"><span class="count" id="q-count"></span></div>
+<h2>게임별 ({len(DATA['games'])}개)</h2>
+<ul class="log games">
+{chr(10).join(rows)}
+</ul>
+<p class="empty" id="q-empty" hidden>찾는 게임이 없습니다.</p>
 <h2>날짜별</h2>
 {chr(10).join(days) if days else '<p class="empty">아직 기록이 없습니다.</p>'}
-<h2>게임별 ({len(DATA['games'])}개)</h2>
-<div class="cards">
-{chr(10).join(cards)}
-</div>
 </main>
 {REQUEST_DIALOG}
 <script>{REQUEST_JS}</script>
+<script>{SEARCH_JS}</script>
 </body>
 </html>
 """
     (REVIEW / "index.html").write_text(page, encoding="utf-8", newline="\n")
 
 
+def request_block(g):
+    """게임 페이지 머리의 「수정 요청」 — 목록과 같은 웹앱·같은 창."""
+    return (f'<!--@REQUEST@-->\n<style>{REQUEST_CSS}</style>\n'
+            f'<div class="req" data-slug="{E(g["slug"])}" data-title="{E(g["title"])}" data-page="{E(g["page"])}" style="margin:14px 0 0">'
+            f'<button type="button" class="req-btn">이 게임 수정 요청</button><span class="req-mark" hidden></span></div>\n'
+            f'{REQUEST_DIALOG}\n<script>{REQUEST_JS}</script>\n<!--@/REQUEST@-->')
+
+
 def build_game_pages():
     pat = re.compile(r"<!--@HISTORY@-->.*?<!--@/HISTORY@-->", re.S)
+    req = re.compile(r"<!--@REQUEST@-->.*?<!--@/REQUEST@-->", re.S)
     for g in DATA["games"]:
         p = REVIEW / g["page"]
         s = p.read_text(encoding="utf-8")
         block = f'<!--@HISTORY@-->\n<ul class="log">\n{history_rows(g)}\n</ul>\n<!--@/HISTORY@-->'
         if not pat.search(s):
             raise SystemExit(f"{p.name}에 <!--@HISTORY@--> 칸이 없다")
-        p.write_text(pat.sub(lambda _: block, s), encoding="utf-8", newline="\n")
+        s = pat.sub(lambda _: block, s)
+        # 수정 요청 칸 — 처음이면 「변환 기록」 제목 앞에 넣고, 다음부터는 그 자리를 다시 쓴다
+        if req.search(s):
+            s = req.sub(lambda _: request_block(g), s)
+        else:
+            assert s.count("<h2>변환 기록</h2>") == 1, p.name
+            s = s.replace("<h2>변환 기록</h2>", request_block(g) + "\n\n  <h2>변환 기록</h2>", 1)
+        p.write_text(s, encoding="utf-8", newline="\n")
 
 
 if __name__ == "__main__":
