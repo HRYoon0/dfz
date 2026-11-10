@@ -1,0 +1,717 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G021 반대로 점프! 술래 피하기 — C# 이식 확인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#202B3D; --surface:#30435A; --line:#46607E; --ink:#F4F8FF; --muted:#CCDCE9;
+  --lime:#D1F58E; --coral:#FF8A7A; --sun:#FFD66B;
+  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
+h2{font-size:22px;margin:44px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
+p{margin:0 0 12px}
+a{color:var(--lime)}
+.lead{color:var(--muted);max-width:46em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.chip b{color:var(--lime)}
+code{font-family:Consolas,'D2Coding',Menlo,monospace;font-size:.92em;background:#18212F;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-size:13px;font-weight:700}
+.wrap{overflow-x:auto}
+.demo{background:#141C29;border:1px solid var(--line);border-radius:14px;padding:12px}
+.demo canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:#1B2536;touch-action:none;cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button{font:inherit;font-weight:650;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 14px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.score{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:14px;font-weight:600}
+.score span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:14px}
+.ok{color:var(--lime);font-weight:700}
+.no{color:var(--coral);font-weight:700}
+ol li,ul li{margin-bottom:6px}
+.back{display:inline-block;margin-bottom:14px;font-weight:650;text-decoration:none}
+ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+
+.stagewrap{position:relative}
+.start{position:absolute;inset:0;border-radius:10px;background:#1B2536;display:grid;grid-template-columns:1.15fr .85fr;gap:20px;padding:22px 26px;overflow:auto;align-content:start}
+.start[hidden]{display:none}
+.start .eyebrow{color:var(--lime);font-weight:800;font-size:13px;letter-spacing:1px}
+.start h3{font-size:clamp(22px,2.6vw,32px);margin:4px 0 6px;font-weight:800;line-height:1.2}
+.start .lead2{margin:0 0 8px;color:var(--muted);font-size:15px;line-height:1.55}
+.start .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.start .tags span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:650}
+.start .how{background:#141C29;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.start .how b{font-size:14px}
+.start ol{margin:6px 0 0;padding-left:20px;font-size:15px;line-height:1.5}
+.start ol li{margin-bottom:3px}
+.start .set{display:grid;gap:12px;align-content:start}
+.start .set h4{margin:0;font-size:17px;font-weight:800}
+.start .opt>span{display:block;font-weight:700;font-size:14px;margin-bottom:4px;color:var(--muted)}
+.start .opt .controls{margin:0}
+.start .go{font:inherit;font-weight:800;font-size:18px;background:var(--lime);color:#13202F;border:0;border-radius:12px;padding:12px 18px;cursor:pointer}
+.start .safe{font-size:13px;color:var(--muted);background:#141C29;border:1px solid var(--line);border-radius:10px;padding:8px 10px;line-height:1.5;margin:0}
+@media (max-width:760px){.start{position:static;grid-template-columns:1fr;margin-bottom:10px}}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 변환 기록 전체</a>
+  <h1>G021 반대로 점프! 술래 피하기 — C# 이식 확인</h1>
+  <p class="lead">HTML 게임 「반대로 점프 술래 피하기」(G021, 회원님이 주신 HTML 파일)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 설정은 모두 원본대로 두었습니다(회원님 「모두 원본대로」). 이번부터는 <b>주개발자 게임과 같은 흐름</b>(참가 화면 → 입장 뒤 중요 동작 연습, 시작 자세로 바로 시작 → 게임 시작)을 게임 안에 넣었습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b></p>
+  <div class="chips">
+    <span class="chip">브랜치 <b>claude/g021-reverse-jump-tag-native</b></span>
+    <span class="chip">기준 <b>main</b> · PR 아직 안 만듦</span>
+    <span class="chip">새 파일 <b>18개</b>(+ .meta 12개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">검사 <b>59건 통과</b> · Unity 밖</span>
+  </div>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g021-reverse-jump-tag-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g021-reverse-jump-tag-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g021-reverse-jump-tag-native/docs/progress/2026-11-10-g021-reverse-jump-tag-native.md">진행 기록</a></p>
+
+  <h2>변환 기록</h2>
+  <!--@HISTORY@-->
+<ul class="log">
+<li><span class="when">2026-11-10 19:47</span><span>처음 변환 — 참가 → 동작 연습(보정·왼쪽·오른쪽·앉기·만세, 전원 통과, 두 팔 ㄴ자 0.25초면 바로 시작) → 3초 → 경기. 원본 설정 모두(1~2명, 난이도 1~3, 반대로·따라 하기·4문제마다, 박자 셋, 목숨·탈락, 글자 말 속임), 성공 +10·빠르기 보너스, 겨울 학교 놀이터 배경·술래 그림(GPT)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/4d7094e00">4d7094e</a></li>
+</ul>
+<!--@/HISTORY@-->
+
+  <h2>흐름 — 참가 → 동작 연습 → 시작</h2>
+  <div class="wrap"><table>
+    <tr><th>단계</th><th>누가</th><th>무엇</th></tr>
+    <tr><td>1. 참가 화면</td><td>앱(그대로)</td><td>카메라 앞에서 참가 자세 → 모두 준비 자세 → 안내 단계로</td></tr>
+    <tr><td>2. 입장 뒤 동작 연습</td><td><b>이 게임</b>(<code>ReverseJumpPractice</code>)</td><td>보정(선 위에 바르게 2초) → 왼쪽 → 오른쪽 → 앉기 → 만세 → 시작 자세. <b>단계마다 참가자 전원</b>이 0.3초 이어야 통과, 모두 통과하면 「잘했어요!」 0.8초 뒤 다음 단계. <b>어느 단계든 한 명이 두 팔을 ㄴ자로 올리고 0.25초</b> 버티면 연습을 건너뛰고 시작(만세 단계만 예외 — 만세와 헷갈리지 않게). 선생님은 앱의 「바로 시작」/Enter.</td></tr>
+    <tr><td>3. 게임 시작</td><td>앱 3초 세기 → 이 게임</td><td>연습에서 한 보정(선 자리·키)을 그대로 이어 쓴다. 연습을 건너뛰어 보정이 없으면 첫 「가운데로!」에서 바르게 선 자리로 보정</td></tr>
+  </table></div>
+  <p class="note">약속은 앱 물풍선 게임의 「동작 익히기」(<code>VisualGameGuide</code>, 2026-10-03 「워터파크 전원 연습」)와 같습니다 — 전원 통과, 0.8초 「잘했어요」, 시작 자세 0.25초. 그쪽은 물풍선에만 붙어 있는 공용 파일이라 고치지 않고, 같은 약속을 이 게임 감독 안에 넣었습니다. 앱 안내 단계에서 부르게 하는 연결은 「앱에 붙이려면」 2번입니다.</p>
+
+  <h2>직접 해 보기</h2>
+  <!--start-screen-->
+<style>.start .set{gap:7px}.start .opt .controls{gap:5px}.start .opt .controls button{padding:5px 11px;font-size:14px}.start .set h4{font-size:16px}</style>
+<p class="note">C# 판정과 같은 규칙과 숫자로 움직입니다. 「게임 시작」을 누르면 앱처럼 <b>동작 연습</b>부터 합니다. 카메라 대신 <b>키보드</b>로 자세를 냅니다 — 1번: <b>A</b> 왼쪽 · <b>D</b> 오른쪽 · <b>S</b> 앉기 · <b>W</b> 만세 · <b>Q</b> 시작 자세, 2번: <b>← → ↓ ↑</b> · <b>/</b> 시작 자세(누르고 있는 동안 그 자세). 아무 키도 안 누르면 「선 위에 바르게 서기」입니다. Enter는 선생님의 「바로 시작」. 2번은 <b>자동 대결자</b>(체험판에만 있는 흉내, 0.25~0.7초 뒤 대개 맞게 움직임)로 둘 수 있습니다.</p>
+  <div class="demo">
+    <div class="stagewrap">
+      <canvas id="cv" width="1600" height="900" tabindex="0" aria-label="반대로 점프 술래 피하기 체험판"></canvas>
+      <div class="start" id="start">
+        <div>
+          <div class="eyebrow">G021 · 체육 · 반응 대결</div>
+          <h3>반대로 점프! 술래 피하기</h3>
+          <p class="lead2">화면 속 술래가 속임 동작을 하다가 「점프!」에 맞춰 자세를 잡습니다. 술래와 <b>반대 자세</b>를 하면 성공! 카메라가 내 자세를 알아봅니다.</p>
+          <div class="how"><b>진행 방법</b>
+            <ol>
+              <li>카메라에서 3m쯤 떨어져 섭니다. 두 명이면 2m 이상 띄워 섭니다.</li>
+              <li>동작 연습: 선 위에 바르게 2초 서서 보정하고, 왼쪽·오른쪽·앉기·만세를 한 번씩 해 봅니다. 두 팔을 ㄴ자로 올리면 바로 시작!</li>
+              <li>문제마다 먼저 가운데에 바르게 섭니다. 「하나, 둘, 점프!」에 맞춰 술래와 반대 자세 — 왼쪽↔오른쪽, 앉기↔만세.</li>
+              <li>성공하면 10점 + 빠를수록 보너스(최대 5점), 틀리면 목숨이 하나 줄고 다 잃으면 탈락합니다.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="set">
+          <h4>경기 설정</h4>
+          <div class="opt"><span>대결자 · 난이도</span><div class="controls">
+            <button data-players="1" aria-pressed="false">1명</button>
+            <button data-players="2" aria-pressed="true">2명</button>
+            <button data-level="1" aria-pressed="false" title="좌우만">1단계</button>
+            <button data-level="2" aria-pressed="true" title="4자세 중 하나, 속임 1번">2단계</button>
+            <button data-level="3" aria-pressed="false" title="좌우+앉기/만세, 속임 2번">3단계</button>
+          </div></div>
+          <div class="opt"><span>규칙</span><div class="controls">
+            <button data-rule="opp" aria-pressed="true">반대로</button>
+            <button data-rule="same" aria-pressed="false">따라 하기</button>
+            <button data-rule="mix" aria-pressed="false">4문제마다 바뀜</button>
+          </div></div>
+          <div class="opt"><span>박자 · 문제 수</span><div class="controls">
+            <button data-speed="slow" aria-pressed="false">느림</button>
+            <button data-speed="normal" aria-pressed="true">보통</button>
+            <button data-speed="fast" aria-pressed="false">빠름</button>
+            <button data-turns="10" aria-pressed="true">10</button>
+            <button data-turns="15" aria-pressed="false">15</button>
+            <button data-turns="20" aria-pressed="false">20</button>
+          </div></div>
+          <div class="opt"><span>목숨 · 말 속임</span><div class="controls">
+            <button data-lives="3" aria-pressed="true">3</button>
+            <button data-lives="5" aria-pressed="false">5</button>
+            <button data-lives="99" aria-pressed="false">무제한</button>
+            <button data-trick="0" aria-pressed="true">속임 없음</button>
+            <button data-trick="1" aria-pressed="false">글자 속임</button>
+          </div></div>
+          <div class="opt"><span>2번 대결자</span><div class="controls">
+            <button data-bot="1" aria-pressed="true">자동</button>
+            <button data-bot="0" aria-pressed="false">방향키</button>
+          </div></div>
+          <button class="go" id="go">게임 시작</button>
+          <p class="safe"><b>안전</b> 착지할 때 무릎을 살짝 굽히기 · 두 대결자 사이 2m 이상 · 미끄럽지 않은 신발</p>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="home" hidden>처음 화면</button>
+      <button id="restart" style="margin-left:auto">다시</button>
+    </div>
+    <div class="score" id="score"></div>
+  </div>
+
+  <h2>HTML판에서 달라진 것</h2>
+  <div class="wrap"><table>
+    <tr><th>HTML판</th><th>앱판</th><th>까닭</th></tr>
+    <tr><td>설정 화면 → 보정(선 위에 2초) → 「준비!」 선생님이 길게 눌러 시작</td><td><b>앱 참가 화면 → 동작 연습(보정 + 네 자세, 시작 자세로 바로 시작) → 앱 3초 세기 → 경기</b></td><td>주개발자 게임 흐름(2026-11-10 회원님). 보정은 연습 첫 단계가 됐다</td></tr>
+    <tr><td>웹캠을 대결자 수만큼 칸으로 잘라 MediaPipe로 칸마다 한 사람</td><td>앱 카메라 골격, 사람마다 명단 번호로. 좌우 경계는 원본처럼 「칸 폭 × 5%」(칸 폭 = 화면 폭 ÷ 사람 수)</td><td>앱은 사람을 따로 따라간다</td></tr>
+    <tr><td>보정 건너뛰기(교사 메뉴) → 화면 가운데가 기준선</td><td>시작 자세로 연습을 건너뛰면 첫 「가운데로!」에서 <b>바르게 선 자리</b>로 보정</td><td>앱에서는 칸이 없어 「화면 가운데」가 그 사람의 선이 아니다</td></tr>
+    <tr><td>칸에 카메라 영상과 뼈대</td><td>칸마다 내 자세를 따라 하는 <b>콩콩이</b>(선 기준 왼쪽·가운데·오른쪽, 앉기·만세)와 자세 칩</td><td>카메라 화면을 보이지 않는 앱 규칙. 콩콩이는 앱 캐릭터</td></tr>
+    <tr><td>음성(하나·둘·점프!)·효과음, 말 속임은 음성</td><td>글자만. 말 속임은 「술래의 말: “오른쪽!”」 글자</td><td>앱에 음성(TTS)이 없다</td></tr>
+    <tr><td>점수 10 + round((1 − 반응/창) × 5)</td><td>성공 Touch +10, 보너스 Press +1 × 보너스</td><td>규칙 파일은 동작마다 점수가 정해져 있다</td></tr>
+    <tr><td>문제를 다 내거나 모두 탈락하면 결과 화면</td><td>같다 — 감독이 <code>Finished</code>를 알리면 앱이 <code>CompleteCourse</code>로 일찍 닫고 앱 결과 화면. 규칙 파일 <code>roundSeconds</code>는 상한(문제 수 × 10 + 20초)</td><td>앱 경기는 시간 칸이 있어야 한다</td></tr>
+    <tr><td>술래·배경은 코드 도형(남색 체육관)</td><td><b>술래 셋(서기·앉기·만세)과 배경(눈 덮인 겨울 학교 놀이터)은 GPT 그림</b>, 그림이 없으면 코드 도형</td><td>게임마다 다른 밝은 장면(11-06 회원님)</td></tr>
+    <tr><td>교사 메뉴(일시정지·다시 보정·끝내기·전체화면)</td><td>앱 메뉴가 맡는다</td><td>앱 공통 기능</td></tr>
+  </table></div>
+  <p class="note">그대로 옮긴 것: 대결자 1~2명, 난이도 1·2·3단계(속임 동작 0·1·2번), 규칙 반대로·따라 하기·4문제마다 바뀜, 박자 느림 0.8/1.7초·보통 0.62/1.3·빠름 0.48/1.0, 문제 10·15·20, 목숨 3·5·무제한, 말 속임, 가운데 0.45초 서기(4초 넘으면 그냥 시작), 속임 동작이 박자 55%에서 돌아옴, 판정은 창의 뒤 40%에서 맞은 자세가 절반 이상, 처음 맞은 뒤 0.15초 안에 풀리면 반응 시간 다시 재기, 앉기(엉덩이가 몸통 × 0.55 내려감 또는 무릎 115° 밑)·만세(두 손목이 어깨보다 몸통 × 0.35 위), 결과 1.9초·규칙 바뀜 1.8초.</p>
+
+  <h2>새 파일</h2>
+  <div class="wrap"><table id="files">
+    <tr><th>파일</th><th>무엇</th></tr>
+  </table></div>
+
+  <h2>검증한 것과 안 한 것</h2>
+  <ul>
+    <li><span class="ok">통과</span> 판정·연습·감독 검사 54건과 무대 검사 5건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소 main의 실제 파일(<code>Core/Input</code> 넷, <code>MatchActorKey</code>, <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었습니다.</li>
+    <li><span class="ok">골격으로 끝까지</span> 감독 검사는 골격 좌표만 넣어 연습 보정 → 시작 자세 → 경기 10문제를 돌리고, 흘린 Touch·Press가 판이 센 점수와 같은지 봅니다.</li>
+    <li><span class="ok">빨간불 확인</span> 판정·연습·감독 규칙 54개를 하나씩 끄면 모두 검사가 실패했습니다. 처음 돌렸을 때 6개(엉덩이만으로 앉기 · 시작 자세 팔 굽힘 · 시작 자세 두 팔 · 「절반 이상」 · 예정 시각 따라잡기 · 떠난 사람 기록 지우기)는 검사가 못 잡아서 검사를 더했고, 다시 끄면 모두 실패합니다.</li>
+    <li><span class="ok">컴파일</span> 무대 <code>UguiReverseJumpStage</code>를 main의 실제 <code>QuizArt.cs</code>와, 나머지 UI 함수의 실제 선언과 같은 모양의 대역에 대고 컴파일했습니다(경고 0, 오류 0).</li>
+    <li><span class="ok">체험판</span> 같은 규칙의 JS를 DOM 대역에서 60Hz·120Hz로 돌려 연습 → 시작 자세 → 3초 → 경기 → 끝을 확인했습니다.</li>
+    <li><span class="no">안 함</span> Unity 실행기, 실제 엔진 컴파일, 앱 화면 촬영, 실물 카메라(앉기·만세·시작 자세가 실제 골격으로 잘 읽히는지), 윈도 PC.</li>
+  </ul>
+
+  <h2>앱에 붙이려면</h2>
+  <ol>
+    <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>ReverseJump</code>, <code>FlowTypes.IsMovedHtmlGame</code>에 더하기, <code>FlowSpec</code>·검증기·스키마에 <code>reverseJumpLevel</code>(1~3)·<code>reverseJumpRule</code>(opp·same·mix)·<code>reverseJumpSpeed</code>(slow·normal·fast)·<code>reverseJumpTurns</code>(10·15·20)·<code>reverseJumpLives</code>(3·5·99)·<code>reverseJumpTrick</code>. 값은 <code>ReverseJumpSettings.From(...)</code>로 감독에.</li>
+    <li><b>연습(새로 잇는 곳)</b>: 안내 단계(<code>SessionState.Intro</code>)에서 이 게임이면 일반 안내 카드 대신 감독 연습을 돈다 — 들어올 때 <code>BeginPractice</code>, 장면마다 <code>SyncRoster</code> → <code>SyncPoses</code>(경기와 같은 <code>SnapshotPlayPoses</code>) → <code>TickPractice</code> → 무대 <code>SyncPractice</code>. <code>PracticeStartRequested</code>가 켜지면 <code>RequestSkipIntro()</code>(물풍선 연습이 시작 자세 때 부르는 것과 같은 길). 「바로 시작」 단추·Enter는 그대로.</li>
+    <li><b>경기</b>: <code>UguiNativeActivities</code>에서 다른 이식 게임처럼 <code>SyncRoster</code> → <code>SyncPoses</code> → <code>Tick(경기 시간, 판)</code> → 무대 <code>Sync</code>. <code>Finished</code>면 <code>runner.CompleteCourse(now)</code>. 감독은 연습과 경기에서 <b>같은 인스턴스</b>를 써야 보정이 이어집니다.</li>
+    <li><b>그림</b>: <code>stage.Backdrop = _hud.StageArt;</code>, 규칙 파일 <code>assets.icons</code>의 <code>suli_stand</code>·<code>suli_sit</code>·<code>suli_up</code>를 <code>SessionHud.ActivityArt</code>로 <code>SuliStandArt</code>·<code>SuliSitArt</code>·<code>SuliUpArt</code>에.</li>
+    <li><b>출시</b>: <code>StreamingAssets/games/g021-reverse-jump-tag/ruleset.json</code>와 <code>assets/images</code>, <code>GameTitles.FolderById</code>, 표지, 말 표(<code>reverseJump.*</code>, 진행 기록에 ko·en).</li>
+  </ol>
+
+  <h2>실물에서 봐 주셨으면 하는 것</h2>
+  <ul>
+    <li><b>좌우 경계</b> — 원본 「칸 폭 × 5%」를 「화면 폭 ÷ 사람 수 × 5%」로 옮겼습니다. 두 명이면 화면 폭의 2.5%라 꽤 예민합니다. 가만히 서 있어도 왼쪽·오른쪽으로 튀면 <code>SideDeadZone</code>을 키워야 합니다.</li>
+    <li><b>시작 자세</b> — 두 팔을 ㄴ자로 올리기(앱 물풍선과 같은 판정). 연습 중 앉기·만세를 하다가 우연히 시작되지 않는지, 반대로 아이들이 잘 해내는지.</li>
+    <li><b>앉기·만세</b> — 3m 거리에서 무릎·발목이 보이는지(안 보이면 엉덩이 높이만으로 앉기를 봅니다).</li>
+    <li>흰 눈밭 배경에서 칸·글자가 잘 보이는지(칸 판은 짙은 남색 78%).</li>
+  </ul>
+</main>
+<script>
+/* 콩콩이 — HRYoon0/dfz templates/buddy.js 그대로 */
+var Buddy = (function () {
+  'use strict';
+  var POSES = ['idle', 'raise', 'squat', 'jump', 'lean', 'cheer', 'oops'];
+  var ink = '#13202F';
+  var rim = 'rgba(255,255,255,.55)';
+  function oval(c, x, y, rx, ry, fill, edge) {
+    c.beginPath();
+    c.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
+    c.fillStyle = fill;
+    c.fill();
+    if (edge) { c.strokeStyle = edge; c.stroke(); }
+  }
+  function line(c, points, color, width) {
+    c.beginPath();
+    c.moveTo(points[0], points[1]);
+    for (var i = 2; i < points.length; i += 2) c.lineTo(points[i], points[i + 1]);
+    c.strokeStyle = color;
+    c.lineWidth = width;
+    c.stroke();
+  }
+  function body(c) {
+    c.beginPath();
+    c.moveTo(-29, -48);
+    c.bezierCurveTo(-29, -73, -15, -87, 1, -87);
+    c.bezierCurveTo(21, -87, 30, -69, 29, -51);
+    c.bezierCurveTo(39, -24, 23, -9, 1, -10);
+    c.bezierCurveTo(-24, -8, -39, -23, -29, -48);
+    c.closePath();
+  }
+  /* 발바닥 중앙이 원점인 높이 100의 설계 좌표. 모든 변형은 호출 안에서 복원한다. */
+  function draw(ctx, o) {
+    o = o || {};
+    var size = Number(o.size);
+    if (!(size > 0) || !isFinite(size)) return;
+    var pose = POSES.indexOf(o.pose) >= 0 ? o.pose : 'idle';
+    var t = typeof o.t === 'number' && isFinite(o.t) ? o.t : 0;
+    var color = o.color || '#D1F58E';
+    var mood = o.mood || (pose === 'oops' ? 'sad' : pose === 'idle' || pose === 'lean' || pose === 'squat' ? 'calm' : 'happy');
+    var breath = Math.sin(t / 650) * .012;
+    var blink = t > 0 && t % 3900 > 3750;
+    var crouch = pose === 'squat';
+    var airborne = pose === 'jump';
+    var angle = pose === 'lean' ? Math.max(-1, Math.min(1, Number(o.lean) || 0)) * .32 : pose === 'oops' ? Math.sin(t / 180) * .045 : 0;
+    ctx.save();
+    try {
+      ctx.translate(Number(o.x) || 0, Number(o.y) || 0);
+      ctx.scale(size / 100, size / 100);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.translate(0, airborne ? -10 - (1 + Math.sin(t / 240)) * 2 : 0);
+      ctx.rotate(angle);
+      ctx.scale(crouch ? 1.12 : 1 - breath / 2, crouch ? .73 : 1 + breath);
+      ctx.lineWidth = 2.2;
+      oval(ctx, -15, -6, 9, 5, color, rim);
+      oval(ctx, 15, -6, 9, 5, color, rim);
+      /* 팔은 몸 뒤에서 연결하고 둥근 끝을 사용한다. */
+      var lifted = pose === 'raise' || pose === 'cheer' || airborne;
+      [-1, 1].forEach(function (side) {
+        var endY = lifted ? (pose === 'raise' ? -80 : -68) : crouch ? -22 : -30;
+        line(ctx, [side * 25, -48, side * 39, endY], rim, 13);
+        line(ctx, [side * 25, -48, side * 39, endY], color, 9);
+      });
+      body(ctx);
+      ctx.fillStyle = color;
+      ctx.fill();
+      ctx.save();
+      try {
+        ctx.clip();
+        oval(ctx, 0, -10, 38, 12, 'rgba(0,0,0,.18)');
+      } finally { ctx.restore(); }
+      body(ctx);
+      ctx.strokeStyle = rim;
+      ctx.lineWidth = 2.2;
+      ctx.stroke();
+      /* 짧은 새싹 한 개와 잎 한 장. */
+      line(ctx, [0, -87, 0, -95], '#D1F58E', 2.8);
+      ctx.beginPath();
+      ctx.moveTo(0, -94);
+      ctx.bezierCurveTo(2, -100, 10, -99, 11, -97);
+      ctx.bezierCurveTo(9, -91, 3, -91, 0, -94);
+      ctx.fillStyle = '#D1F58E';
+      ctx.fill();
+      oval(ctx, -19, -49, 5, 3, '#FF8A7A');
+      oval(ctx, 19, -49, 5, 3, '#FF8A7A');
+      [-1, 1].forEach(function (side) {
+        var x = side * 11;
+        if (pose === 'oops') {
+          line(ctx, [x - 3, -63, x + 3, -57], ink, 2.8);
+          line(ctx, [x + 3, -63, x - 3, -57], ink, 2.8);
+        } else if (blink || pose === 'cheer') {
+          ctx.beginPath();
+          ctx.moveTo(x - 4, -58);
+          ctx.quadraticCurveTo(x, blink ? -58 : -65, x + 4, -58);
+          ctx.strokeStyle = ink;
+          ctx.lineWidth = 2.8;
+          ctx.stroke();
+        } else oval(ctx, x, -60, 3.8, 5, ink);
+      });
+      ctx.beginPath();
+      ctx.moveTo(-4, -48);
+      ctx.quadraticCurveTo(0, mood === 'sad' ? -53 : -42, 4, -48);
+      if (mood === 'happy') {
+        ctx.quadraticCurveTo(0, -36, -4, -48);
+        ctx.fillStyle = ink;
+        ctx.fill();
+        oval(ctx, 0, -43, 2.3, 1.4, '#FF8A7A');
+      } else {
+        ctx.strokeStyle = ink;
+        ctx.lineWidth = 2.3;
+        ctx.stroke();
+      }
+      if (o.label !== undefined && o.label !== null && String(o.label)) {
+        oval(ctx, 0, -27, 11, 10, 'rgba(255,255,255,.75)');
+        ctx.fillStyle = ink;
+        ctx.font = "bold 11px 'Malgun Gothic','Apple SD Gothic Neo',sans-serif";
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(Array.from(String(o.label)).slice(0, 3).join(''), 0, -26, 19);
+      }
+      if (crouch || airborne) {
+        ctx.lineWidth = 2.2;
+        oval(ctx, -17, -12, 8, 7, color, rim);
+        oval(ctx, 17, -12, 8, 7, color, rim);
+      }
+      if (pose === 'cheer') {
+        [-1, 1].forEach(function (s) {
+          line(ctx, [s * 35, -87, s * 40, -92], '#FFD66B', 3);
+          line(ctx, [s * 43, -77, s * 48, -79], '#FFD66B', 3);
+        });
+      }
+      if (pose === 'oops') {
+        ctx.beginPath();
+        for (var j = 0; j <= 24; j++) {
+          var a = j * .39;
+          var r = 1 + j * .17;
+          var px = 38 + Math.cos(a) * r;
+          var py = -83 + Math.sin(a) * r;
+          if (!j) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+        }
+        ctx.strokeStyle = '#F4F8FF';
+        ctx.lineWidth = 1.8;
+        ctx.stroke();
+      }
+    } finally { ctx.restore(); }
+  }
+  return { draw: draw, POSES: POSES.slice() };
+})();
+
+</script>
+<script>
+/* 새 파일 목록 */
+(function(){
+  var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/g021-reverse-jump-tag-native/";
+  var rows = [
+    ["unity/Assets/DigitalFitZone/Game/Play/ReverseJump/ReverseJumpSettings.cs", "놀이 값: 난이도·규칙·박자·문제 수·목숨·말 속임, 자세 판정 기준, 점수, 연습 값"],
+    ["unity/Assets/DigitalFitZone/Game/Play/ReverseJump/JumpBody.cs", "관절 → 자세(왼쪽·오른쪽·앉기·만세·바르게 서기·시작 자세)"],
+    ["unity/Assets/DigitalFitZone/Game/Play/ReverseJump/ReverseJumpRound.cs", "판: 가운데 서기 → 하나·둘(속임 동작) → 점프! → 판정, 목숨·탈락, 규칙 바뀜, 점수 순간"],
+    ["unity/Assets/DigitalFitZone/Game/Play/ReverseJump/ReverseJumpPractice.cs", "입장 뒤 동작 연습: 보정 → 네 자세 → 시작 자세, 전원 통과, 시작 자세로 바로 시작"],
+    ["unity/Assets/DigitalFitZone/Game/Play/ReverseJump/ReverseJumpScoring.cs", "성공 → Touch(+10), 빠르기 보너스 → Press(+1 × 보너스)"],
+    ["unity/Assets/DigitalFitZone/UI/Session/ReverseJumpDirector.cs", "감독: 명단 맞추기, 골격 → 관절, 연습·경기 밀기, Award, 끝 알림"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiReverseJumpStage.cs", "무대: 칸 | 술래 무대 | 칸, 콩콩이·목숨·점수·자세 칩, 술래 그림, 연습 화면"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/ReverseJumpRoundTests.cs", "판·자세 검사 33건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/ReverseJumpPracticeTests.cs", "연습 검사 11건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/ReverseJumpDirectorTests.cs", "감독 검사 10건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/ReverseJumpStageTests.cs", "무대 검사 5건"],
+    ["docs/progress/2026-11-10-g021-reverse-jump-tag-native.md", "진행 기록, 붙이는 길, 말 표"],
+    ["docs/progress/g021-reverse-jump-tag-rulesets/g021-reverse-jump-tag.ruleset.json", "규칙 파일 초안"],
+    ["docs/progress/g021-reverse-jump-tag-rulesets/assets/images/bg.jpg", "배경 그림 — 눈 덮인 겨울 학교 놀이터(GPT 생성)"],
+    ["docs/progress/g021-reverse-jump-tag-rulesets/assets/images/suli-stand.png", "술래 — 서기(GPT 생성, 오린 투명 PNG)"],
+    ["docs/progress/g021-reverse-jump-tag-rulesets/assets/images/suli-sit.png", "술래 — 앉기"],
+    ["docs/progress/g021-reverse-jump-tag-rulesets/assets/images/suli-up.png", "술래 — 만세"],
+    ["docs/progress/g021-reverse-jump-tag-review.html", "이 페이지 사본"]
+  ];
+  var t = document.getElementById("files");
+  rows.forEach(function(r){
+    var tr = document.createElement("tr"), a = document.createElement("a"), td1 = document.createElement("td"), td2 = document.createElement("td");
+    a.href = base + r[0]; a.textContent = r[0].replace("unity/Assets/DigitalFitZone/", "");
+    td1.appendChild(a); td2.textContent = r[1]; tr.appendChild(td1); tr.appendChild(td2); t.appendChild(tr);
+  });
+})();
+
+/* 체험판 — ReverseJumpRound.cs·ReverseJumpPractice.cs 와 같은 규칙과 숫자, 1/60초 고정 걸음(남은 시간을 쌓아 꺼낸다).
+   흐름은 앱과 같다: 시작 화면(참가) → 동작 연습(전원 통과, 시작 자세로 바로 시작) → 3초 → 경기 */
+(function(){
+  "use strict";
+  var STEP = 1 / 60, EPS = 1e-9;
+  var SPEED = { slow: { beat: 0.8, win: 1.7 }, normal: { beat: 0.62, win: 1.3 }, fast: { beat: 0.48, win: 1.0 } };
+  var CENTER_HOLD = 0.45, CENTER_MAX = 4, RULE_CHANGE = 1.8, JUDGE_SHOW = 1.9, FEINT_RETURN = 0.55, TAIL_FROM = 0.6, TAIL_PASS = 0.5, FLICKER = 0.15;
+  var SUCCESS = 10, BONUSMAX = 5, EASE = 0.07, CALIB_HOLD = 2, HOLD = 0.3, FEEDBACK = 0.8, START_HOLD = 0.25, COUNTDOWN = 3;
+  var COL = ["#3E7BFA", "#E5484D"], WORD = { L: "왼쪽", R: "오른쪽", SIT: "앉기", UP: "만세" };
+  var STEPS = ["calib", "L", "R", "SIT", "UP", "start"];
+  var STEP_SAY = { calib: "선 위에 바르게 서서 기다려요(2초)", L: "선 왼쪽으로 한 걸음!", R: "선 오른쪽으로 한 걸음!", SIT: "무릎 굽혀 쪼그려 앉기!", UP: "일어서서 두 팔 위로 만세!", start: "준비됐으면 두 팔을 ㄴ자로 올려요" };
+  var cfg = { players: 2, level: 2, rule: "opp", speed: "normal", turns: 10, lives: 3, trick: false, bot: true };
+  var started = false, stage, clock, acc, rng, botRng, P, R, PR, cd;
+  var keys = {};
+
+  function lcg(s) { return function () { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; }
+  function opp(v) { return v === "L" ? "R" : v === "R" ? "L" : v === "SIT" ? "UP" : v === "UP" ? "SIT" : v; }
+
+  // 사람 — 키보드(또는 자동)가 내는 자세
+  function newPlayer(i) { return { i: i, side: "C", vert: "N", startPose: false, calib: false, pts: 0, lives: cfg.lives, ok: 0, bad: 0, rts: 0, out: false, verdict: "", vpts: 0, tailT: 0, tailOk: 0, firstOk: NaN, hold: 0, startHold: 0, passed: false, bot: i === 1 && cfg.bot }; }
+  function upright(p) { return p.vert === "N" && !p.startPose; }
+  function centered(p) { return p.side === "C" && p.vert === "N" && !p.startPose; }
+
+  function reset() {
+    rng = lcg(21); botRng = lcg(77); clock = 0; acc = 0; cd = 0;
+    P = []; for (var i = 0; i < cfg.players; i++) P.push(newPlayer(i));
+    R = { phase: "idle", turn: 0, same: cfg.rule === "same", cmd: null, said: null, beatWord: "", start: 0, end: 0, centerHeld: 0, beat: -1, nextBeat: 0, feints: [], suli: { x: 0, c: 0, a: 0 }, target: { x: 0, c: 0, a: 0 } };
+    PR = { step: 0, advanceAt: NaN, startBy: -1 };
+    stage = "practice";
+  }
+
+  // ── 연습(ReverseJumpPractice)
+  function practiceStep(t) {
+    var name = STEPS[PR.step];
+    for (var i = 0; i < P.length; i++) {
+      var p = P[i], on = name !== "UP" && p.startPose;
+      p.startHold = on ? p.startHold + STEP : 0;
+      if (p.startHold >= START_HOLD - EPS) { PR.startBy = i; stage = "count"; cd = t; return; }
+    }
+    if (!isNaN(PR.advanceAt)) {
+      if (t >= PR.advanceAt - EPS) { PR.advanceAt = NaN; P.forEach(function (p) { p.passed = false; p.hold = 0; }); if (PR.step < STEPS.length - 1) PR.step++; }
+      return;
+    }
+    if (name === "start") return;
+    P.forEach(function (p) {
+      if (p.passed) return;
+      if (name === "calib") {
+        p.hold = upright(p) ? p.hold + STEP : Math.max(0, p.hold - STEP);
+        if (p.hold >= CALIB_HOLD - EPS) { p.calib = true; p.passed = true; }
+        return;
+      }
+      if (!p.calib && upright(p)) p.calib = true;
+      var doing = name === "L" || name === "R" ? p.side === name : p.vert === name;
+      p.hold = doing ? p.hold + STEP : 0;
+      if (p.hold >= HOLD - EPS) p.passed = true;
+    });
+    if (P.every(function (p) { return p.passed; })) PR.advanceAt = t + FEEDBACK;
+  }
+
+  // ── 경기(ReverseJumpRound)
+  function setPhase(ph, t) { R.phase = ph; R.start = t; }
+  function alive() { return P.filter(function (p) { return !p.out; }).length; }
+  function makeCmd() {
+    var side = rng() < 0.5 ? "L" : "R";
+    if (cfg.level <= 1) return { side: side, vert: null };
+    if (cfg.level === 2) { var k = Math.floor(rng() * 4); return k === 0 ? { side: "L", vert: null } : k === 1 ? { side: "R", vert: null } : k === 2 ? { side: null, vert: "SIT" } : { side: null, vert: "UP" }; }
+    return { side: side, vert: rng() < 0.5 ? "SIT" : "UP" };
+  }
+  function required() { var c = R.cmd; return R.same ? c : { side: opp(c.side), vert: opp(c.vert) }; }
+  function matches(p, q) { return (!q.side || p.side === q.side) && (!q.vert || p.vert === q.vert); }
+  function bonusOf(rt, win) { return Math.max(0, Math.floor((1 - rt / win) * BONUSMAX + 0.5)); }
+  function gameStart(t) {
+    P.forEach(function (p) { p.pts = 0; p.lives = cfg.lives; p.ok = 0; p.bad = 0; p.rts = 0; p.out = false; p.verdict = ""; });
+    R.turn = 0; R.same = cfg.rule === "same"; nextTurn(t);
+  }
+  function nextTurn(t) {
+    if (R.turn >= cfg.turns || alive() === 0) { setPhase("over", t); R.beatWord = ""; R.said = null; stage = "over"; return; }
+    R.turn++;
+    if (cfg.rule === "mix" && R.turn > 1 && (R.turn - 1) % 4 === 0) { R.same = !R.same; setPhase("rule", t); R.beatWord = "규칙이 바뀌었어요!"; R.end = t + RULE_CHANGE; return; }
+    enterCenter(t);
+  }
+  function enterCenter(t) { setPhase("center", t); R.centerHeld = 0; R.target = { x: 0, c: 0, a: 0 }; R.said = null; R.beatWord = "가운데로!"; P.forEach(function (p) { p.verdict = ""; }); }
+  function enterBeats(t) {
+    setPhase("beats", t); R.cmd = makeCmd(); R.feints = [];
+    for (var f = 0; f < Math.min(2, cfg.level - 1); f++) {
+      var left = rng() < 0.5, half = rng() < 0.5, c = rng() < 0.4 ? 0.5 : 0, a = rng() < 0.3 ? 0.6 : 0;
+      R.feints.push({ x: (left ? -1 : 1) * (half ? 0.45 : 0.7), c: c, a: a });
+    }
+    R.beat = -1; R.nextBeat = t; beatStep(t);
+  }
+  function beatStep(t) {
+    var b = SPEED[cfg.speed].beat;
+    if (R.beat >= 0 && R.beat < R.feints.length && t >= R.start + R.beat * b + b * FEINT_RETURN - EPS) R.target = { x: 0, c: 0.1, a: 0 };
+    while (t >= R.nextBeat - EPS) {
+      R.beat++;
+      if (R.beat >= 2) { jump(R.nextBeat); return; }
+      R.beatWord = R.beat === 0 ? "하나" : "둘";
+      R.target = R.beat < R.feints.length ? R.feints[R.beat] : { x: 0, c: 0.15, a: 0 };
+      R.nextBeat = R.start + (R.beat + 1) * b;
+    }
+  }
+  function jump(t) {
+    setPhase("respond", t); var c = R.cmd;
+    R.target = { x: c.side === "L" ? -1 : c.side === "R" ? 1 : 0, c: c.vert === "SIT" ? 1 : 0, a: c.vert === "UP" ? 1 : 0 };
+    R.beatWord = "점프!"; R.said = cfg.trick && c.side ? opp(c.side) : null; R.end = t + SPEED[cfg.speed].win;
+    P.forEach(function (p) { p.tailT = 0; p.tailOk = 0; p.firstOk = NaN; p.botAt = t + 0.25 + botRng() * 0.45; p.botRight = botRng() < 0.85; });
+  }
+  function judge(t) {
+    setPhase("judged", t); R.beatWord = ""; var win = SPEED[cfg.speed].win;
+    P.forEach(function (p) {
+      if (p.out) return;
+      var ok = p.tailT > 0 && p.tailOk / p.tailT >= TAIL_PASS;
+      if (ok) { var rt = isNaN(p.firstOk) ? win : p.firstOk, bonus = bonusOf(rt, win); p.rts += rt; p.ok++; p.pts += SUCCESS + bonus; p.verdict = "ok"; p.vpts = SUCCESS + bonus; }
+      else { p.bad++; if (cfg.lives < 99) p.lives--; p.verdict = "bad"; if (p.lives <= 0) { p.out = true; p.verdict = "out"; } }
+    });
+    R.end = t + JUDGE_SHOW;
+  }
+  function gameStep(t) {
+    var k = Math.min(1, STEP / EASE);
+    R.suli.x += (R.target.x - R.suli.x) * k; R.suli.c += (R.target.c - R.suli.c) * k; R.suli.a += (R.target.a - R.suli.a) * k;
+    if (R.phase === "rule") { if (t >= R.end - EPS) enterCenter(R.end); }
+    else if (R.phase === "center") {
+      var ready = true;
+      P.forEach(function (p) { if (p.out) return; if (!p.calib && upright(p)) p.calib = true; if (!centered(p)) ready = false; });
+      R.centerHeld = ready ? R.centerHeld + STEP : 0;
+      if (R.centerHeld > CENTER_HOLD + EPS || t - R.start > CENTER_MAX + EPS) enterBeats(t);
+    }
+    else if (R.phase === "beats") beatStep(t);
+    else if (R.phase === "respond") {
+      if (t >= R.end - EPS) { judge(R.end); return; }
+      var q = required(), since = t - R.start, win = SPEED[cfg.speed].win;
+      P.forEach(function (p) {
+        if (p.out) return;
+        var ok = matches(p, q);
+        if (since > win * TAIL_FROM) { p.tailT++; if (ok) p.tailOk++; }
+        if (ok && isNaN(p.firstOk)) p.firstOk = since; else if (!ok && !isNaN(p.firstOk) && since - p.firstOk < FLICKER) p.firstOk = NaN;
+      });
+    }
+    else if (R.phase === "judged") { if (t >= R.end - EPS) nextTurn(R.end); }
+  }
+
+  // ── 입력: 키보드(눌린 동안 그 자세) · 자동 대결자
+  var KEYMAP = { a: [0, "side", "L"], d: [0, "side", "R"], s: [0, "vert", "SIT"], w: [0, "vert", "UP"], q: [0, "start", true],
+                 "ㅁ": [0, "side", "L"], "ㅇ": [0, "side", "R"], "ㄴ": [0, "vert", "SIT"], "ㅈ": [0, "vert", "UP"], "ㅂ": [0, "start", true],
+                 ArrowLeft: [1, "side", "L"], ArrowRight: [1, "side", "R"], ArrowDown: [1, "vert", "SIT"], ArrowUp: [1, "vert", "UP"], "/": [1, "start", true] };
+  function readKeys() {
+    P.forEach(function (p) {
+      if (p.bot) return;
+      var side = "C", vert = "N", st = false;
+      Object.keys(keys).forEach(function (k) { var m = KEYMAP[k]; if (!m || !keys[k]) return; var who = cfg.players === 1 ? 0 : m[0]; if (who !== p.i) return; if (m[1] === "side") side = m[2]; else if (m[1] === "vert") vert = m[2]; else st = true; });
+      p.side = side; p.vert = vert; p.startPose = st;
+    });
+  }
+  function botMove(t) {
+    P.forEach(function (p) {
+      if (!p.bot) return;
+      p.side = "C"; p.vert = "N"; p.startPose = false;
+      if (stage === "practice") {
+        var name = STEPS[PR.step];
+        if (name === "L" || name === "R") p.side = name; else if (name === "SIT" || name === "UP") p.vert = name;
+      } else if (stage === "game" && R.phase === "respond" && t >= p.botAt) {
+        var q = p.botRight ? required() : R.cmd;   // 가끔 술래를 따라 해서 틀린다
+        if (q.side) p.side = q.side; if (q.vert) p.vert = q.vert;
+      }
+    });
+  }
+  function advance(t) {
+    readKeys(); botMove(t);
+    if (stage === "practice") practiceStep(t);
+    else if (stage === "count") { if (t - cd >= COUNTDOWN - EPS) { stage = "game"; gameStart(t); } }
+    else if (stage === "game") gameStep(t);
+  }
+  addEventListener("keydown", function (e) {
+    if (!started) return;
+    var k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (KEYMAP[k]) { keys[k] = true; e.preventDefault(); }
+    if (k === "Enter" && stage === "practice") { stage = "count"; cd = clock; e.preventDefault(); }   // 앱의 「바로 시작」
+  });
+  addEventListener("keyup", function (e) { var k = e.key.length === 1 ? e.key.toLowerCase() : e.key; keys[k] = false; });
+  addEventListener("blur", function () { keys = {}; });
+
+  // ── 그리기(UguiReverseJumpStage 와 같은 배치)
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var ART = {};
+  if (typeof Image !== "undefined") {
+    [["bg", "img/g021-reverse-jump-tag-bg.jpg"], ["stand", "img/g021-suli-stand.png"], ["sit", "img/g021-suli-sit.png"], ["up", "img/g021-suli-up.png"]]
+      .forEach(function (a) { var im = new Image(); im.src = a[1]; ART[a[0]] = im; });
+  }
+  function ready(im) { return im && im.complete && im.naturalWidth; }
+  function font(px) { return "800 " + Math.round(px) + "px Pretendard, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"; }
+  function rr(x, y, w, h, r, fill) { ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fillStyle = fill; ctx.fill(); }
+  function pill(x, y, w, h, text, size, fill, ink) { rr(x, y, w, h, h * .3, fill); ctx.fillStyle = ink; ctx.font = font(size); ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(text, x + w / 2, y + h / 2 + size * .04); }
+  function cmdText(c) { var s = c.side ? WORD[c.side] : "", v = c.vert ? WORD[c.vert] : ""; return s && v ? s + "에서 " + v : s || v; }
+  function layout() {
+    var two = P.length >= 2, total = two ? 3.25 : 2.25, gap = W * .01, inner = W - gap * (two ? 2 : 1), lw = inner / total, cw = inner * 1.25 / total;
+    var lanes = [{ x: 0, y: 0, w: lw, h: H }], center = { x: lw + gap, y: 0, w: cw, h: H };
+    if (two) lanes.push({ x: center.x + cw + gap, y: 0, w: lw, h: H });
+    return { lanes: lanes, center: center };
+  }
+  function heart(cx, cy, s, fill) { ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(cx - s * .5, cy - s * .15, s * .55, 0, 7); ctx.arc(cx + s * .5, cy - s * .15, s * .55, 0, 7); ctx.fill(); ctx.beginPath(); ctx.moveTo(cx - s * 1.02, cy); ctx.lineTo(cx + s * 1.02, cy); ctx.lineTo(cx, cy + s * 1.1); ctx.fill(); }
+  function drawLane(r, p, verdicts) {
+    var rim = verdicts && p.verdict === "ok" ? "#4FD18B" : verdicts && p.verdict ? "#FF6B6B" : "rgba(243,241,234,.35)";
+    rr(r.x - 3, r.y - 3, r.w + 6, r.h + 6, r.w * .05 + 3, rim); rr(r.x, r.y, r.w, r.h, r.w * .05, "rgba(20,33,58,.78)");
+    ctx.fillStyle = "rgba(255,210,63,.8)"; for (var y = r.h * .14; y < r.h * .86; y += r.h * .051) ctx.fillRect(r.x + r.w / 2 - r.w * .006, y, r.w * .012, r.h * .03);
+    var m = H * .03;
+    ctx.textBaseline = "middle"; ctx.textAlign = "left"; ctx.fillStyle = COL[p.i]; ctx.font = font(m * 1.2); ctx.fillText("P" + (p.i + 1) + (p.bot ? " (자동)" : ""), r.x + r.w * .05, r.y + m * .9);
+    ctx.textAlign = "right"; ctx.fillStyle = "#F3F1EA"; ctx.font = font(m * 2); ctx.fillText(String(p.pts), r.x + r.w * .95, r.y + m * 1.2);
+    if (cfg.lives < 99) for (var k = 0; k < cfg.lives; k++) heart(r.x + r.w * .05 + m * .5 + k * m * 1.2, r.y + m * 2.1, m * .5, k < p.lives ? "#FF6B6B" : "rgba(243,241,234,.25)");
+    var pose = p.out ? "oops" : verdicts && p.verdict === "ok" ? "cheer" : verdicts && p.verdict ? "oops" : p.vert === "SIT" ? "squat" : p.vert === "UP" ? "raise" : p.side !== "C" ? "lean" : "idle";
+    var bx = r.x + r.w * (0.5 + (p.side === "L" ? -0.2 : p.side === "R" ? 0.2 : 0));   // UguiReverseJumpStage.BuddyStep·BuddyHeight
+    if (typeof Buddy !== "undefined") Buddy.draw(ctx, { x: bx, y: r.y + r.h * .86, size: r.h * .34, color: COL[p.i], pose: pose, lean: p.side === "L" ? -.35 : p.side === "R" ? .35 : 0, t: performance.now() + p.i * 370 });
+    if (p.startPose) { ctx.strokeStyle = "#FFD23F"; ctx.lineWidth = H * .008; ctx.beginPath(); ctx.arc(bx, r.y + r.h * .55, r.h * .2, 0, 7); ctx.stroke(); }
+    var cw = (r.w * .92 - 3 * r.w * .015) / 4, ch = m * 1.25;
+    ["L", "R", "SIT", "UP"].forEach(function (k2, j) {
+      var on = j < 2 ? p.side === k2 : p.vert === k2, cx = r.x + r.w * .04 + j * (cw + r.w * .015);
+      rr(cx, r.y + r.h * .9, cw, ch, ch / 2, on ? "#F3F1EA" : "rgba(20,33,58,.9)");
+      ctx.fillStyle = on ? "#14213A" : "#C4D0E4"; ctx.font = font(m * .75); ctx.textAlign = "center"; ctx.fillText(WORD[k2], cx + cw / 2, r.y + r.h * .9 + ch / 2);
+    });
+    if (p.out) rr(r.x, r.y, r.w, r.h, r.w * .05, "rgba(20,33,58,.55)");
+  }
+  function drawCourt(c) {
+    var floor = c.y + c.h * .8, m = H * .03;
+    rr(c.x, floor, c.w, c.h * .05, c.h * .02, "rgba(20,33,58,.35)");
+    ctx.fillStyle = "rgba(255,210,63,.85)"; for (var y = c.h * .27; y < floor; y += c.h * .054) ctx.fillRect(c.x + c.w / 2 - c.w * .004, y, c.w * .008, c.h * .03);
+    pill(c.x + c.w * .03, c.y + c.h * .27, c.w * .22, m * 1.3, "왼쪽", m * .85, "rgba(243,241,234,.94)", "#14213A");
+    pill(c.x + c.w * .75, c.y + c.h * .27, c.w * .22, m * 1.3, "오른쪽", m * .85, "rgba(243,241,234,.94)", "#14213A");
+  }
+  function drawSuli(c, s) {
+    var floor = c.y + c.h * .8, x = c.x + c.w * (0.5 + s.x * 0.3), h = c.h * .42, which = s.a > 0.5 ? "up" : s.c > 0.5 ? "sit" : "stand";
+    ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.ellipse(x, floor, h * .38, h * .06, 0, 0, 7); ctx.fill();
+    var im = ready(ART[which]) ? ART[which] : ready(ART.stand) ? ART.stand : null;
+    if (im) { var ht = (which === "sit" ? h * .82 : h) * (which === "stand" ? 1 - .25 * s.c : 1), wd = ht * im.naturalWidth / im.naturalHeight; ctx.drawImage(im, x - wd / 2, floor - ht, wd, ht); return; }
+    ctx.fillStyle = "#FF8A3D"; ctx.beginPath(); ctx.ellipse(x, floor - h * .35, h * .28, h * .35 * (1 - .4 * s.c), 0, 0, 7); ctx.fill();
+  }
+  function demoPose(name) { var k = Math.max(0, Math.min(1, 0.5 + Math.sin(clock * 2.4) * 0.9)); return name === "L" ? { x: -.8 * k, c: 0, a: 0 } : name === "R" ? { x: .8 * k, c: 0, a: 0 } : name === "SIT" ? { x: 0, c: k, a: 0 } : name === "UP" ? { x: 0, c: 0, a: k } : { x: 0, c: 0, a: 0 }; }
+  function startFigure(cx, cy, s, ink) {
+    ctx.strokeStyle = ink; ctx.lineWidth = s * .14; ctx.lineCap = "round"; ctx.fillStyle = ink;
+    ctx.beginPath(); ctx.arc(cx, cy - s * .55, s * .2, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(cx, cy - s * .32); ctx.lineTo(cx, cy + s * .45);
+    [-1, 1].forEach(function (d) { ctx.moveTo(cx, cy - s * .2); ctx.lineTo(cx + d * s * .45, cy - s * .2); ctx.lineTo(cx + d * s * .45, cy - s * .75); ctx.moveTo(cx, cy + s * .45); ctx.lineTo(cx + d * s * .22, cy + s * .95); });
+    ctx.stroke();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    if (ready(ART.bg)) { ctx.drawImage(ART.bg, 0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.14)"; ctx.fillRect(0, 0, W, H); }
+    else { var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#A9D4F5"); g.addColorStop(.55, "#F2F6FB"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+    var sh = ctx.createLinearGradient(0, 0, 0, H * .2); sh.addColorStop(0, "rgba(0,0,0,.45)"); sh.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H * .2);
+    if (!P) return;
+    var L = layout(), c = L.center, m = H * .03, verdicts = stage === "game" && R.phase === "judged" || stage === "over";
+    P.forEach(function (p, i) {
+      var r = L.lanes[i]; drawLane(r, p, verdicts);
+      if (stage === "practice") {
+        var by = r.y + r.h * .4;
+        if (p.passed) pill(r.x + r.w * .2, by, r.w * .6, m * 1.8, "통과!", m * 1.3, "#4FD18B", "#14213A");
+        else if (STEPS[PR.step] !== "start") { var w = r.w * .7, x = r.x + r.w * .15, need = PR.step === 0 ? CALIB_HOLD : HOLD; rr(x, by, w, m * .6, m * .3, "rgba(20,33,58,.85)"); var k = Math.min(1, p.hold / need); if (k > 0) rr(x, by, Math.max(m * .6, w * k), m * .6, m * .3, "#FFD23F"); }
+      } else if (verdicts && p.verdict) {
+        pill(r.x + r.w * .1, r.y + r.h * .36, r.w * .8, m * 3, p.verdict === "ok" ? "성공! +" + p.vpts : p.verdict === "out" ? "탈락" : "앗!", m * 2.2, p.verdict === "ok" ? "#4FD18B" : "#FF6B6B", "#14213A");
+      } else if (stage === "game" && R.phase === "center" && !p.out && !centered(p)) {
+        pill(r.x + r.w * .08, r.y + r.h * .4, r.w * .84, m * 1.5, "가운데에 바르게 서요", m, "rgba(243,241,234,.94)", "#14213A");
+      }
+    });
+    drawCourt(c);
+    if (stage === "practice" || stage === "count") {
+      var name = STEPS[PR.step], celebrating = !isNaN(PR.advanceAt);
+      pill(c.x + c.w * .15, c.y + c.h * .04, c.w * .7, m * 1.8, "동작 연습 " + (PR.step + 1) + " / " + STEPS.length, m * 1.1, "rgba(20,33,58,.94)", "#F3F1EA");
+      pill(c.x + c.w * .04, c.y + c.h * .15, c.w * .92, m * 2, stage === "count" ? "곧 시작해요!" : celebrating ? "잘했어요!" : STEP_SAY[name], m * (celebrating ? 1.6 : 1.15), celebrating ? "#4FD18B" : "#FFD23F", "#14213A");
+      drawSuli(c, demoPose(name));
+      var hy = c.y + c.h * .86, hh = m * 2.4, hx = c.x + c.w * .04, hw = c.w * .92;
+      rr(hx, hy, hw, hh, hh * .3, "rgba(20,33,58,.92)"); startFigure(hx + hh * .6, hy + hh * .5, hh * .42, name === "start" ? "#FFD23F" : "#F3F1EA");
+      ctx.fillStyle = "#F3F1EA"; ctx.font = font(m * .95); ctx.textAlign = "left"; ctx.fillText(name === "UP" ? "만세 단계가 끝나면 시작 자세로 시작해요" : "두 팔을 ㄴ자로 올리면 바로 시작", hx + hh * 1.2, hy + hh * .38);
+      var best = 0; P.forEach(function (p) { best = Math.max(best, p.startHold); });
+      rr(hx + hh * 1.2, hy + hh * .74, hw - hh * 1.5, hh * .12, hh * .06, "rgba(243,241,234,.25)"); if (best > 0) rr(hx + hh * 1.2, hy + hh * .74, (hw - hh * 1.5) * Math.min(1, best / START_HOLD), hh * .12, hh * .06, "#FFD23F");
+      if (stage === "count") { var n = Math.max(1, Math.ceil(COUNTDOWN - (clock - cd) - EPS)); ctx.fillStyle = "rgba(20,33,58,.55)"; ctx.fillRect(0, 0, W, H); ctx.fillStyle = "#FFD23F"; ctx.font = font(H * .3); ctx.textAlign = "center"; ctx.fillText(String(n), W / 2, H / 2); }
+    } else {
+      pill(c.x + c.w * .22, c.y + c.h * .04, c.w * .56, m * 2.2, R.same ? "따라 하기!" : "반대로!", m * 1.5, R.same ? "#4FD18B" : "#F3F1EA", "#14213A");
+      if (R.said) pill(c.x + c.w * .06, c.y + c.h * .16, c.w * .88, m * 1.4, "술래의 말: “" + WORD[R.said] + "!” (말 말고 움직임을 봐요)", m * .9, "#FFD23F", "#14213A");
+      drawSuli(c, R.suli);
+      var beat = stage === "over" ? "끝!" : R.phase === "judged" ? "술래: " + cmdText(R.cmd) + " → 정답: " + cmdText(required()) : R.beatWord;
+      if (beat) { var big = R.phase === "beats" || R.phase === "respond", sz = big ? m * 2.6 : m * 1.1; pill(c.x + c.w * .04, c.y + c.h * .86, c.w * .92, sz * 1.25, beat, sz, R.phase === "respond" ? "#FFD23F" : "rgba(243,241,234,.94)", "#14213A"); }
+      if (stage === "over") {
+        var best2 = Math.max.apply(null, P.map(function (p) { return p.pts; })), win = P.filter(function (p) { return p.pts === best2; });
+        pill(W * .3, H * .38, W * .4, H * .14, P.length === 1 ? best2 + "점!" : win.length > 1 ? "무승부!" : "P" + (win[0].i + 1) + " 승리!", H * .07, "#FFD23F", "#14213A");
+      }
+    }
+    var info = stage === "practice" ? "동작 연습 — 단계마다 모두 통과해야 다음으로 · 시작 자세(Q, 2번은 /)나 Enter로 바로 시작" : stage === "count" ? "3초 뒤 시작" : stage === "over" ? "경기 끝" : R.turn + " / " + cfg.turns + " 문제";
+    document.getElementById("score").innerHTML = "<span>" + info + "</span>" + P.map(function (p) {
+      var rt = p.ok ? (p.rts / p.ok).toFixed(2) + "초" : "-";
+      return "<span style='border-color:" + COL[p.i] + "'>P" + (p.i + 1) + (p.bot ? "(자동)" : "") + " " + p.pts + "점 · 성공 " + p.ok + " · 틀림 " + p.bad + " · 평균 반응 " + rt + (cfg.lives < 99 ? " · 목숨 " + Math.max(0, p.lives) : "") + "</span>";
+    }).join("");
+  }
+  var last = 0;
+  function frame(t) {
+    var now = t / 1000; if (!last) last = now;
+    var dt = Math.min(0.25, now - last); last = now;
+    if (started && dt > 0) { acc += dt; while (acc >= STEP) { acc -= STEP; clock += STEP; advance(clock); } }   /* 시작 화면에서는 멈춰 있다 */
+    draw(); requestAnimationFrame(frame);
+  }
+  function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
+  [["data-players", "players", true], ["data-level", "level", true], ["data-rule", "rule", false], ["data-speed", "speed", false], ["data-turns", "turns", true], ["data-lives", "lives", true], ["data-trick", "trick", "bool"], ["data-bot", "bot", "bool"]].forEach(function (o) {
+    document.querySelectorAll("[" + o[0] + "]").forEach(function (b) { b.onclick = function () { var v = b.getAttribute(o[0]); cfg[o[1]] = o[2] === "bool" ? v === "1" : o[2] ? +v : v; pick(o[0], v); reset(); }; });
+  });
+  document.getElementById("restart").onclick = function () { reset(); };
+  window.__startDemo = function () { reset(); started = true; keys = {}; if (cv.focus) cv.focus(); };
+  window.__stopDemo = function () { started = false; reset(); };
+  window.__g021 = {
+    state: function () { return { stage: stage, step: STEPS[PR.step], phase: R.phase, turn: R.turn, clock: clock, pts: P.map(function (p) { return p.pts; }), ok: P.map(function (p) { return p.ok; }), bad: P.map(function (p) { return p.bad; }), lives: P.map(function (p) { return p.lives; }), calib: P.map(function (p) { return p.calib; }) }; },
+    key: function (k, down) { keys[k] = !!down; },
+    set: function (o) { Object.keys(o).forEach(function (k) { cfg[k] = o[k]; }); reset(); },
+    required: function () { return R.cmd ? required() : null; }
+  };
+  reset(); requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* 시작 화면 — 「경기 시작」을 누르면 체험판이 돈다, 「처음 화면」이면 멈추고 돌아온다 */
+(function(){
+  var start = document.getElementById("start"), go = document.getElementById("go"), home = document.getElementById("home");
+  go.addEventListener("click", function(){ start.hidden = true; home.hidden = false; window.__startDemo(); });
+  home.addEventListener("click", function(){ window.__stopDemo(); start.hidden = false; home.hidden = true; go.focus(); });
+})();
+</script>
+</body>
+</html>
