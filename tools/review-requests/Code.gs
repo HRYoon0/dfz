@@ -2,7 +2,9 @@
  * 디지털 핏 존 변환 기록(https://hryoon0.github.io/dfz/review/)의 「수정 요청」을 구글 시트 탭에 받는다.
  *
  * - POST(본문 JSON, text/plain): { slug, title, page, name, text } → 탭 「수정 요청」에 한 줄. 답 { ok, at }.
- * - GET ?action=list: 게임마다 요청 수·마지막 요청 시각·마지막 처리 상태. 답 { ok, games: { slug: { count, last, status } } }.
+ * - GET ?action=list: 게임마다 요청 수·마지막 요청 시각·마지막 처리 상태와 요청 글 전부(댓글처럼 보여 준다).
+ *   답 { ok, games: { slug: { count, last, status, items: [{ at, name, text, status, reply }] } } }.
+ * - 답글은 시트 「답글」 칸(H열)에 적는다 — 페이지에서 그 요청 아래에 붙어 보인다.
  *
  * ★ 익명 웹앱(실행: 나 / 액세스: 모든 사용자)이라 내장 SpreadsheetApp 대신 처음부터 고급 Sheets 서비스(Sheets v4)를 쓴다.
  * ★ 쓰기는 LockService로 줄 세우고, 조회는 CacheService로 20초 묶는다(쓰면 지운다).
@@ -11,8 +13,9 @@
  */
 var SHEET_ID = '1YYFMoVyPWgdroDd1h4kDmHMoguyhsi9WuaZaH_my5xw';
 var TAB = '수정 요청';
-var HEAD = ['요청 시각', '게임 ID', '게임 제목', '요청한 사람', '수정 요청 내용', '확인 페이지', '처리 상태'];
-var LIST_KEY = 'list-v1';
+var HEAD = ['요청 시각', '게임 ID', '게임 제목', '요청한 사람', '수정 요청 내용', '확인 페이지', '처리 상태', '답글'];
+var LIST_KEY = 'list-v2';
+var TAB_KEY = 'tab-ok-v2';
 var LIMIT_PER_10MIN = 30;
 
 /** 받은 값을 검사해 시트 한 줄로. 틀리면 { ok:false, error }. 순수 함수(검사용). */
@@ -39,8 +42,9 @@ function summarize(rows) {
     var slug = String(r[1] || '');
     if (!slug) continue;
     var at = String(r[0] || '');
-    var g = games[slug] || (games[slug] = { count: 0, last: '', status: '' });
+    var g = games[slug] || (games[slug] = { count: 0, last: '', status: '', items: [] });
     g.count++;
+    g.items.push({ at: at, name: String(r[3] || ''), text: String(r[4] || ''), status: String(r[6] || ''), reply: String(r[7] || '') });
     if (at >= g.last) { g.last = at; g.status = String(r[6] || ''); }
   }
   return games;
@@ -52,6 +56,8 @@ function doGet(e) {
   try {
     var cached = cacheGet(LIST_KEY);
     if (cached) return json(cached);
+    ensureTab();   // 「답글」 머리칸이 없던 옛 탭에 채워 넣는다(6시간에 한 번)
+    // ponytail: 조회마다(20초 묶음) 탭 전체를 읽고, 95KB를 넘으면 묶음도 건너뛴다 — 요청이 수백 건을 넘으면 게임별 조회로 나눈다
     var res = { ok: true, games: summarize(readRows()) };
     cachePut(LIST_KEY, res, 20);
     return json(res);
@@ -86,22 +92,22 @@ function doPost(e) {
   }
 }
 
-/** 탭이 없으면 만들고 머리줄을 쓴다. 있으면 6시간 기억해 다시 묻지 않는다. */
+/** 탭이 없으면 만들고, 머리줄을 쓴다(있어도 다시 쓴다 — 새로 생긴 칸 이름이 들어가게). 6시간 기억해 다시 묻지 않는다. */
 function ensureTab() {
   var cache = CacheService.getScriptCache();
-  if (cache.get('tab-ok')) return;
+  if (cache.get(TAB_KEY)) return;
   var meta = Sheets.Spreadsheets.get(SHEET_ID, { fields: 'sheets.properties.title' });
   var has = (meta.sheets || []).some(function (s) { return s.properties.title === TAB; });
   if (!has) {
     Sheets.Spreadsheets.batchUpdate({ requests: [{ addSheet: { properties: { title: TAB, gridProperties: { frozenRowCount: 1 } } } }] }, SHEET_ID);
-    Sheets.Spreadsheets.Values.update({ values: [HEAD] }, SHEET_ID, "'" + TAB + "'!A1:G1", { valueInputOption: 'RAW' });
   }
-  cache.put('tab-ok', '1', 21600);
+  Sheets.Spreadsheets.Values.update({ values: [HEAD] }, SHEET_ID, "'" + TAB + "'!A1:H1", { valueInputOption: 'RAW' });
+  cache.put(TAB_KEY, '1', 21600);
 }
 
 function readRows() {
   try {
-    var res = Sheets.Spreadsheets.Values.get(SHEET_ID, "'" + TAB + "'!A2:G");
+    var res = Sheets.Spreadsheets.Values.get(SHEET_ID, "'" + TAB + "'!A2:H");
     return res.values || [];
   } catch (err) {
     if (String(err).indexOf('Unable to parse range') >= 0) return [];   // 탭이 아직 없다 — 요청 0건

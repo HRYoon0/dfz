@@ -96,6 +96,15 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 .req-dlg .row button{font:inherit;font-weight:700;border-radius:10px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .req-dlg .row button.send{background:var(--lime);color:#13202F;border-color:var(--lime)}
 .req-dlg .msg{margin-right:auto;font-size:14px;color:#FFB4A8}
+.req-dlg .open-note{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.req-thread{grid-column:1/-1;margin:8px 0 0;font-size:14px;font-weight:500}
+.req-thread summary{cursor:pointer;color:var(--muted);font-weight:650}
+.req-item{margin:8px 0 0;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.req-item .who{font-weight:700}
+.req-item .at{color:var(--muted);margin-left:8px}
+.req-item .st{margin-left:8px;font-weight:650;color:#13202F;background:var(--lime);border-radius:999px;padding:1px 10px}
+.req-item p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.req-reply{margin:8px 0 0 14px;padding:2px 0 2px 12px;border-left:3px solid var(--lime)}
 </style>
 <div class="req" data-slug="color-band" data-title="색깔 띠 잡아 오기" data-page="color-band.html" style="margin:14px 0 0"><button type="button" class="req-btn">이 게임 수정 요청</button><span class="req-mark" hidden></span></div>
 <dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h">
@@ -104,6 +113,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 <div class="game" style="font-weight:700"></div>
 <label>요청한 사람(선택)<input name="who" maxlength="40" autocomplete="name"></label>
 <label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요"></textarea></label>
+<p class="open-note">보낸 글과 이름은 이 페이지에 그대로 보입니다.</p>
 <div class="row"><span class="msg" role="status"></span><button type="button" class="cancel">취소</button><button type="submit" class="send">보내기</button></div>
 </form>
 </dialog>
@@ -120,7 +130,24 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
     el.title = '마지막 요청 ' + g.last;
     el.classList.toggle('done', !!g.status); el.hidden = false;
   }
-  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); }); }).catch(function(){}); }
+  // 받은 글은 남이 쓴 것이라 textContent로만 넣는다(태그를 적어 보내도 글자로 보인다)
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  // 요청 글과 답글을 댓글처럼 — 목록에서는 접어 두고, 게임 페이지에서는 펴 둔다
+  function thread(slug, g){
+    var req = document.querySelector('.req[data-slug="' + slug + '"]'); if (!req || !g || !g.items || !g.items.length) return;
+    var box = req.nextElementSibling;
+    if (!box || !box.classList.contains('req-thread')) { box = el('details', 'req-thread'); box.open = !req.closest('ul.games'); req.after(box); }
+    box.textContent = '';
+    box.appendChild(el('summary', '', '수정 요청 ' + g.items.length + '건'));
+    g.items.forEach(function(it){
+      var d = el('div', 'req-item'), h = el('div');
+      h.appendChild(el('span', 'who', it.name)); h.appendChild(el('span', 'at', it.at)); if (it.status) h.appendChild(el('span', 'st', it.status));
+      d.appendChild(h); d.appendChild(el('p', '', it.text));
+      if (it.reply) { var r = el('div', 'req-reply'); r.appendChild(el('span', 'who', '답글')); r.appendChild(el('p', '', it.reply)); d.appendChild(r); }
+      box.appendChild(d);
+    });
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); }).catch(function(){}); }
   var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
   document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
     cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
