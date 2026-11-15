@@ -177,6 +177,28 @@ def stage_of(g):
     return "브랜치", ""
 
 
+# PR 상태 — 페이지를 열 때마다 웹앱(?action=prs)이 GitHub에서 읽은 단계로 줄 앞 표시를 바꾼다(2026-11-15 회원님
+# 「페이지가 새로고침 될 때 확인되도록」). 웹앱은 5분 캐시. 답이 없으면(토큰 없음·오류) conversions.json 상태 글 그대로.
+PRS_JS = """
+(function(){
+  var URL_ = %s, GH = %s, c = new AbortController(), t = setTimeout(function(){ c.abort(); }, 15000);
+  fetch(URL_ + '?action=prs', { signal: c.signal }).then(function(r){ return r.json(); }).then(function(r){
+    if (!r || !r.ok) return;
+    Object.keys(r.games).forEach(function(slug){
+      var g = r.games[slug], li = document.querySelector('ul.games li[data-slug="' + slug + '"]'); if (!li) return;
+      var st = li.querySelector('.stage'), L = { app: ['앱 포함', 'app'], merged: ['병합 · 앱 연결 전', 'pr'],
+        open: ['PR #' + g.pr + ' 검토 중', 'pr'], closed: ['PR #' + g.pr + ' 닫힘', ''] }[g.stage];
+      if (L) { st.textContent = L[0]; st.className = 'stage ' + L[1]; st.title += ' — GitHub에서 ' + r.at + ' 확인'; }
+      (g.fixes || []).forEach(function(f){
+        var a = li.querySelector('a[data-fix="' + f.n + '"]');
+        if (a) a.textContent = '수정 PR #' + f.n + ({ open: ' 검토 중', merged: ' 병합', closed: ' 닫힘' }[f.state] || '');
+      });
+    });
+  }).catch(function(){}).finally(function(){ clearTimeout(t); });
+})();
+""" % (json.dumps(REQUEST_URL), json.dumps(GH))
+
+
 SEARCH_JS = """
 (function(){
   var q = document.getElementById('q'), count = document.getElementById('q-count'), empty = document.getElementById('q-empty');
@@ -218,6 +240,7 @@ def build_index():
         last = max(h["date"] for h in g["history"])
         label, cls = stage_of(g)
         pr = f'<a href="{GH}/pull/{g["pr"]}">PR #{g["pr"]}</a> · ' if g.get("pr") else ""
+        pr = "".join(f'<a data-fix="{n}" href="{GH}/pull/{n}">수정 PR #{n}</a> · ' for n in g.get("fixes", [])) + pr
         q = " ".join([g["title"], g["slug"], g.get("author", ""), g["source"], g["result"], label]).lower()
         rows.append(
             f'<li data-slug="{E(g["slug"])}" data-q="{E(q)}"><span class="stage {cls}" title="{E(g["status"])}">{E(label)}</span>'
@@ -252,6 +275,7 @@ def build_index():
 {REQUEST_DIALOG}
 <script>{REQUEST_JS}</script>
 <script>{SEARCH_JS}</script>
+<script>{PRS_JS}</script>
 </body>
 </html>
 """

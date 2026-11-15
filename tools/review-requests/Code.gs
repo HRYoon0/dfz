@@ -4,6 +4,7 @@
  * - POST(본문 JSON, text/plain): { slug, title, page, name, text } → 탭 「수정 요청」에 한 줄. 답 { ok, at }.
  * - GET ?action=list: 게임마다 요청 수·마지막 요청 시각·마지막 처리 상태와 요청 글 전부(댓글처럼 보여 준다).
  *   답 { ok, games: { slug: { count, last, status, items: [{ at, name, text, status, reply }] } } }.
+ * - GET ?action=prs: 게임마다 변환 PR 단계(app·merged·open·closed)와 수정 PR — GitHub 읽기 전용 토큰(스크립트 속성 GITHUB_TOKEN), 5분 캐시.
  * - 답글은 시트 「답글」 칸(H열)에 적는다 — 페이지에서 그 요청 아래에 붙어 보인다.
  *
  * ★ 익명 웹앱(실행: 나 / 액세스: 모든 사용자)이라 내장 SpreadsheetApp 대신 처음부터 고급 Sheets 서비스(Sheets v4)를 쓴다.
@@ -50,8 +51,71 @@ function summarize(rows) {
   return games;
 }
 
+// ── PR 상태(2026-11-15 회원님 「페이지가 새로고침 될 때 확인되도록」) ──
+// digitalpe는 비공개라 페이지가 직접 못 묻는다 — 웹앱이 읽기 전용 토큰(스크립트 속성 GITHUB_TOKEN)으로 묻고 결과만 넘긴다.
+// 게임 목록·PR 번호는 공개된 conversions.json에서 읽는다(페이지가 보낸 값을 받지 않아 아무 PR이나 캐물을 수 없다).
+var REPO = 'EduFit-Tech/digitalpe';
+var CONVERSIONS = 'https://hryoon0.github.io/dfz/review/conversions.json';
+var PRS_KEY = 'prs-v1';
+
+/** PR 하나의 상태 — GitHub pulls 응답에서. 순수 함수(검사용). */
+function prState(p) {
+  if (!p || !p.number) return null;
+  return { n: p.number, state: p.merged_at ? 'merged' : (p.state === 'open' ? 'open' : 'closed') };
+}
+
+/**
+ * 게임 하나의 단계. 순수 함수(검사용).
+ * app = 변환 PR이 병합되고 main에 게임 폴더(StreamingAssets/games/<slug>)가 있다 · merged = 병합됐지만 폴더가 없다 · open · closed · none.
+ */
+function stageOf(slug, pr, folders) {
+  if (!pr) return 'none';
+  if (pr.state !== 'merged') return pr.state;
+  return folders.indexOf(slug) >= 0 ? 'app' : 'merged';
+}
+
+function gh(path, token) {
+  return { url: 'https://api.github.com/repos/' + REPO + path, muteHttpExceptions: true,
+           headers: { Authorization: 'Bearer ' + token, Accept: 'application/vnd.github+json' } };
+}
+
+function readPrs() {
+  var token = PropertiesService.getScriptProperties().getProperty('GITHUB_TOKEN');
+  if (!token) return { ok: false, error: 'no-token' };
+  var games = JSON.parse(UrlFetchApp.fetch(CONVERSIONS, { muteHttpExceptions: true }).getContentText()).games || [];
+  var nums = [];
+  games.forEach(function (g) { [g.pr].concat(g.fixes || []).forEach(function (n) { if (n && nums.indexOf(n) < 0) nums.push(n); }); });
+  var reqs = [gh('/contents/unity/Assets/StreamingAssets/games?ref=main', token)]
+    .concat(nums.map(function (n) { return gh('/pulls/' + n, token); }));
+  var res = UrlFetchApp.fetchAll(reqs);
+  if (res[0].getResponseCode() !== 200) return { ok: false, error: 'github-' + res[0].getResponseCode() };
+  var folders = JSON.parse(res[0].getContentText()).filter(function (f) { return f.type === 'dir'; }).map(function (f) { return f.name; });
+  var byNum = {};
+  for (var i = 0; i < nums.length; i++) {
+    if (res[i + 1].getResponseCode() === 200) byNum[nums[i]] = prState(JSON.parse(res[i + 1].getContentText()));
+  }
+  var out = {};
+  games.forEach(function (g) {
+    var pr = byNum[g.pr] || null;
+    out[g.slug] = { stage: stageOf(g.slug, pr, folders), pr: g.pr || null,
+                    fixes: (g.fixes || []).map(function (n) { return byNum[n]; }).filter(Boolean) };
+  });
+  return { ok: true, games: out, at: Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm') };
+}
+
 function doGet(e) {
   var action = e && e.parameter && e.parameter.action;
+  if (action === 'prs') {
+    try {
+      var hit = cacheGet(PRS_KEY);
+      if (hit) return json(hit);
+      var r = readPrs();
+      if (r.ok) cachePut(PRS_KEY, r, 300);   // 5분 — 새로고침이 몰려도 GitHub에는 5분에 한 번
+      return json(r);
+    } catch (err) {
+      return json({ ok: false, error: 'prs-failed' });
+    }
+  }
   if (action !== 'list') return json({ ok: false, error: 'unknown-action' });
   try {
     var cached = cacheGet(LIST_KEY);
@@ -133,4 +197,6 @@ function json(o) { return ContentService.createTextOutput(JSON.stringify(o)).set
 function authorize() {
   ensureTab();
   Logger.log('ok: ' + readRows().length + '줄');
+  CacheService.getScriptCache().remove(PRS_KEY);
+  Logger.log('PR 상태: ' + JSON.stringify(readPrs()));   // 토큰을 넣은 뒤 한 번 — 외부 요청 권한도 이때 승인한다
 }
