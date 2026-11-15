@@ -170,6 +170,10 @@ REQUEST_DIALOG = """<dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h"
 
 def stage_of(g):
     """상태 글을 한 낱말로 — 목록 줄 앞 표시. 자세한 글은 마우스를 올리면 보인다."""
+    # 앱에 들어간 게임이라도 수정 PR이 검토 중이면 그쪽을 앞에 — 고친 판은 아직 앱에 없다(2026-11-15 G015)
+    for n in g.get("fixes", []):
+        if re.search(rf"#{n}\b[^·]*검토 중", g["status"]):
+            return f"수정 PR #{n} 검토 중", "pr"
     if "앱에 들어" in g["status"]:
         return "앱 포함", "app"
     if g.get("pr"):
@@ -188,6 +192,8 @@ PRS_JS = """
       var g = r.games[slug], li = document.querySelector('ul.games li[data-slug="' + slug + '"]'); if (!li) return;
       var st = li.querySelector('.stage'), L = { app: ['앱 포함', 'app'], merged: ['병합 · 앱 연결 전', 'pr'],
         open: ['PR #' + g.pr + ' 검토 중', 'pr'], closed: ['PR #' + g.pr + ' 닫힘', ''] }[g.stage];
+      var fo = (g.fixes || []).filter(function(f){ return f.state === 'open'; })[0];
+      if (fo) L = ['수정 PR #' + fo.n + ' 검토 중', 'pr'];
       if (L) { st.textContent = L[0]; st.className = 'stage ' + L[1]; st.title += ' — GitHub에서 ' + r.at + ' 확인'; }
       (g.fixes || []).forEach(function(f){
         var a = li.querySelector('a[data-fix="' + f.n + '"]');
