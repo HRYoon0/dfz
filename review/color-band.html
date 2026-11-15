@@ -124,7 +124,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   function fetchJSON(url, opts, ms){ var c = new AbortController(), t = setTimeout(function(){ c.abort(); }, ms || 15000);
     return fetch(url, Object.assign({}, opts, { signal: c.signal })).then(function(r){ return r.json(); }).finally(function(){ clearTimeout(t); }); }
   function mark(slug, g){
-    var el = document.querySelector('.req[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
+    var el = document.querySelector('[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
     var day = String(g.last || '').slice(0, 10);
     el.textContent = (g.status ? g.status + ' · ' : '수정 요청함 · ') + day + (g.count > 1 ? ' (' + g.count + '건)' : '');
     el.title = '마지막 요청 ' + g.last;

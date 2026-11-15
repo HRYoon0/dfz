@@ -36,12 +36,12 @@ CSS = """
 --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
-main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+main{max-width:min(1560px,94vw);margin:0 auto;padding:32px 16px 64px}
 h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
 h2{font-size:22px;margin:40px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
 h3{font-size:17px;margin:20px 0 8px;font-weight:700;color:var(--lime)}
 a{color:var(--lime)}
-.lead{color:var(--muted);max-width:46em;margin:0}
+.lead{color:var(--muted);max-width:60em;margin:0}
 ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
 ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
 ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
@@ -55,18 +55,30 @@ ul.log .note{color:var(--muted);font-size:14px;white-space:nowrap}
 .card dt{color:var(--muted);font-weight:600}
 .card dd{margin:0;overflow-wrap:anywhere}
 .empty{color:var(--muted)}
-ul.games li{grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center}
-ul.games .stage{font-size:13px;font-weight:700;border-radius:999px;padding:2px 10px;min-width:9em;text-align:center;white-space:nowrap;background:var(--bg);border:1px solid var(--line);color:var(--muted)}
+ul.games{gap:10px}
+ul.games li{grid-template-columns:11.5em minmax(0,1fr) auto auto;align-items:center;gap:6px 24px;padding:16px 22px 16px 18px;border-left:6px solid var(--line);border-radius:12px}
+ul.games li.st-app{border-left-color:var(--lime)}
+ul.games li.st-pr{border-left-color:#FFD66B;background:#36475C}
+ul.games li:hover{border-color:#6A86A6}
+ul.games .stage{font-size:15px;font-weight:750;border-radius:999px;padding:6px 12px;text-align:center;white-space:nowrap;background:var(--bg);border:1.5px solid var(--line);color:var(--muted)}
 ul.games .stage.app{background:var(--lime);border-color:var(--lime);color:#13202F}
-ul.games .stage.pr{border-color:#FFD66B;color:#FFD66B}
-ul.games .sub{display:block;color:var(--muted);font-size:14px}
-ul.games .links{font-size:14px;white-space:nowrap}
+ul.games .stage.pr{background:#4A4430;border-color:#FFD66B;color:#FFE29A}
+ul.games a.game{font-size:20px;font-weight:750;text-decoration:none}
+ul.games a.game:hover{text-decoration:underline}
+ul.games .sub{display:block;color:var(--muted);font-size:15px;margin-top:2px}
+ul.games .main .req-mark{display:inline-block;margin-top:6px;font-size:14px;border-radius:10px}
+ul.games .main .req-mark[hidden]{display:none}
+ul.games .links{font-size:15px;font-weight:600;white-space:nowrap;display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-end}
+ul.games .links .sep{display:none}
 ul.games .req{margin:0;justify-content:flex-end}
+ul.games .req-btn{font-size:15px;padding:8px 18px}
+ul.games .req-thread{margin-top:4px}
 .search{display:flex;gap:10px;align-items:center;margin:20px 0 4px}
 .search input{flex:1;font:inherit;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
 .search input:focus{outline:2px solid var(--lime);outline-offset:1px}
 .search .count{color:var(--muted);font-size:14px;white-space:nowrap}
-@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}ul.games li{grid-template-columns:minmax(0,1fr)}ul.games .req{justify-content:flex-start}}
+@media (max-width:1180px){ul.games li{grid-template-columns:11.5em minmax(0,1fr)}ul.games .links,ul.games .req{grid-column:2;justify-content:flex-start}}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}ul.games li{grid-template-columns:minmax(0,1fr)}ul.games .links,ul.games .req{grid-column:1;justify-content:flex-start}ul.games .stage{justify-self:start}}
 """
 
 REQUEST_CSS = """
@@ -107,7 +119,7 @@ REQUEST_JS = """
   function fetchJSON(url, opts, ms){ var c = new AbortController(), t = setTimeout(function(){ c.abort(); }, ms || 15000);
     return fetch(url, Object.assign({}, opts, { signal: c.signal })).then(function(r){ return r.json(); }).finally(function(){ clearTimeout(t); }); }
   function mark(slug, g){
-    var el = document.querySelector('.req[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
+    var el = document.querySelector('[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
     var day = String(g.last || '').slice(0, 10);
     el.textContent = (g.status ? g.status + ' · ' : '수정 요청함 · ') + day + (g.count > 1 ? ' (' + g.count + '건)' : '');
     el.title = '마지막 요청 ' + g.last;
@@ -194,7 +206,7 @@ PRS_JS = """
         open: ['PR #' + g.pr + ' 검토 중', 'pr'], closed: ['PR #' + g.pr + ' 닫힘', ''] }[g.stage];
       var fo = (g.fixes || []).filter(function(f){ return f.state === 'open'; })[0];
       if (fo) L = ['수정 PR #' + fo.n + ' 검토 중', 'pr'];
-      if (L) { st.textContent = L[0]; st.className = 'stage ' + L[1]; st.title += ' — GitHub에서 ' + r.at + ' 확인'; }
+      if (L) { st.textContent = L[0]; st.className = 'stage ' + L[1]; li.className = 'st-' + L[1]; st.title += ' — GitHub에서 ' + r.at + ' 확인'; }
       (g.fixes || []).forEach(function(f){
         var a = li.querySelector('a[data-fix="' + f.n + '"]');
         if (a) a.textContent = '수정 PR #' + f.n + ({ open: ' 검토 중', merged: ' 병합', closed: ' 닫힘' }[f.state] || '');
@@ -245,15 +257,16 @@ def build_index():
     for g in sorted(DATA["games"], key=lambda g: max(h["date"] + h.get("time", "") for h in g["history"]), reverse=True):
         last = max(h["date"] for h in g["history"])
         label, cls = stage_of(g)
-        pr = f'<a href="{GH}/pull/{g["pr"]}">PR #{g["pr"]}</a> · ' if g.get("pr") else ""
-        pr = "".join(f'<a data-fix="{n}" href="{GH}/pull/{n}">수정 PR #{n}</a> · ' for n in g.get("fixes", [])) + pr
+        pr = f'<a href="{GH}/pull/{g["pr"]}">PR #{g["pr"]}</a><span class="sep"> · </span>' if g.get("pr") else ""
+        pr = "".join(f'<a data-fix="{n}" href="{GH}/pull/{n}">수정 PR #{n}</a><span class="sep"> · </span>' for n in g.get("fixes", [])) + pr
         q = " ".join([g["title"], g["slug"], g.get("author", ""), g["source"], g["result"], label]).lower()
         rows.append(
-            f'<li data-slug="{E(g["slug"])}" data-q="{E(q)}"><span class="stage {cls}" title="{E(g["status"])}">{E(label)}</span>'
-            f'<span><a class="game" href="{E(g["page"])}">{E(g["title"])}</a>'
-            f'<span class="sub">만든 사람 {E(g["author"]) or "미기재"} · 마지막 {last} · 고친 {len(g["history"])}건</span></span>'
+            f'<li class="st-{cls}" data-slug="{E(g["slug"])}" data-q="{E(q)}"><span class="stage {cls}" title="{E(g["status"])}">{E(label)}</span>'
+            f'<span class="main"><a class="game" href="{E(g["page"])}">{E(g["title"])}</a>'
+            f'<span class="sub">만든 사람 {E(g["author"]) or "미기재"} · 마지막 {last} · 고친 {len(g["history"])}건</span>'
+            f'<span class="req-mark" hidden></span></span>'
             f'<span class="links">{pr}<a href="{GH}/tree/{E(g["branch"])}">브랜치</a></span>'
-            f'<div class="req" data-slug="{E(g["slug"])}" data-title="{E(g["title"])}" data-page="{E(g["page"])}"><span class="req-mark" hidden></span><button type="button" class="req-btn">수정 요청</button></div></li>')
+            f'<div class="req" data-slug="{E(g["slug"])}" data-title="{E(g["title"])}" data-page="{E(g["page"])}"><button type="button" class="req-btn">수정 요청</button></div></li>')
 
     page = f"""<!doctype html>
 <html lang="ko">
