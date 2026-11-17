@@ -1,0 +1,544 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G012 운석 피하기! 좌우 점프 — C# 이식 확인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#202B3D; --surface:#30435A; --line:#46607E; --ink:#F4F8FF; --muted:#CCDCE9;
+  --lime:#D1F58E; --coral:#FF8A7A; --sun:#FFD66B;
+  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
+h2{font-size:22px;margin:44px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
+p{margin:0 0 12px}
+a{color:var(--lime)}
+.lead{color:var(--muted);max-width:46em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.chip b{color:var(--lime)}
+code{font-family:Consolas,'D2Coding',Menlo,monospace;font-size:.92em;background:#18212F;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-size:13px;font-weight:700}
+.wrap{overflow-x:auto}
+.demo{background:#141C29;border:1px solid var(--line);border-radius:14px;padding:12px}
+.demo canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:#1B2536;touch-action:none;cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button{font:inherit;font-weight:650;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 14px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.score{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:14px;font-weight:600}
+.score span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:14px}
+.ok{color:var(--lime);font-weight:700}
+.no{color:var(--coral);font-weight:700}
+ol li,ul li{margin-bottom:6px}
+.back{display:inline-block;margin-bottom:14px;font-weight:650;text-decoration:none}
+ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+
+.stagewrap{position:relative}
+.start{position:absolute;inset:0;border-radius:10px;background:#1B2536;display:grid;grid-template-columns:1.15fr .85fr;gap:20px;padding:22px 26px;overflow:auto;align-content:start}
+.start[hidden]{display:none}
+.start .eyebrow{color:var(--lime);font-weight:800;font-size:13px;letter-spacing:1px}
+.start h3{font-size:clamp(22px,2.6vw,32px);margin:4px 0 6px;font-weight:800;line-height:1.2}
+.start .lead2{margin:0 0 8px;color:var(--muted);font-size:15px;line-height:1.55}
+.start .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.start .tags span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:650}
+.start .how{background:#141C29;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.start .how b{font-size:14px}
+.start ol{margin:6px 0 0;padding-left:20px;font-size:15px;line-height:1.5}
+.start ol li{margin-bottom:3px}
+.start .set{display:grid;gap:12px;align-content:start}
+.start .set h4{margin:0;font-size:17px;font-weight:800}
+.start .opt>span{display:block;font-weight:700;font-size:14px;margin-bottom:4px;color:var(--muted)}
+.start .opt .controls{margin:0}
+.start .go{font:inherit;font-weight:800;font-size:18px;background:var(--lime);color:#13202F;border:0;border-radius:12px;padding:12px 18px;cursor:pointer}
+.start .safe{font-size:13px;color:var(--muted);background:#141C29;border:1px solid var(--line);border-radius:10px;padding:8px 10px;line-height:1.5;margin:0}
+@media (max-width:760px){.start{position:static;grid-template-columns:1fr;margin-bottom:10px}}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 변환 기록 전체</a>
+  <h1>G012 운석 피하기! 좌우 점프 — C# 이식 확인</h1>
+  <p class="lead">HTML 게임 「운석 피하기! 좌우 점프」(G012 v1.0, 회원님이 주신 HTML 파일)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 1~4명이 저마다 3칸 길에서 같은 위험에 동시에 도전해, 떨어지는 운석은 옆 칸으로 피하고 다가오는 충격파는 점프로 넘는 게임입니다. 회원님 결정대로 <b>입력만 단추·키보드 → 카메라(옆 걸음·제자리 점프) + 폰(좌우 기울기·단추 점프)</b>로 바꾸고 나머지는 모두 원본대로 옮겼습니다. 주개발자 게임과 같은 흐름(참가 → 동작 연습 → 시작)을 넣었고, 앱 「웹 게임」에 붙여 넣는 <b>HTML 판</b>도 함께 올렸습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b></p>
+  <div class="chips">
+    <span class="chip">브랜치 <b>claude/g012-meteor-dodge-native</b></span>
+    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/109">PR #109</a> 검토 대기</span>
+    <span class="chip">새 파일 <b>17개</b>(+ .meta 12개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">맥 Unity 컴파일 오류 <b>0</b> · 검사 <b>45/45</b> 통과</span>
+  </div>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g012-meteor-dodge-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g012-meteor-dodge-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/109">PR #109</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g012-meteor-dodge-native/docs/progress/2026-11-17-g012-meteor-dodge-native.md">진행 기록</a></p>
+
+  <!--@REQUEST@-->
+<style>
+.req{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+.req-btn{font:inherit;font-weight:700;font-size:14px;background:var(--bg);color:var(--ink);border:1px solid var(--lime);border-radius:999px;padding:5px 14px;cursor:pointer}
+.req-btn:hover{background:var(--lime);color:#13202F}
+.req-mark{font-size:14px;font-weight:650;color:#13202F;background:#FFD66B;border-radius:999px;padding:3px 12px}
+.req-mark.done{background:var(--lime)}
+dialog.req-dlg{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:min(520px,92vw)}
+dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
+.req-dlg h3{margin:0 0 4px}
+.req-dlg label{display:grid;gap:4px;margin-top:12px;font-weight:650;font-size:14px;color:var(--muted)}
+.req-dlg input,.req-dlg textarea{font:inherit;font-weight:450;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.req-dlg textarea{min-height:130px;resize:vertical}
+.req-dlg .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;align-items:center}
+.req-dlg .row button{font:inherit;font-weight:700;border-radius:10px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.req-dlg .row button.send{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.req-dlg .msg{margin-right:auto;font-size:14px;color:#FFB4A8}
+.req-dlg .open-note{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.req-thread{grid-column:1/-1;margin:8px 0 0;font-size:14px;font-weight:500}
+.req-thread summary{cursor:pointer;color:var(--muted);font-weight:650}
+.req-item{margin:8px 0 0;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.req-item .who{font-weight:700}
+.req-item .at{color:var(--muted);margin-left:8px}
+.req-item .st{margin-left:8px;font-weight:650;color:#13202F;background:var(--lime);border-radius:999px;padding:1px 10px}
+.req-item p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.req-reply{margin:8px 0 0 14px;padding:2px 0 2px 12px;border-left:3px solid var(--lime)}
+</style>
+<div class="req" data-slug="g012-meteor-dodge" data-title="G012 운석 피하기! 좌우 점프" data-page="g012-meteor-dodge.html" style="margin:14px 0 0"><button type="button" class="req-btn">이 게임 수정 요청</button><span class="req-mark" hidden></span></div>
+<dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h">
+<form method="dialog">
+<h3 id="req-h">수정 요청</h3>
+<div class="game" style="font-weight:700"></div>
+<label>요청한 사람(선택)<input name="who" maxlength="40" autocomplete="name"></label>
+<label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요"></textarea></label>
+<p class="open-note">보낸 글과 이름은 이 페이지에 그대로 보입니다.</p>
+<div class="row"><span class="msg" role="status"></span><button type="button" class="cancel">취소</button><button type="submit" class="send">보내기</button></div>
+</form>
+</dialog>
+<script>
+(function(){
+  var URL_ = "https://script.google.com/macros/s/AKfycbwRpKn6QXcB_kITjF_YPSyPDp8Dx9tiD84oj90SO8u2FfV6lLIcHy5StBsAhaPeLg-S/exec", PAGES = "https://hryoon0.github.io/dfz/review/";
+  // 응답이 없을 때 「보내는 중」이 영원히 돌지 않게 15초에 끊는다
+  function fetchJSON(url, opts, ms){ var c = new AbortController(), t = setTimeout(function(){ c.abort(); }, ms || 15000);
+    return fetch(url, Object.assign({}, opts, { signal: c.signal })).then(function(r){ return r.json(); }).finally(function(){ clearTimeout(t); }); }
+  function mark(slug, g){
+    var el = document.querySelector('[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
+    var day = String(g.last || '').slice(0, 10);
+    el.textContent = (g.status ? g.status + ' · ' : '수정 요청함 · ') + day + (g.count > 1 ? ' (' + g.count + '건)' : '');
+    el.title = '마지막 요청 ' + g.last;
+    el.classList.toggle('done', !!g.status); el.hidden = false;
+  }
+  // 받은 글은 남이 쓴 것이라 textContent로만 넣는다(태그를 적어 보내도 글자로 보인다)
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  // 요청 글과 답글을 댓글처럼 — 목록에서는 접어 두고, 게임 페이지에서는 펴 둔다
+  function thread(slug, g){
+    var req = document.querySelector('.req[data-slug="' + slug + '"]'); if (!req || !g || !g.items || !g.items.length) return;
+    var box = req.nextElementSibling;
+    if (!box || !box.classList.contains('req-thread')) { box = el('details', 'req-thread'); box.open = !req.closest('ul.games'); req.after(box); }
+    box.textContent = '';
+    box.appendChild(el('summary', '', '수정 요청 ' + g.items.length + '건'));
+    g.items.forEach(function(it){
+      var d = el('div', 'req-item'), h = el('div');
+      h.appendChild(el('span', 'who', it.name)); h.appendChild(el('span', 'at', it.at)); if (it.status) h.appendChild(el('span', 'st', it.status));
+      d.appendChild(h); d.appendChild(el('p', '', it.text));
+      if (it.reply) { var r = el('div', 'req-reply'); r.appendChild(el('span', 'who', '답글')); r.appendChild(el('p', '', it.reply)); d.appendChild(r); }
+      box.appendChild(d);
+    });
+  }
+  // 게임별 목록 — 고친 기록과 수정 요청 중 더 늦은 시각이 위로(2026-11-17 회원님 「수정요청 받으면 또 그게 최신」)
+  function resort(games){
+    var ul = document.querySelector('ul.games'); if (!ul) return;
+    var rows = [].slice.call(ul.children);
+    rows.forEach(function(li){ var g = games[li.dataset.slug], at = g && String(g.last || '').slice(0, 16);
+      if (at && at > (li.dataset.last || '')) li.dataset.last = at; });
+    rows.sort(function(a, b){ return (b.dataset.last || '').localeCompare(a.dataset.last || ''); }).forEach(function(li){ ul.appendChild(li); });
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) { Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); resort(r.games); } }).catch(function(){}); }
+  var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
+  document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
+    cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
+    form.reset(); var n = localStorage.getItem('dfz-req-name'); if (n) W.who.value = n; dlg.showModal(); W.note.focus(); }); });
+  dlg.querySelector('.cancel').addEventListener('click', function(){ dlg.close(); });
+  form.addEventListener('submit', function(e){
+    e.preventDefault(); if (!cur) return;
+    var text = W.note.value.trim(); if (text.length < 2) { msg.textContent = '고칠 점을 적어 주세요.'; return; }
+    send.disabled = true; send.textContent = '보내는 중…'; msg.textContent = '';
+    localStorage.setItem('dfz-req-name', W.who.value.trim());
+    // text/plain — 브라우저가 사전 요청(OPTIONS)을 보내지 않게(Apps Script는 그것을 받지 못한다)
+    fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text }) })
+      .then(function(r){
+        if (!r || !r.ok) throw new Error(r && r.error || 'fail');
+        dlg.close(); load();
+        mark(cur.slug, { count: 1, last: r.at, status: '' });
+      })
+      .catch(function(err){ send.disabled = false; send.textContent = '다시 보내기';
+        msg.textContent = String(err.message) === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 보내 주세요.' : '보내지 못했어요. 다시 보내 주세요.'; });
+  });
+  load();
+})();
+</script>
+<!--@/REQUEST@-->
+
+  <h2>변환 기록</h2>
+  <!--@HISTORY@-->
+<ul class="log">
+<li><span class="when">2026-11-17 22:25</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 폰 기울기·단추로 같은 규칙(웹에 오는 카메라 동작으로는 좌우 칸을 받을 수 없어 폰만, 설정은 기본값 고정). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #109">PR #109</a></li>
+<li><span class="when">2026-11-17 22:25</span><span>처음 변환 — 입력은 회원님 결정 「카메라 + 폰 둘 다」(카메라는 선 자리가 곧 칸·제자리 점프, 폰은 좌우로 기울였다 돌아오면 한 칸·단추 점프), 나머지는 원본대로: 1~4명 동시, 30·60·90초, 보호막 5·4·3, 위험 종류 셋, 예고 1.1초·20초마다 낙하 빨라짐, 회피 +30·생존 1초당 2점. 봇은 원본 시범 조작. 참가 → 동작 연습(왼쪽·오른쪽·점프) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #109">PR #109</a></li>
+</ul>
+<!--@/HISTORY@-->
+
+  <h2>흐름 — 참가 → 동작 연습 → 시작</h2>
+  <div class="wrap"><table>
+    <tr><th>단계</th><th>누가</th><th>무엇</th></tr>
+    <tr><td>1. 참가 화면</td><td>앱(그대로)</td><td>카메라(또는 폰·컨트롤러)로 1~4명 참가</td></tr>
+    <tr><td>2. 입장 뒤 동작 연습</td><td><b>이 게임</b>(<code>MeteorDodgePractice</code>)</td><td>왼쪽으로 → 오른쪽으로 → 점프를 저마다 한 번씩. 단계마다 <b>참가자 전원</b>(봇은 바로 통과)이 해야 「잘했어요!」 0.8초 뒤 다음 단계, 셋을 마치면 시작. 연습 동안 칸 이동·점프가 화면에 그대로 보입니다. 선생님은 앱의 「바로 시작」/Enter.</td></tr>
+    <tr><td>3. 게임 시작</td><td>앱 3초 세기 → 이 게임</td><td>탐험 시간 동안 위험이 하나씩(예고 → 낙하 → 판정). 시간이 다 되거나 모두 보호막을 잃으면 앱이 경기를 닫고 결과 화면</td></tr>
+  </table></div>
+
+  <h2>직접 해 보기</h2>
+  <!--start-screen-->
+<style>#start{grid-template-columns:1fr 1fr}.start .set{gap:10px}.start .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}.start .grid2 .wide{grid-column:1/-1}.start .opt .controls{gap:5px}.start .opt .controls button{padding:5px 11px;font-size:14px}.start .set h4{font-size:16px}@media (max-width:760px){.start .grid2{grid-template-columns:1fr}}</style>
+<p class="note">C# 판정과 같은 규칙과 숫자로 움직입니다. 키보드는 원본과 같습니다 — <b>P1 ← → Space · P2 A D W · P3 J L I · P4 F H T</b>(왼쪽 · 오른쪽 · 점프). 앱에서는 이 자리를 폰 기울이기·단추, 또는 카메라 옆 걸음·제자리 점프가 맡습니다. 「시범 보기」면 모두 봇이 원본 시범처럼 피합니다. Enter는 선생님의 「바로 시작」.</p>
+  <div class="demo">
+    <div class="stagewrap">
+      <canvas id="cv" width="1600" height="900" tabindex="0" aria-label="운석 피하기 체험판"></canvas>
+      <div class="start" id="start">
+        <div>
+          <div class="eyebrow">G012 · 민첩성 × 반응 × 안전한 이동</div>
+          <h3>운석 피하기! 좌우 점프</h3>
+          <p class="lead2">떨어지는 운석은 옆으로 쏙! 다가오는 충격파는 타이밍 맞춰 점프! 1–4명 · 좌우로 피하고, 점프로 넘어요!</p>
+          <div class="how"><b>진행 방법</b>
+            <ol>
+              <li>주황 표시가 뜬 칸으로 운석이 내려와요. 옆 칸으로 피하세요 — 점프로는 못 피해요.</li>
+              <li>보라색 충격파는 아래 판정선에 닿기 직전에 점프! 연속 점프에는 잠깐 회복 시간이 필요해요.</li>
+              <li>회피 +30점 · 생존 1초당 2점. 20초마다 낙하가 조금씩 빨라져요.</li>
+              <li>보호막을 모두 잃으면 그 탐험가는 응원해요.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="set">
+          <h4>출발 설정</h4>
+          <div class="grid2">
+          <div class="opt"><span>참가 인원</span><div class="controls">
+            <button data-count="1" aria-pressed="false">1명</button>
+            <button data-count="2" aria-pressed="true">2명</button>
+            <button data-count="3" aria-pressed="false">3명</button>
+            <button data-count="4" aria-pressed="false">4명</button>
+          </div></div>
+          <div class="opt"><span>탐험 시간</span><div class="controls">
+            <button data-seconds="30" aria-pressed="false">30초</button>
+            <button data-seconds="60" aria-pressed="true">60초</button>
+            <button data-seconds="90" aria-pressed="false">90초</button>
+          </div></div>
+          <div class="opt wide"><span>시작 난이도</span><div class="controls">
+            <button data-level="easy" aria-pressed="false">쉬움 · 보호막 5칸</button>
+            <button data-level="normal" aria-pressed="true">보통 · 보호막 4칸</button>
+            <button data-level="hard" aria-pressed="false">도전 · 보호막 3칸</button>
+          </div></div>
+          <div class="opt wide"><span>위험 종류</span><div class="controls">
+            <button data-hazards="mixed" aria-pressed="true">운석 + 충격파</button>
+            <button data-hazards="meteor" aria-pressed="false">운석만 · 좌우 연습</button>
+            <button data-hazards="wave" aria-pressed="false">충격파만 · 점프 연습</button>
+          </div></div>
+          <div class="opt"><span>기기</span><div class="controls">
+            <button data-device="camera" aria-pressed="false">카메라</button>
+            <button data-device="phone" aria-pressed="true">폰</button>
+          </div></div>
+          <div class="opt"><span>참가</span><div class="controls">
+            <button data-demo="0" aria-pressed="true">키보드</button>
+            <button data-demo="1" aria-pressed="false">시범 보기(봇)</button>
+          </div></div>
+          </div>
+          <button class="go" id="go">게임 시작</button>
+          <p class="safe"><b>안전</b> 넓은 공간에서 · 옆 사람과 2m 이상 · 점프는 낮게, 무릎을 살짝 굽혀 착지 · 폰은 두 손으로</p>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="home" hidden>처음 화면</button>
+      <button id="restart" style="margin-left:auto">다시</button>
+    </div>
+    <div class="score" id="score"></div>
+  </div>
+
+  <h2>HTML 판 — 원본 형식 그대로 함께 올렸습니다</h2>
+  <p>주개발자 요청(「HTML·유니티 둘 다 올려 보라」)대로, 앱의 「AI로 게임 만들기 → HTML 붙여넣기」에 그대로 넣으면 도는 <b>HTML 한 파일</b>도 같은 PR에 넣었습니다: <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g012-meteor-dodge-native/docs/progress/g012-meteor-dodge-web/game.html"><code>docs/progress/g012-meteor-dodge-web/game.html</code></a>(설명 <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g012-meteor-dodge-native/docs/progress/g012-meteor-dodge-web/README.md">README</a>).</p>
+  <div class="wrap"><table>
+    <tr><th></th><th>Unity C# 판(앱 내장)</th><th>HTML 판(붙여넣기용)</th></tr>
+    <tr><td>규칙·숫자</td><td colspan="2">같다 — 원본 v1.0(예고 1.1초·낙하 시간·셋째마다 충격파·점프 창·보호막·회피 +30·생존 1초당 2점)</td></tr>
+    <tr><td>입력</td><td>카메라(선 자리 = 칸 · 제자리 점프) · 폰(좌우 기울기 · 단추 점프)</td><td>폰만 — 웹 게임에 오는 카메라 동작(Jump·Raise·Squat)으로는 좌우 칸을 받을 수 없다</td></tr>
+    <tr><td>설정</td><td>규칙 파일 칸(시간 30·60·90, 난이도 셋, 위험 종류 셋)</td><td>기본값 고정(60초 · 보통 · 섞임)</td></tr>
+    <tr><td>동작 연습</td><td>있음(왼쪽 · 오른쪽 · 점프)</td><td>없음 — 앱이 시작을 알리면 바로 경기</td></tr>
+  </table></div>
+  <ul>
+    <li><span class="ok">통과</span> 앱이 붙여 넣은 HTML에 거는 검사기(<code>WebGameLint.Check</code> 규약 · <code>FindClassroomHazards</code> 교실 위험 · <code>WebGameImport</code> 바깥 주소)를 맥 Unity에서 돌려 문제 0건.</li>
+    <li><span class="ok">끝까지</span> <code>dfz</code> 대역 위에서 60·120Hz로 한 판(두 사람 · 한 사람)을 돌려 끝 알림(<code>dfz.finish</code>)이 한 번 오는 것을 봤습니다.</li>
+    <li><span class="no">안 함</span> 앱 안 격리 브라우저에서 실제 실행 — 그 엔진이 Windows 전용이라 맥에서는 못 돌립니다.</li>
+  </ul>
+
+  <h2>원본 HTML판에서 달라진 것 — 입력</h2>
+  <div class="wrap"><table>
+    <tr><th>원본 HTML판</th><th>앱판(C#)</th><th>까닭</th></tr>
+    <tr><td>사람마다 ← · → 단추(키) 한 번 = 한 칸</td><td><b>카메라</b>: 선 자리가 곧 칸(처음 선 자리에서 어깨 너비 0.6배 넘게 옆이면 옆 칸, 0.4배 안이면 가운데) / <b>폰</b>: 좌우로 기울였다 돌아오면 한 칸</td><td>원본이 권한 실제 활동(사이드스텝)을 카메라가 그대로 읽는다</td></tr>
+    <tr><td>점프 단추(키)</td><td><b>카메라</b>: 제자리 점프(앱 카메라 Jump) / <b>폰</b>: 누르기·톡</td><td>같은 뜻</td></tr>
+    <tr><td>「혼자 시범 보기」(자동 조작)</td><td>앱 봇이 같은 가상 조작(운석은 0.45초 뒤 옆으로, 충격파는 0.32초 전 점프)</td><td>봇 행동이 곧 원본 시범</td></tr>
+    <tr><td>이름 입력 칸 · 결과 표 · txt 저장</td><td>자리 표시(P1~P4) · 사람 카드(점수·보호막·상태) · 앱 결과판</td><td>앱 공통</td></tr>
+    <tr><td>탐험가 그림(헬멧 쓴 아이)</td><td>앱 캐릭터 「콩콩이」(사람 색)</td><td>학년별 게임과 같은 캐릭터</td></tr>
+    <tr><td>어두운 우주 바탕</td><td><b>배경 그림(밝은 파스텔 행성, GPT)</b> 위에 원본 길 그림</td><td>게임마다 다른 밝은 장면</td></tr>
+  </table></div>
+  <p class="note">그대로 옮긴 것: 1~4명 동시, 탐험 시간 30·60·90초, 난이도(보호막 5·4·3, 낙하 3.1·2.6·2.1초), 위험 종류 셋, 예고 1.1초, 20초마다 레벨 +1·낙하 −0.2초(1.3초까지), 첫 위험 0.6초·다음 0.55초, 운석은 점프로 못 피함, 충격파는 떠 있어야(뛴 뒤 0.12~0.67초) 넘음, 점프 0.85초·회복 1.1초·점프 중 좌우 이동, 회피 +30·생존 1초당 2점, 보호막을 다 잃은 사람만 끝·모두 잃으면 경기 끝, 공동 우승.</p>
+
+  <h2>새 파일</h2>
+  <div class="wrap"><table id="files">
+    <tr><th>파일</th><th>무엇</th></tr>
+  </table></div>
+
+  <h2>검증한 것과 안 한 것</h2>
+  <ul>
+    <li><span class="ok">Unity</span> 맥 Unity 6000.5.9f1 · 빌드 대상 Win64 · 가지 95deef8 스냅샷: 컴파일 오류 0, EditMode(골라 돌림 — 「MeteorDodge」, 전체 아님) 45건 모두 통과.</li>
+    <li><span class="ok">.NET</span> 같은 45건을 .NET 8·C# 9·경고를 오류로·NUnit 3.14로도 돌렸습니다(main의 실제 파일과 함께 묶음).</li>
+    <li><span class="ok">빨간불 확인</span> 판정·칸 읽기·연습·감독·무대 규칙 96개를 하나씩 끄면 모두 검사가 실패합니다. 처음엔 10개가 구멍이라 검사 3건을 더하고 5건을 보강했습니다.</li>
+    <li><span class="ok">HTML 판</span> 앱 웹 게임 검사기 통과(위 절).</li>
+    <li><span class="no">안 함</span> 앱 화면 촬영(앱에 아직 연결 전이라 앱 화면이 없음), 실물 카메라·폰으로 한 판(만든 분들이 확인), Windows 실행.</li>
+  </ul>
+
+  <h2>앱에 붙이려면</h2>
+  <ol>
+    <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>MeteorDodge</code>, <code>FlowTypes.IsMovedHtmlGame</code>, <code>FlowSpec</code>·검증기·스키마에 <code>meteorDodgeLevel</code>(easy·normal·hard)·<code>meteorDodgeHazards</code>(mixed·meteor·wave). 탐험 시간은 <code>roundSeconds</code>(30·60·90) — <code>MeteorDodgeSettings.From(roundSeconds, …)</code>로 감독에.</li>
+    <li><b>연습</b>: 안내 단계(<code>SessionState.Intro</code>)에서 이 게임이면 안내 카드 대신 감독 연습 — <code>BeginPractice</code>, 장면마다 <code>SyncRoster</code> → 입력 <code>HandleInput(e, now)</code> → (카메라면) <code>SyncPoses</code> → <code>TickPractice</code> → 무대 <code>SyncPractice</code>. <code>PracticeStartRequested</code>면 <code>RequestSkipIntro()</code>.</li>
+    <li><b>경기</b>: <code>UguiNativeActivities</code>에서 <code>SyncRoster</code> → <code>HandleInput(e, now)</code> → (카메라면) <code>SyncPoses</code> → <code>Tick(경기 시간, 판)</code> → 무대 <code>Sync</code>. <code>Award</code>는 <code>HandleActivityInput</code>으로, <code>Finished</code>면 <code>runner.CompleteCourse(now)</code>.</li>
+    <li><b>그림</b>: <code>stage.Backdrop = _hud.StageArt;</code></li>
+    <li><b>출시</b>: <code>StreamingAssets/games/g012-meteor-dodge{,-camera}/</code>, <code>GameTitles.FolderById</code>, 표지, 말 표(<code>meteorDodge.*</code>, 진행 기록에 ko·en).</li>
+  </ol>
+
+  <h2>실물에서 봐 주셨으면 하는 것</h2>
+  <ul>
+    <li><b>카메라 칸 경계</b> — 어깨 너비 0.6배(옆 칸)·0.4배(가운데)가 사이드스텝 한 번에 알맞은지, 좌우가 거울처럼 맞는지, 4명이 나란히 설 자리가 되는지.</li>
+    <li><b>카메라 점프</b> — 앱 카메라 점프가 충격파 판정 창(뛴 뒤 0.12~0.67초)에 늦지 않게 오는지.</li>
+    <li><b>폰</b> — 좌우 문턱 0.5·되돌림 0.25와 단추 점프가 손에 맞는지.</li>
+  </ul>
+</main>
+<script>
+/* 새 파일 목록 */
+(function(){
+  var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/g012-meteor-dodge-native/";
+  var rows = [
+    ["unity/Assets/DigitalFitZone/Game/Play/MeteorDodge/MeteorDodgeSettings.cs", "놀이 값: 시간·난이도·위험 종류, 보호막·낙하·레벨, 점프, 점수, 폰·카메라 문턱"],
+    ["unity/Assets/DigitalFitZone/Game/Play/MeteorDodge/MeteorDodgeSteps.cs", "기기 값 → 칸: 폰은 기울였다 돌아오면 한 칸, 카메라는 선 자리가 곧 칸"],
+    ["unity/Assets/DigitalFitZone/Game/Play/MeteorDodge/MeteorDodgeRound.cs", "판: 위험 하나씩(예고 → 낙하 → 판정), 칸 이동·점프, 충돌·회피·보호막, 생존 점수, 봇 조작"],
+    ["unity/Assets/DigitalFitZone/Game/Play/MeteorDodge/MeteorDodgePractice.cs", "입장 뒤 동작 연습: 왼쪽 → 오른쪽 → 점프, 전원 통과"],
+    ["unity/Assets/DigitalFitZone/Game/Play/MeteorDodge/MeteorDodgeScoring.cs", "회피 +30·생존 +1 → 그 사람에게 Move(+1) 그 점수만큼"],
+    ["unity/Assets/DigitalFitZone/UI/Session/MeteorDodgeDirector.cs", "감독: 명단(봇), 기울기 → 한 칸, 누르기·톡·점프 → 점프, 골격 → 칸, 연습·경기 밀기, Award, 끝 알림"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiMeteorDodgeStage.cs", "무대: 위 띠 · 사람마다 3칸 길 · 사람 카드, 연습 화면, 배경 그림, 콩콩이"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgeRoundTests.cs", "판 검사 20건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgePracticeTests.cs", "칸 읽기·연습 검사 10건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgeDirectorTests.cs", "감독 검사 11건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgeStageTests.cs", "무대 검사 4건"],
+    ["docs/progress/2026-11-17-g012-meteor-dodge-native.md", "진행 기록, 붙이는 길, 말 표"],
+    ["docs/progress/g012-meteor-dodge-rulesets/g012-meteor-dodge.ruleset.json", "규칙 파일 초안(폰) — 같은 폴더에 -camera"],
+    ["docs/progress/g012-meteor-dodge-rulesets/assets/images/bg.jpg", "배경 그림 — 밝은 파스텔 행성(GPT 생성)"],
+    ["docs/progress/g012-meteor-dodge-web/game.html", "HTML 판 — 앱 「웹 게임」에 붙여 넣는 한 파일(폰 기울기·단추)"],
+    ["docs/progress/g012-meteor-dodge-web/README.md", "HTML 판 붙이는 길·입력·Unity 판과 다른 점"],
+    ["docs/progress/g012-meteor-dodge-review.html", "이 페이지 사본"]
+  ];
+  var t = document.getElementById("files");
+  rows.forEach(function(r){
+    var tr = document.createElement("tr"), a = document.createElement("a"), td1 = document.createElement("td"), td2 = document.createElement("td");
+    a.href = base + r[0]; a.textContent = r[0].replace("unity/Assets/DigitalFitZone/", "");
+    td1.appendChild(a); td2.textContent = r[1]; tr.appendChild(td1); tr.appendChild(td2); t.appendChild(tr);
+  });
+})();
+
+/* 체험판 — MeteorDodgeRound.cs·MeteorDodgePractice.cs 와 같은 규칙과 숫자, 1/60초 고정 걸음(남은 시간을 쌓아 꺼낸다).
+   흐름은 앱과 같다: 시작 화면(참가) → 동작 연습(왼쪽 → 오른쪽 → 점프, 전원) → 3초 → 경기.
+   키보드는 원본과 같다: P1 ← → Space · P2 A D W · P3 J L I · P4 F H T(폰 기울이기·단추, 또는 옆 걸음·점프 대신). 「시범 보기」면 모두 봇. */
+(function(){
+  "use strict";
+  var STEP = 1 / 60, EPS = 1e-9, COUNTDOWN = 3, FEEDBACK = 0.8;
+  var WARN = 1.1, MIN_TRAVEL = 1.3, FIRST = 0.6, NEXT = 0.55, JUMP = 0.85, AIR_FROM = 0.12, AIR_TO = 0.67, COOL = 1.1, FLASH = 0.55, DODGE = 0.45, LEAD = 0.32;
+  var LEVELS = { easy: [5, 3.1, "쉬움"], normal: [4, 2.6, "보통"], hard: [3, 2.1, "도전"] };
+  var KEYS = [{ left: "ArrowLeft", right: "ArrowRight", jump: "Space", labels: "← → Space" }, { left: "KeyA", right: "KeyD", jump: "KeyW", labels: "A D W" },
+              { left: "KeyJ", right: "KeyL", jump: "KeyI", labels: "J L I" }, { left: "KeyF", right: "KeyH", jump: "KeyT", labels: "F H T" }];
+  var STAGES = ["left", "right", "jump"], SAY = { left: "왼쪽으로 한 칸!", right: "오른쪽으로 한 칸!", jump: "점프!" };
+  var HOW = { phone: { left: "폰을 왼쪽으로 기울였다가 돌아와요", right: "폰을 오른쪽으로 기울였다가 돌아와요", jump: "폰 단추를 눌러요" },
+              camera: { left: "왼쪽으로 한 걸음 옮겨요", right: "오른쪽으로 한 걸음 옮겨요", jump: "제자리에서 낮게 점프!" } };
+  var STATUS = { ready: "준비 완료", watch: "위험 신호를 살펴요", jump: "점프!", hit: "충돌! 다시 집중해요", out: "보호막 소진 · 응원해요", avoided: "회피 성공! +30점" };
+  var COLORS = ["#4fa8d8", "#f09352", "#947be0", "#5bb580"];
+  var cfg = { count: 2, seconds: 60, level: "normal", hazards: "mixed", device: "phone", demo: 0 };
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var bg = typeof Image === "function" ? new Image() : null; if (bg) bg.src = "img/g012-meteor-dodge-bg.jpg";
+  var started = false, stage = "idle", clock = 0, acc = 0, cd = 0, seed = 12;
+  var PL, R, PR;
+  function rnd() { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+  function hp() { return LEVELS[cfg.level][0]; }
+  function reset() {
+    clock = 0; acc = 0; seed = 12; stage = started ? "practice" : "idle";
+    PL = [];
+    for (var i = 0; i < cfg.count; i++) PL.push({ id: "P" + (i + 1), seat: i, bot: !!cfg.demo, lane: 1, jump: -1, cool: 0, hp: hp(), avoided: 0, hits: 0, survival: 0, flash: 0, status: "ready" });
+    PR = { i: 0, passed: {}, at: NaN };
+    R = { elapsed: 0, hazard: null, id: 0, passed: 0, wait: FIRST };
+  }
+  function level() { return 1 + Math.floor(R.elapsed / 20 + 1e-9); }
+  function score(p) { return p.avoided * 30 + Math.floor(p.survival * 2 + 1e-9); }
+  function air(p) { return p.jump >= AIR_FROM - EPS && p.jump <= AIR_TO + EPS; }
+  function move(p, d) { if (stage === "over" || p.hp <= 0) return false; var l = Math.max(0, Math.min(2, p.lane + d)); if (l === p.lane) return false; p.lane = l; return true; }
+  function leap(p) { if (stage === "over" || p.hp <= 0 || p.cool > EPS || p.jump >= 0) return false; p.jump = 0; p.cool = COOL; p.status = "jump"; return true; }
+  function animate(p, s) { p.flash = Math.max(0, p.flash - s); p.cool = Math.max(0, p.cool - s); if (p.jump >= 0) { p.jump += s; if (p.jump >= JUMP - EPS) p.jump = -1; } }
+  function spawn() { R.id++; var kind = cfg.hazards === "mixed" ? (R.id % 3 === 0 ? "wave" : "meteor") : cfg.hazards; R.hazard = { kind: kind, lane: Math.floor(rnd() * 3), age: 0, travel: Math.max(MIN_TRAVEL, LEVELS[cfg.level][1] - (level() - 1) * 0.2) }; }
+  function resolve() {
+    var h = R.hazard;
+    PL.forEach(function (p) { if (p.hp <= 0) return; var hit = h.kind === "meteor" ? p.lane === h.lane : !air(p);
+      if (hit) { p.hp--; p.hits++; p.flash = FLASH; p.status = p.hp > 0 ? "hit" : "out"; } else { p.avoided++; p.status = "avoided"; } });
+    R.passed++; R.hazard = null; R.wait = NEXT;
+    if (PL.length && PL.every(function (p) { return p.hp <= 0; })) stage = "over";
+  }
+  function advance(t) {
+    if (stage === "practice") {
+      PL.forEach(function (p) { animate(p, STEP); });
+      if (!isNaN(PR.at)) { if (t >= PR.at - EPS) { PR.at = NaN; PR.passed = {}; if (PR.i + 1 >= STAGES.length) { stage = "count"; cd = t; } else PR.i++; } return; }
+      if (PL.length && PL.every(function (p) { return p.bot || PR.passed[p.id]; })) PR.at = t + FEEDBACK;
+      return;
+    }
+    if (stage === "count") { if (t - cd >= COUNTDOWN - EPS) { reset(); stage = "play"; PL.forEach(function (p) { p.status = "watch"; }); } return; }   /* 판을 열면 모두 가운데·보호막 가득(MeteorDodgeRound.Start) */
+    if (stage !== "play") return;
+    var s = Math.min(STEP, Math.max(0, cfg.seconds - R.elapsed)); R.elapsed += s;
+    PL.forEach(function (p) { if (p.hp <= 0) return; p.survival += s; animate(p, s); });
+    var h = R.hazard;
+    if (h) {
+      h.age += s;
+      PL.forEach(function (p) { if (!p.bot || p.hp <= 0) return;
+        if (h.kind === "meteor" && p.lane === h.lane && h.age > DODGE) move(p, h.lane === 0 ? 1 : -1);
+        if (h.kind === "wave" && WARN + h.travel - h.age <= LEAD + EPS && p.jump < 0) leap(p); });
+      if (h.age >= WARN + h.travel - EPS) resolve();
+    } else { R.wait -= s; if (R.wait <= EPS) spawn(); }
+    if (stage === "play" && R.elapsed >= cfg.seconds - EPS) { R.elapsed = cfg.seconds; stage = "over"; }
+  }
+  function act(i, a) {
+    if (!started || (stage !== "practice" && stage !== "play")) return;
+    var p = PL[i]; if (!p || p.bot) return;
+    var did = a === "jump" ? leap(p) : move(p, a === "left" ? -1 : 1);
+    if (did && stage === "practice" && isNaN(PR.at) && a === STAGES[PR.i]) PR.passed[p.id] = true;
+  }
+
+  /* ---- 그리기(UguiMeteorDodgeStage 배치 — 길 70~540, 판정 점선 470, 운석 y = 95 + 375 × 내려온 몫) */
+  function rr(x, y, w, h, r, c) { ctx.fillStyle = c; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); ctx.fill(); }
+  function label(s, x, y, size, c, align) { ctx.fillStyle = c; ctx.font = "800 " + size + "px Pretendard, 'Malgun Gothic', sans-serif"; ctx.textAlign = align || "center"; ctx.textBaseline = "middle"; ctx.fillText(String(s), x, y); }
+  function fit(s, size, width) { return Math.min(size, width / Math.max(1, String(s).length) * 1.7); }
+  function buddy(x, feet, size, c, pose, alpha) {   /* 콩콩이를 줄여 그린 모양(체험판) */
+    ctx.save(); ctx.globalAlpha = alpha; ctx.translate(x, feet); var k = size / 100;
+    ctx.fillStyle = c; ctx.beginPath(); ctx.ellipse(0, -30 * k, 24 * k, 30 * k, 0, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -72 * k, 22 * k, 0, 7); ctx.fill();
+    ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.arc(-8 * k, -75 * k, 6 * k, 0, 7); ctx.arc(8 * k, -75 * k, 6 * k, 0, 7); ctx.fill();
+    ctx.fillStyle = "#222b4a"; if (pose === "oops") { label("×  ×", 0, -75 * k, 11 * k, "#222b4a"); } else { ctx.beginPath(); ctx.arc(-8 * k, -74 * k, 3 * k, 0, 7); ctx.arc(8 * k, -74 * k, 3 * k, 0, 7); ctx.fill(); }
+    ctx.strokeStyle = c; ctx.lineWidth = 8 * k; ctx.lineCap = "round"; ctx.beginPath();
+    var up = pose === "jump" || pose === "cheer"; ctx.moveTo(-20 * k, -42 * k); ctx.lineTo(-34 * k, up ? -70 * k : -20 * k); ctx.moveTo(20 * k, -42 * k); ctx.lineTo(34 * k, up ? -70 * k : -20 * k); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(-10 * k, -4 * k); ctx.lineTo(-12 * k, 0); ctx.moveTo(10 * k, -4 * k); ctx.lineTo(12 * k, 0); ctx.stroke();
+    ctx.restore();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    if (bg && bg.complete && bg.naturalWidth) {
+      ctx.drawImage(bg, 0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.14)"; ctx.fillRect(0, 0, W, H);
+      var gr = ctx.createLinearGradient(0, 0, 0, H * .2); gr.addColorStop(0, "rgba(0,0,0,.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H * .2);
+    } else { ctx.fillStyle = "#f4f5fb"; ctx.fillRect(0, 0, W, H); }
+    var m = H * .03, gap = W * .012, w = W - gap * 2, hh = H - gap * 4, x0 = gap, y0 = gap, n = Math.max(1, PL.length);
+    var hud = { x: x0, y: y0, w: w, h: hh * .11 }, ay = y0 + hud.h + gap, ah = hh * .64, cw = (w - gap * (n - 1)) / n, cy = ay + ah + gap, ch = hh * (1 - .11 - .64);
+    var play = stage === "play" || stage === "over", over = stage === "over";
+    var Y = function (v) { return ay + (v - 60) / 490 * ah; }, k = ah / 490;
+    if (play) {
+      label("LEVEL " + level() + " · " + LEVELS[cfg.level][2], hud.x, hud.y + hud.h * .2, m * .8, "#f4f5fb", "left");
+      var best = -1, wins = []; PL.forEach(function (p) { var sc = score(p); if (sc > best) { best = sc; wins = [p.id]; } else if (sc === best) wins.push(p.id); });
+      label(over ? (PL.length === 1 ? (PL[0].hp > 0 ? "우주 탐험 성공!" : "다시 도전해 볼까요?") : (wins.length > 1 ? "공동 우승! " : "우승! ") + wins.join(" · ")) : "살펴보고, 피하고, 점프!", hud.x, hud.y + hud.h * .68, m * 1.5, "#ffffff", "left");
+      {
+        rr(hud.x + hud.w * .62, hud.y + hud.h * .2, hud.w * .18, hud.h * .6, hud.h * .27, "#eef0fa"); label(Math.max(0, cfg.seconds - R.elapsed).toFixed(1) + "초", hud.x + hud.w * .71, hud.y + hud.h * .5, m * .9, "#222b4a");
+        rr(hud.x + hud.w * .82, hud.y + hud.h * .2, hud.w * .18, hud.h * .6, hud.h * .27, "#eef0fa"); label("위험 통과 " + R.passed + "회", hud.x + hud.w * .91, hud.y + hud.h * .5, m * .9, "#222b4a");
+      }
+    } else {
+      var a = STAGES[PR.i];
+      label("동작 연습 " + (PR.i + 1) + " / " + STAGES.length, hud.x, hud.y + hud.h * .2, m * .8, "#f4f5fb", "left");
+      label(stage === "count" ? "곧 시작해요!" : !isNaN(PR.at) ? "잘했어요!" : SAY[a], hud.x, hud.y + hud.h * .68, m * 1.5, "#ffffff", "left");
+      label(HOW[cfg.device][a], hud.x + hud.w, hud.y + hud.h * .5, m * .8, "#ffffff", "right");
+    }
+    var h = play ? R.hazard : null;
+    PL.forEach(function (p, i) {
+      var cx0 = x0 + i * (cw + gap), lw = cw / 3, col = COLORS[i % 4];
+      rr(cx0, ay, cw, ah, cw * .04, "rgba(255,255,255,.94)");
+      for (var j = 0; j < 3; j++) { ctx.fillStyle = j % 2 ? "#dad8f0" : "#e6e4f6"; ctx.fillRect(cx0 + j * lw + lw * .03, Y(70), lw * .94, Y(540) - Y(70)); }
+      ctx.strokeStyle = "#7c86b0"; ctx.lineWidth = 2.5; ctx.setLineDash([10, 8]); ctx.beginPath(); ctx.moveTo(cx0, Y(470)); ctx.lineTo(cx0 + cw, Y(470)); ctx.stroke(); ctx.setLineDash([]);
+      if (h) {
+        var pr = Math.max(0, Math.min(1, (h.age - WARN) / h.travel)), y = Y(95 + 375 * pr);
+        if (h.kind === "meteor") {
+          var mx = cx0 + lw * (h.lane + .5); ctx.fillStyle = "rgba(241,163,106,.22)"; ctx.fillRect(cx0 + lw * h.lane, Y(70), lw, Y(480) - Y(70));
+          if (h.age < WARN) label("!", mx, Y(125), m * 1.8, "#c47c59");
+          else { ctx.strokeStyle = "#ffb570"; ctx.lineWidth = 7 * k; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(mx - 13 * k, y - 52 * k); ctx.lineTo(mx, y - 12 * k); ctx.stroke();
+            ctx.fillStyle = "#c47c59"; ctx.beginPath(); ctx.arc(mx, y, Math.min(25 * k, lw * .27), 0, 7); ctx.fill(); ctx.fillStyle = "#8c5b53"; ctx.beginPath(); ctx.arc(mx - 6 * k, y - 5 * k, 7 * k, 0, 7); ctx.fill(); }
+        } else {
+          if (h.age < WARN) label("점프 준비!", cx0 + cw / 2, Y(125), m * 1.1, "#9b6ff0");
+          else { ctx.strokeStyle = "#9b6ff0"; ctx.lineWidth = 9 * k; ctx.beginPath(); ctx.moveTo(cx0 + 6, y); ctx.lineTo(cx0 + cw - 6, y); ctx.stroke(); ctx.strokeStyle = "#e9dcff"; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(cx0 + 6, y - 8 * k); ctx.lineTo(cx0 + cw - 6, y - 8 * k); ctx.stroke(); }
+        }
+      }
+      var lift = p.jump >= 0 ? Math.sin(Math.PI * p.jump / JUMP) * 95 * k : 0, bx = cx0 + lw * (p.lane + .5), size = Math.min(lw * .95, ah * .24);
+      ctx.fillStyle = "rgba(0,0,0,.16)"; ctx.beginPath(); ctx.ellipse(bx, Y(482) + 2, size * .26, size * .07, 0, 0, 7); ctx.fill();
+      var ok = PR.passed[p.id] || p.bot;
+      buddy(bx, Y(482) - lift, size, col, p.hp <= 0 || p.flash > 0 ? "oops" : p.jump >= 0 ? "jump" : !play && ok ? "cheer" : "idle", p.hp <= 0 ? .4 : 1);
+      label("P" + (i + 1), cx0 + cw / 2, Y(548), 20 * k, col);
+      if (p.hp <= 0) label("탐험 종료", cx0 + cw / 2, Y(300), m, "#222b4a");
+      /* 카드 */
+      rr(cx0, cy, cw, ch, ch * .1, "rgba(255,255,255,.97)"); rr(cx0, cy, cw, ch * .06, ch * .03, col);
+      label("P" + (i + 1) + (p.bot ? " · 봇" : " · " + KEYS[i].labels), cx0 + cw * .06, cy + ch * .2, fit("P1 · ← → Space", m * .8, cw * .5), "#222b4a", "left");
+      label(play ? score(p) + "점" : ok ? "통과!" : "해 보세요", cx0 + cw * .94, cy + ch * .26, m * 1.3, "#222b4a", "right");
+      if (play) for (var q = 0; q < hp(); q++) { ctx.fillStyle = q < p.hp ? "#e85d6a" : "rgba(232,93,106,.25)"; ctx.beginPath(); ctx.arc(cx0 + cw * .06 + ch * .16 * (q + .5), cy + ch * .56, ch * .06, 0, 7); ctx.fill(); }
+      var st = play ? STATUS[p.status] : "모두 해 보면 시작 · Enter로 바로 시작";
+      label(st, cx0 + cw * .06, cy + ch * .83, fit(st, m * .7, cw * .88), p.status === "avoided" && play ? "#2e8a5e" : "#565f7e", "left");
+    });
+    if (play && PL.length) { var t0 = !h ? "다음 신호 대기" : (h.kind === "meteor" ? "운석 · " + (h.lane + 1) + "번 칸" : "충격파 · 모든 칸") + (h.age < WARN ? " / 예고" : " / 접근 중");
+      rr(x0 + m * .4, ay + m * .4, m * 9, m * 1.4, m * .5, "rgba(255,255,255,.92)"); label(t0, x0 + m * .6, ay + m * 1.1, m * .7, "#222b4a", "left"); }
+    if (stage === "count") { var cn = Math.max(1, Math.ceil(COUNTDOWN - (clock - cd) - EPS)); ctx.fillStyle = "rgba(34,43,74,.45)"; ctx.fillRect(0, 0, W, H); label(cn, W / 2, H / 2, H * .3, "#ffffff"); }
+    var info = stage === "practice" ? "동작 연습 — 사람마다 자기 키로 · Enter로 바로 시작" : stage === "count" ? "3초 뒤 시작" : over ? "경기 끝" : stage === "play" ? "LEVEL " + level() : "";
+    var el = document.getElementById("score");
+    if (el) el.innerHTML = "<span>" + info + "</span>" + PL.map(function (p, i) { return "<span style='border-color:" + COLORS[i % 4] + "'>P" + (i + 1) + " " + score(p) + "점</span>"; }).join("");
+  }
+  var last = 0;
+  function frame(t) {
+    var now = t / 1000; if (!last) last = now;
+    var dt = Math.min(0.25, now - last); last = now;
+    if (started && dt > 0) { acc += dt; while (acc >= STEP) { acc -= STEP; clock += STEP; advance(clock); } }
+    draw(); requestAnimationFrame(frame);
+  }
+  window.addEventListener("keydown", function (e) {
+    if (!started) return;
+    if (e.key === "Enter" && stage === "practice") { stage = "count"; cd = clock; e.preventDefault(); return; }
+    for (var i = 0; i < KEYS.length; i++) for (var a in { left: 1, right: 1, jump: 1 }) if (KEYS[i][a] === e.code) { e.preventDefault(); if (!e.repeat) act(i, a); return; }
+  });
+  function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
+  [["data-count", "count", 1], ["data-seconds", "seconds", 1], ["data-level", "level", 0], ["data-hazards", "hazards", 0], ["data-device", "device", 0], ["data-demo", "demo", 1]].forEach(function (o) {
+    document.querySelectorAll("[" + o[0] + "]").forEach(function (b) { b.onclick = function () { var v = b.getAttribute(o[0]); cfg[o[1]] = o[2] ? +v : v; pick(o[0], v); reset(); }; });
+  });
+  document.getElementById("restart").onclick = function () { reset(); };
+  window.__startDemo = function () { started = true; reset(); if (cv.focus) cv.focus(); };
+  window.__stopDemo = function () { started = false; reset(); };
+  window.__g012 = {
+    state: function () {
+      return { stage: stage, practice: PR.i, elapsed: R.elapsed, passed: R.passed, hazard: R.hazard && { kind: R.hazard.kind, lane: R.hazard.lane, age: R.hazard.age, travel: R.hazard.travel },
+               people: PL.map(function (p) { return { lane: p.lane, jump: p.jump, hp: p.hp, avoided: p.avoided, hits: p.hits, score: score(p) }; }), clock: clock };
+    },
+    act: act,
+    set: function (o) { Object.keys(o).forEach(function (k) { cfg[k] = o[k]; }); reset(); }
+  };
+  reset(); requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* 시작 화면 — 「경기 시작」을 누르면 체험판이 돈다, 「처음 화면」이면 멈추고 돌아온다 */
+(function(){
+  var start = document.getElementById("start"), go = document.getElementById("go"), home = document.getElementById("home");
+  go.addEventListener("click", function(){ start.hidden = true; home.hidden = false; window.__startDemo(); });
+  home.addEventListener("click", function(){ window.__stopDemo(); start.hidden = false; home.hidden = true; go.focus(); });
+})();
+</script>
+</body>
+</html>
