@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G011 사라지는 발자국! 기억력 탐험 — C# 이식 확인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#202B3D; --surface:#30435A; --line:#46607E; --ink:#F4F8FF; --muted:#CCDCE9;
+  --lime:#D1F58E; --coral:#FF8A7A; --sun:#FFD66B;
+  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
+h2{font-size:22px;margin:44px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
+p{margin:0 0 12px}
+a{color:var(--lime)}
+.lead{color:var(--muted);max-width:46em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.chip b{color:var(--lime)}
+code{font-family:Consolas,'D2Coding',Menlo,monospace;font-size:.92em;background:#18212F;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-size:13px;font-weight:700}
+.wrap{overflow-x:auto}
+.demo{background:#141C29;border:1px solid var(--line);border-radius:14px;padding:12px}
+.demo canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:#1B2536;touch-action:none;cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button{font:inherit;font-weight:650;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 14px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.score{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:14px;font-weight:600}
+.score span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:14px}
+.ok{color:var(--lime);font-weight:700}
+.no{color:var(--coral);font-weight:700}
+ol li,ul li{margin-bottom:6px}
+.back{display:inline-block;margin-bottom:14px;font-weight:650;text-decoration:none}
+ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+
+.stagewrap{position:relative}
+.start{position:absolute;inset:0;border-radius:10px;background:#1B2536;display:grid;grid-template-columns:1.15fr .85fr;gap:20px;padding:22px 26px;overflow:auto;align-content:start}
+.start[hidden]{display:none}
+.start .eyebrow{color:var(--lime);font-weight:800;font-size:13px;letter-spacing:1px}
+.start h3{font-size:clamp(22px,2.6vw,32px);margin:4px 0 6px;font-weight:800;line-height:1.2}
+.start .lead2{margin:0 0 8px;color:var(--muted);font-size:15px;line-height:1.55}
+.start .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.start .tags span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:650}
+.start .how{background:#141C29;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.start .how b{font-size:14px}
+.start ol{margin:6px 0 0;padding-left:20px;font-size:15px;line-height:1.5}
+.start ol li{margin-bottom:3px}
+.start .set{display:grid;gap:12px;align-content:start}
+.start .set h4{margin:0;font-size:17px;font-weight:800}
+.start .opt>span{display:block;font-weight:700;font-size:14px;margin-bottom:4px;color:var(--muted)}
+.start .opt .controls{margin:0}
+.start .go{font:inherit;font-weight:800;font-size:18px;background:var(--lime);color:#13202F;border:0;border-radius:12px;padding:12px 18px;cursor:pointer}
+.start .safe{font-size:13px;color:var(--muted);background:#141C29;border:1px solid var(--line);border-radius:10px;padding:8px 10px;line-height:1.5;margin:0}
+@media (max-width:760px){.start{position:static;grid-template-columns:1fr;margin-bottom:10px}}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 변환 기록 전체</a>
+  <h1>G011 사라지는 발자국! 기억력 탐험 — C# 이식 확인</h1>
+  <p class="lead">HTML 게임 「사라지는 발자국! 기억력 탐험」(G011 v2.1, 회원님이 주신 HTML 파일)을 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 2~4팀이 번갈아, 4×4 보물 지도에 잠깐 나타난 발자국 길을 기억해 출발부터 보물까지 한 칸씩 찾아가는 팀 게임입니다. 회원님 결정대로 <b>입력만 클릭·방향키 → 폰 기울기 + 카메라(만세·앉기·옆 걸음)</b>로 바꾸고 나머지는 모두 원본대로 옮겼습니다. 주개발자 게임과 같은 흐름(참가 → 동작 연습 → 시작)을 넣었고, 앱 「웹 게임」에 붙여 넣는 <b>HTML 판</b>도 함께 올렸습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b></p>
+  <div class="chips">
+    <span class="chip">브랜치 <b>claude/g011-footprint-explorer-native</b></span>
+    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/108">PR #108</a> 검토 대기</span>
+    <span class="chip">새 파일 <b>17개</b>(+ .meta 12개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">맥 Unity 컴파일 오류 <b>0</b> · 검사 <b>53/53</b> 통과</span>
+  </div>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g011-footprint-explorer-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g011-footprint-explorer-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/108">PR #108</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g011-footprint-explorer-native/docs/progress/2026-11-17-g011-footprint-explorer-native.md">진행 기록</a></p>
+
+  <!--@REQUEST@-->
+<style>
+.req{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+.req-btn{font:inherit;font-weight:700;font-size:14px;background:var(--bg);color:var(--ink);border:1px solid var(--lime);border-radius:999px;padding:5px 14px;cursor:pointer}
+.req-btn:hover{background:var(--lime);color:#13202F}
+.req-mark{font-size:14px;font-weight:650;color:#13202F;background:#FFD66B;border-radius:999px;padding:3px 12px}
+.req-mark.done{background:var(--lime)}
+dialog.req-dlg{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:min(520px,92vw)}
+dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
+.req-dlg h3{margin:0 0 4px}
+.req-dlg label{display:grid;gap:4px;margin-top:12px;font-weight:650;font-size:14px;color:var(--muted)}
+.req-dlg input,.req-dlg textarea{font:inherit;font-weight:450;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.req-dlg textarea{min-height:130px;resize:vertical}
+.req-dlg .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;align-items:center}
+.req-dlg .row button{font:inherit;font-weight:700;border-radius:10px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.req-dlg .row button.send{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.req-dlg .msg{margin-right:auto;font-size:14px;color:#FFB4A8}
+.req-dlg .open-note{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.req-thread{grid-column:1/-1;margin:8px 0 0;font-size:14px;font-weight:500}
+.req-thread summary{cursor:pointer;color:var(--muted);font-weight:650}
+.req-item{margin:8px 0 0;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.req-item .who{font-weight:700}
+.req-item .at{color:var(--muted);margin-left:8px}
+.req-item .st{margin-left:8px;font-weight:650;color:#13202F;background:var(--lime);border-radius:999px;padding:1px 10px}
+.req-item p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.req-reply{margin:8px 0 0 14px;padding:2px 0 2px 12px;border-left:3px solid var(--lime)}
+</style>
+<div class="req" data-slug="g011-footprint-explorer" data-title="G011 사라지는 발자국! 기억력 탐험" data-page="g011-footprint-explorer.html" style="margin:14px 0 0"><button type="button" class="req-btn">이 게임 수정 요청</button><span class="req-mark" hidden></span></div>
+<dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h">
+<form method="dialog">
+<h3 id="req-h">수정 요청</h3>
+<div class="game" style="font-weight:700"></div>
+<label>요청한 사람(선택)<input name="who" maxlength="40" autocomplete="name"></label>
+<label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요"></textarea></label>
+<p class="open-note">보낸 글과 이름은 이 페이지에 그대로 보입니다.</p>
+<div class="row"><span class="msg" role="status"></span><button type="button" class="cancel">취소</button><button type="submit" class="send">보내기</button></div>
+</form>
+</dialog>
+<script>
+(function(){
+  var URL_ = "https://script.google.com/macros/s/AKfycbwRpKn6QXcB_kITjF_YPSyPDp8Dx9tiD84oj90SO8u2FfV6lLIcHy5StBsAhaPeLg-S/exec", PAGES = "https://hryoon0.github.io/dfz/review/";
+  // 응답이 없을 때 「보내는 중」이 영원히 돌지 않게 15초에 끊는다
+  function fetchJSON(url, opts, ms){ var c = new AbortController(), t = setTimeout(function(){ c.abort(); }, ms || 15000);
+    return fetch(url, Object.assign({}, opts, { signal: c.signal })).then(function(r){ return r.json(); }).finally(function(){ clearTimeout(t); }); }
+  function mark(slug, g){
+    var el = document.querySelector('[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
+    var day = String(g.last || '').slice(0, 10);
+    el.textContent = (g.status ? g.status + ' · ' : '수정 요청함 · ') + day + (g.count > 1 ? ' (' + g.count + '건)' : '');
+    el.title = '마지막 요청 ' + g.last;
+    el.classList.toggle('done', !!g.status); el.hidden = false;
+  }
+  // 받은 글은 남이 쓴 것이라 textContent로만 넣는다(태그를 적어 보내도 글자로 보인다)
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  // 요청 글과 답글을 댓글처럼 — 목록에서는 접어 두고, 게임 페이지에서는 펴 둔다
+  function thread(slug, g){
+    var req = document.querySelector('.req[data-slug="' + slug + '"]'); if (!req || !g || !g.items || !g.items.length) return;
+    var box = req.nextElementSibling;
+    if (!box || !box.classList.contains('req-thread')) { box = el('details', 'req-thread'); box.open = !req.closest('ul.games'); req.after(box); }
+    box.textContent = '';
+    box.appendChild(el('summary', '', '수정 요청 ' + g.items.length + '건'));
+    g.items.forEach(function(it){
+      var d = el('div', 'req-item'), h = el('div');
+      h.appendChild(el('span', 'who', it.name)); h.appendChild(el('span', 'at', it.at)); if (it.status) h.appendChild(el('span', 'st', it.status));
+      d.appendChild(h); d.appendChild(el('p', '', it.text));
+      if (it.reply) { var r = el('div', 'req-reply'); r.appendChild(el('span', 'who', '답글')); r.appendChild(el('p', '', it.reply)); d.appendChild(r); }
+      box.appendChild(d);
+    });
+  }
+  // 게임별 목록 — 고친 기록과 수정 요청 중 더 늦은 시각이 위로(2026-11-17 회원님 「수정요청 받으면 또 그게 최신」)
+  function resort(games){
+    var ul = document.querySelector('ul.games'); if (!ul) return;
+    var rows = [].slice.call(ul.children);
+    rows.forEach(function(li){ var g = games[li.dataset.slug], at = g && String(g.last || '').slice(0, 16);
+      if (at && at > (li.dataset.last || '')) li.dataset.last = at; });
+    rows.sort(function(a, b){ return (b.dataset.last || '').localeCompare(a.dataset.last || ''); }).forEach(function(li){ ul.appendChild(li); });
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) { Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); resort(r.games); } }).catch(function(){}); }
+  var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
+  document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
+    cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
+    form.reset(); var n = localStorage.getItem('dfz-req-name'); if (n) W.who.value = n; dlg.showModal(); W.note.focus(); }); });
+  dlg.querySelector('.cancel').addEventListener('click', function(){ dlg.close(); });
+  form.addEventListener('submit', function(e){
+    e.preventDefault(); if (!cur) return;
+    var text = W.note.value.trim(); if (text.length < 2) { msg.textContent = '고칠 점을 적어 주세요.'; return; }
+    send.disabled = true; send.textContent = '보내는 중…'; msg.textContent = '';
+    localStorage.setItem('dfz-req-name', W.who.value.trim());
+    // text/plain — 브라우저가 사전 요청(OPTIONS)을 보내지 않게(Apps Script는 그것을 받지 못한다)
+    fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text }) })
+      .then(function(r){
+        if (!r || !r.ok) throw new Error(r && r.error || 'fail');
+        dlg.close(); load();
+        mark(cur.slug, { count: 1, last: r.at, status: '' });
+      })
+      .catch(function(err){ send.disabled = false; send.textContent = '다시 보내기';
+        msg.textContent = String(err.message) === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 보내 주세요.' : '보내지 못했어요. 다시 보내 주세요.'; });
+  });
+  load();
+})();
+</script>
+<!--@/REQUEST@-->
+
+  <h2>변환 기록</h2>
+  <!--@HISTORY@-->
+<ul class="log">
+<li><span class="when">2026-11-17 21:33</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 폰 기울기로 같은 규칙(웹에 오는 카메라 동작으로는 좌우를 받을 수 없어 폰만, 설정은 기본값 고정, 팀 수는 앱). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #108">PR #108</a></li>
+<li><span class="when">2026-11-17 21:33</span><span>처음 변환 — 입력은 회원님 결정 「폰 기울기 + 카메라 둘 다」(폰은 기울였다 돌아오면 한 칸, 카메라는 만세 위·앉기 아래·옆 걸음 좌우), 나머지는 원본대로: 2·3·4팀이 번갈아, 라운드 3·5·난이도 셋·관찰 12~25초·제한 25·40·60초, 틀리면 출발점, 300 + 남은 초×5 − 실수×40. 라운드마다 팀 안 탐험가가 돌아가고, 사람 없는 팀·봇은 원본 시범 걸음, 결과 2.7초 뒤 다음 팀. 참가 → 동작 연습(위·아래·왼쪽·오른쪽 한 칸) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #108">PR #108</a></li>
+</ul>
+<!--@/HISTORY@-->
+
+  <h2>흐름 — 참가 → 동작 연습 → 시작</h2>
+  <div class="wrap"><table>
+    <tr><th>단계</th><th>누가</th><th>무엇</th></tr>
+    <tr><td>1. 참가 화면</td><td>앱(그대로)</td><td>폰·컨트롤러(또는 카메라)로 참가, 앱이 팀을 고르게 나눕니다(2·3·4팀 규칙 파일). 모자라면 봇이 채웁니다(<code>botFill</code>)</td></tr>
+    <tr><td>2. 입장 뒤 동작 연습</td><td><b>이 게임</b>(<code>FootprintPractice</code>)</td><td>「한 칸 연습」 — 위 → 아래 → 왼쪽 → 오른쪽을 저마다 한 칸씩. 단계마다 <b>참가자 전원</b>(봇은 바로 통과)이 해야 「잘했어요!」 0.8초 뒤 다음 단계, 넷을 마치면 시작. 선생님은 앱의 「바로 시작」/Enter.</td></tr>
+    <tr><td>3. 게임 시작</td><td>앱 3초 세기 → 이 게임</td><td>라운드마다 팀이 차례로 준비 3초 → 지도 관찰 → 기억으로 탐험 → 결과. 라운드마다 같은 팀 사람이 돌아가며 탐험가. 다 돌면 앱이 경기를 닫고 결과 화면(팀 합계)</td></tr>
+  </table></div>
+
+  <h2>직접 해 보기</h2>
+  <!--start-screen-->
+<style>#start{grid-template-columns:1fr 1fr}.start .set{gap:10px}.start .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}.start .grid2 .wide{grid-column:1/-1}.start .opt .controls{gap:5px}.start .opt .controls button{padding:5px 11px;font-size:14px}.start .set h4{font-size:16px}@media (max-width:760px){.start .grid2{grid-template-columns:1fr}}</style>
+<p class="note">C# 판정과 같은 규칙과 숫자로 움직입니다. 팀마다 두 사람이 서고(합류 순서대로 팀을 번갈아), 지금 탐험가의 폰 기울이기(또는 만세·앉기·옆 걸음) 대신 <b>방향키를 한 번 누를 때마다 한 칸</b>입니다. 동작 연습에서는 아직 안 한 사람부터 차례로 방향키를 맡습니다. 「시범 보기」면 모두 봇이 원본 시범처럼 걷습니다. Enter는 선생님의 「바로 시작」.</p>
+  <div class="demo">
+    <div class="stagewrap">
+      <canvas id="cv" width="1600" height="900" tabindex="0" aria-label="사라지는 발자국 체험판"></canvas>
+      <div class="start" id="start">
+        <div>
+          <div class="eyebrow">G011 · 공간 기억 × 이동 경로 × 방향 조절</div>
+          <h3>사라지는 발자국! 기억력 탐험</h3>
+          <p class="lead2">잠깐 나타난 발자국 길을 눈에 담아요. 길이 사라지면, 기억한 위치로 한 칸씩 이동! 2–4팀 · 사라진 길을 찾아 보물까지!</p>
+          <div class="how"><b>진행 방법</b>
+            <ol>
+              <li>출발 깃발부터 보물까지 이어진 노란 발자국과 번호를 기억해요. 길은 한 번만 보여 줘요.</li>
+              <li>현재 위치 바로 옆 칸으로 한 칸씩 — 폰을 기울이거나, 만세(위)·앉기(아래)·옆 걸음(좌우)으로.</li>
+              <li>길을 벗어나면 출발점으로! 시간은 계속 흘러요.</li>
+              <li>성공 300점 + 남은 초 × 5 − 실수 × 40(최소 100), 시간 초과 0점.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="set">
+          <h4>시작 설정</h4>
+          <div class="grid2">
+          <div class="opt"><span>참가 팀</span><div class="controls">
+            <button data-teams="2" aria-pressed="true">2팀</button>
+            <button data-teams="3" aria-pressed="false">3팀</button>
+            <button data-teams="4" aria-pressed="false">4팀</button>
+          </div></div>
+          <div class="opt"><span>탐험 라운드</span><div class="controls">
+            <button data-rounds="3" aria-pressed="true">3라운드</button>
+            <button data-rounds="5" aria-pressed="false">5라운드</button>
+          </div></div>
+          <div class="opt wide"><span>탐험 난이도</span><div class="controls">
+            <button data-level="easy" aria-pressed="false">쉬움 · 5칸부터 +1</button>
+            <button data-level="normal" aria-pressed="true">보통 · 6칸부터 +1</button>
+            <button data-level="hard" aria-pressed="false">도전 · 7칸부터 +2</button>
+          </div></div>
+          <div class="opt"><span>길을 보여 주는 시간</span><div class="controls">
+            <button data-view="12" aria-pressed="false">12초</button>
+            <button data-view="16" aria-pressed="true">16초</button>
+            <button data-view="20" aria-pressed="false">20초</button>
+            <button data-view="25" aria-pressed="false">25초</button>
+          </div></div>
+          <div class="opt"><span>보물 찾는 시간</span><div class="controls">
+            <button data-limit="25" aria-pressed="false">25초</button>
+            <button data-limit="40" aria-pressed="true">40초</button>
+            <button data-limit="60" aria-pressed="false">60초</button>
+          </div></div>
+          <div class="opt"><span>기기</span><div class="controls">
+            <button data-device="phone" aria-pressed="true">폰 기울기</button>
+            <button data-device="camera" aria-pressed="false">카메라</button>
+          </div></div>
+          <div class="opt"><span>참가</span><div class="controls">
+            <button data-demo="0" aria-pressed="true">키보드(방향키)</button>
+            <button data-demo="1" aria-pressed="false">시범 보기(봇)</button>
+          </div></div>
+          </div>
+          <button class="go" id="go">게임 시작</button>
+          <p class="safe"><b>안전</b> 주변을 확인하고 제자리에서 · 폰은 두 손으로 · 카메라 앞은 2m 띄워 · 차례가 아닌 팀은 말로 돕기</p>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="home" hidden>처음 화면</button>
+      <button id="restart" style="margin-left:auto">다시</button>
+    </div>
+    <div class="score" id="score"></div>
+  </div>
+
+  <h2>HTML 판 — 원본 형식 그대로 함께 올렸습니다</h2>
+  <p>주개발자 요청(「HTML·유니티 둘 다 올려 보라」)대로, 앱의 「AI로 게임 만들기 → HTML 붙여넣기」에 그대로 넣으면 도는 <b>HTML 한 파일</b>도 같은 PR에 넣었습니다: <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g011-footprint-explorer-native/docs/progress/g011-footprint-explorer-web/game.html"><code>docs/progress/g011-footprint-explorer-web/game.html</code></a>(설명 <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g011-footprint-explorer-native/docs/progress/g011-footprint-explorer-web/README.md">README</a>).</p>
+  <div class="wrap"><table>
+    <tr><th></th><th>Unity C# 판(앱 내장)</th><th>HTML 판(붙여넣기용)</th></tr>
+    <tr><td>규칙·숫자</td><td colspan="2">같다 — 원본 v2.1(길 길이·관찰·제한 시간, 틀리면 출발점, 300 + 남은 초×5 − 실수×40, 결과 2.7초 뒤 다음 팀)</td></tr>
+    <tr><td>입력</td><td>폰 기울기 · 카메라(만세 위 · 앉기 아래 · 옆 걸음 좌우)</td><td>폰 기울기만 — 웹 게임에 오는 카메라 동작(Jump·Raise·Squat)으로는 좌우를 받을 수 없다</td></tr>
+    <tr><td>설정</td><td>규칙 파일 칸(라운드 3·5, 난이도 셋, 관찰 12~25초, 제한 25·40·60초) · 팀 수는 2·3·4팀 규칙 파일</td><td>기본값 고정(3라운드 · 보통 · 16초 · 40초) · 팀 수는 앱 <code>teams</code></td></tr>
+    <tr><td>동작 연습</td><td>있음(한 칸 연습)</td><td>없음 — 앱이 시작을 알리면 바로 첫 팀 준비</td></tr>
+  </table></div>
+  <ul>
+    <li><span class="ok">통과</span> 앱이 붙여 넣은 HTML에 거는 검사기(<code>WebGameLint.Check</code> 규약 · <code>FindClassroomHazards</code> 교실 위험 · <code>WebGameImport</code> 바깥 주소)를 맥 Unity에서 돌려 문제 0건.</li>
+    <li><span class="ok">끝까지</span> <code>dfz</code> 대역 위에서 60·120Hz로 한 판(사람 1명 · 사람 없음)을 돌려 끝 알림(<code>dfz.finish</code>)이 한 번 오는 것을 봤습니다.</li>
+    <li><span class="no">안 함</span> 앱 안 격리 브라우저에서 실제 실행 — 그 엔진이 Windows 전용이라 맥에서는 못 돌립니다.</li>
+  </ul>
+
+  <h2>원본 HTML판에서 달라진 것 — 입력</h2>
+  <div class="wrap"><table>
+    <tr><th>원본 HTML판</th><th>앱판(C#)</th><th>까닭</th></tr>
+    <tr><td>「화면 연습」: 옆 칸 클릭·방향키·나침반 단추</td><td><b>폰</b>: 탐험가가 앞·뒤·좌·우로 기울이면 한 칸, 가운데로 돌아와야 다음 칸(앞으로 = 위)</td><td>회원님 결정. 기울인 채로 여러 칸 가지 않게 되돌림</td></tr>
+    <tr><td>「체육 활동」: 바닥 격자를 걷고 교사가 기록</td><td><b>카메라</b>: 만세 = 위, 쪼그려 앉기 = 아래, 옆으로 한 걸음 = 좌우(처음 선 자리에서 어깨 너비 0.6배)</td><td>카메라는 앞뒤 걸음을 잘 못 봐서 위·아래는 몸 동작으로</td></tr>
+    <tr><td>팀이 화면 하나를 번갈아</td><td>앱 모둠, 라운드마다 그 팀 사람이 자리 차례로 돌아가며 탐험가</td><td>같은 뜻 — 한 사람이 다 걷지 않게</td></tr>
+    <tr><td>「혼자 시범 보기」(자동 이동)</td><td>사람이 없는 팀·봇 탐험가가 같은 가상 이동(0.75초 뒤부터 0.65초마다, 둘째 팀은 한 번 틀림)</td><td>모자란 자리는 앱 봇 — 봇 행동이 곧 원본 시범</td></tr>
+    <tr><td>결과 뒤 선생님 「다음 팀 탐험 →」</td><td>2.7초 뒤 저절로(원본 시범 모드와 같게)</td><td>앱에 선생님 단추가 없다</td></tr>
+    <tr><td>팀 이름 입력 칸</td><td>하늘·노을·보라·초록 탐험대(원본 기본값)</td><td>앱 화면에 글 입력이 없다</td></tr>
+    <tr><td>결과 표·txt 저장</td><td>팀 카드(점수·보물·실수), 끝나면 위 띠에 우승 팀, 앱 결과판</td><td>앱 공통</td></tr>
+    <tr><td>그림 글자 🧭 🚩 💎 👣</td><td>도형(나침반·깃발·보석·발자국)</td><td>윈도에서 모양이 달라 구분 수단으로 안 쓴다</td></tr>
+    <tr><td>연둣빛 바탕</td><td><b>배경 그림(숲속 탐험 야영지, GPT)</b> 위에 원본 지도 그대로</td><td>게임마다 다른 밝은 장면</td></tr>
+  </table></div>
+  <p class="note">그대로 옮긴 것: 참가 팀 2·3·4, 라운드 3·5, 난이도 쉬움·보통·도전(5·6·7칸부터 +1·+1·+2, 15칸까지), 관찰 12·16·20·25초, 제한 25·40·60초, 준비 3초, 길 만들기(맨 아래 줄 출발, 겹치지 않게, 한 라운드 안에서 팀마다 다른 길), 길은 관찰·결과 때만 보임, 바로 옆 칸만, 틀리면 실수 +1·출발점·시간은 계속, 점수 셈, 공동 우승.</p>
+
+  <h2>새 파일</h2>
+  <div class="wrap"><table id="files">
+    <tr><th>파일</th><th>무엇</th></tr>
+  </table></div>
+
+  <h2>검증한 것과 안 한 것</h2>
+  <ul>
+    <li><span class="ok">Unity</span> 맥 Unity 6000.5.9f1 · 빌드 대상 Win64 · 가지 85b9550 스냅샷: 컴파일 오류 0, EditMode(골라 돌림 — 「Footprint」, 전체 아님) 53건 모두 통과.</li>
+    <li><span class="ok">.NET</span> 같은 53건을 .NET 8·C# 9·경고를 오류로·NUnit 3.14로도 돌렸습니다(main의 실제 파일과 함께 묶음).</li>
+    <li><span class="ok">빨간불 확인</span> 판정·한 칸 읽기·연습·감독·무대 규칙 98개를 하나씩 끄면 모두 검사가 실패합니다. 처음엔 12개가 구멍이라 검사 3건을 더하고 8건을 보강했습니다.</li>
+    <li><span class="ok">HTML 판</span> 앱 웹 게임 검사기 통과(위 절).</li>
+    <li><span class="no">안 함</span> 앱 화면 촬영(앱에 아직 연결 전이라 앱 화면이 없음), 실물 폰·카메라로 한 판(만든 분들이 확인), Windows 실행.</li>
+  </ul>
+
+  <h2>앱에 붙이려면</h2>
+  <ol>
+    <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>Footprint</code>, <code>FlowTypes.IsMovedHtmlGame</code>, <code>FlowSpec</code>·검증기·스키마에 <code>footprintRounds</code>(3·5)·<code>footprintLevel</code>(easy·normal·hard)·<code>footprintView</code>(12·16·20·25)·<code>footprintLimit</code>(25·40·60). 값은 <code>FootprintSettings.From(모둠 수, …)</code>로 감독에.</li>
+    <li><b>봇</b>: <code>BotFill.Supports</code>에 <code>FlowType.Footprint</code>(봇 행동은 판 안에 있음).</li>
+    <li><b>연습</b>: 안내 단계(<code>SessionState.Intro</code>)에서 이 게임이면 안내 카드 대신 감독 연습 — <code>BeginPractice</code>, 장면마다 <code>SyncRoster</code> → 입력 <code>HandleInput(e, now)</code> → (카메라면) <code>SyncPoses</code> → <code>TickPractice</code> → 무대 <code>SyncPractice</code>. <code>PracticeStartRequested</code>면 <code>RequestSkipIntro()</code>.</li>
+    <li><b>경기</b>: <code>UguiNativeActivities</code>에서 <code>SyncRoster</code> → <code>HandleInput(e, now)</code> → (카메라면) <code>SyncPoses</code> → <code>Tick(경기 시간, 판)</code> → 무대 <code>Sync</code>. <code>Award</code>는 <code>HandleActivityInput</code>으로(팀 합계는 앱이), <code>Finished</code>면 <code>runner.CompleteCourse(now)</code>.</li>
+    <li><b>그림</b>: <code>stage.Backdrop = _hud.StageArt;</code></li>
+    <li><b>출시</b>: <code>StreamingAssets/games/g011-footprint-explorer{,-3teams,-4teams,-camera,-camera-3teams,-camera-4teams}/</code>, <code>GameTitles.FolderById</code>, 표지, 말 표(<code>footprint.*</code>, 진행 기록에 ko·en).</li>
+  </ol>
+
+  <h2>실물에서 봐 주셨으면 하는 것</h2>
+  <ul>
+    <li><b>폰 앞뒤 방향</b> — 앞으로 기울이면 위 칸으로 가는지. 문턱 0.5·되돌림 0.25가 한 칸씩 끊어 가기에 알맞은지.</li>
+    <li><b>카메라 옆 걸음</b> — 어깨 너비 0.6배가 한 걸음에 알맞은지, 좌우가 거울처럼 맞는지.</li>
+    <li>결과 2.7초(원본 시범 모드 값)가 정답 길을 다시 보기에 넉넉한지.</li>
+  </ul>
+</main>
+<script>
+/* 새 파일 목록 */
+(function(){
+  var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/g011-footprint-explorer-native/";
+  var rows = [
+    ["unity/Assets/DigitalFitZone/Game/Play/Footprint/FootprintSettings.cs", "놀이 값: 팀·라운드·난이도·관찰·제한 시간, 길 길이, 점수 셈, 기울기·카메라 한 칸 문턱"],
+    ["unity/Assets/DigitalFitZone/Game/Play/Footprint/FootprintMap.cs", "4×4 지도(옆 칸·벽·칸 이름·길 만들기)와 기기 값 → 한 칸(기울기·옆 걸음, 돌아와야 다음 칸)"],
+    ["unity/Assets/DigitalFitZone/Game/Play/Footprint/FootprintRound.cs", "판: 라운드·팀 차례, 준비 → 관찰 → 탐험 → 결과, 한 칸 이동·실수·출발점, 가상 이동, 팀 기록"],
+    ["unity/Assets/DigitalFitZone/Game/Play/Footprint/FootprintPractice.cs", "입장 뒤 동작 연습: 위 → 아래 → 왼쪽 → 오른쪽 한 칸씩, 전원 통과"],
+    ["unity/Assets/DigitalFitZone/Game/Play/Footprint/FootprintScoring.cs", "탐험 점수 → 탐험가에게 Move(+5) 점수 ÷ 5번"],
+    ["unity/Assets/DigitalFitZone/UI/Session/FootprintDirector.cs", "감독: 명단(팀·봇), 기울기(앞뒤 y − z)·만세·앉기·골격 옆 걸음 → 한 칸, 연습·경기 밀기, Award, 끝 알림"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiFootprintStage.cs", "무대: 위 띠 · 보물 지도 | 안내 판 · 팀 카드, 연습 화면, 배경 그림"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintRoundTests.cs", "판·지도 검사 23건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintPracticeTests.cs", "한 칸 읽기·연습 검사 13건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintDirectorTests.cs", "감독 검사 12건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintStageTests.cs", "무대 검사 5건"],
+    ["docs/progress/2026-11-17-g011-footprint-explorer-native.md", "진행 기록, 붙이는 길, 말 표"],
+    ["docs/progress/g011-footprint-explorer-rulesets/g011-footprint-explorer.ruleset.json", "규칙 파일 초안(폰 2팀) — 같은 폴더에 -3teams · -4teams, 카메라 -camera · -camera-3teams · -camera-4teams"],
+    ["docs/progress/g011-footprint-explorer-rulesets/assets/images/bg.jpg", "배경 그림 — 숲속 탐험 야영지(GPT 생성)"],
+    ["docs/progress/g011-footprint-explorer-web/game.html", "HTML 판 — 앱 「웹 게임」에 붙여 넣는 한 파일(폰 기울기)"],
+    ["docs/progress/g011-footprint-explorer-web/README.md", "HTML 판 붙이는 길·입력·Unity 판과 다른 점"],
+    ["docs/progress/g011-footprint-explorer-review.html", "이 페이지 사본"]
+  ];
+  var t = document.getElementById("files");
+  rows.forEach(function(r){
+    var tr = document.createElement("tr"), a = document.createElement("a"), td1 = document.createElement("td"), td2 = document.createElement("td");
+    a.href = base + r[0]; a.textContent = r[0].replace("unity/Assets/DigitalFitZone/", "");
+    td1.appendChild(a); td2.textContent = r[1]; tr.appendChild(td1); tr.appendChild(td2); t.appendChild(tr);
+  });
+})();
+
+/* 체험판 — FootprintRound.cs·FootprintPractice.cs 와 같은 규칙과 숫자, 1/60초 고정 걸음(남은 시간을 쌓아 꺼낸다).
+   흐름은 앱과 같다: 시작 화면(참가) → 동작 연습(위·아래·왼쪽·오른쪽 한 칸, 전원) → 3초 → 경기.
+   키보드: 방향키 한 번 = 폰을 한 번 기울였다 돌아오기(또는 만세·앉기·옆 걸음). 팀마다 두 사람(합류 순서대로 팀을 번갈아). 「시범 보기」면 모두 봇. */
+(function(){
+  "use strict";
+  var STEP = 1 / 60, EPS = 1e-9, COUNTDOWN = 3, N = 4, FEEDBACK = 0.8;
+  var READY = 3, REVIEW = 2.7, AUTO1 = 0.75, AUTO = 0.65, MAXLEN = 15;
+  var LEVELS = { easy: [5, 1, "쉬움"], normal: [6, 1, "보통"], hard: [7, 2, "도전"] };
+  var STAGES = ["up", "down", "left", "right"], ARROW = { up: "↑ 위", down: "↓ 아래", left: "← 왼쪽", right: "→ 오른쪽" };
+  var HOW = { phone: { up: "폰을 앞으로 기울였다가 돌아와요", down: "폰을 뒤로 기울였다가 돌아와요", left: "폰을 왼쪽으로 기울였다가 돌아와요", right: "폰을 오른쪽으로 기울였다가 돌아와요" },
+              camera: { up: "두 팔을 위로 쭉 — 만세!", down: "쪼그려 앉았다가 일어나요", left: "왼쪽으로 한 걸음 갔다가 돌아와요", right: "오른쪽으로 한 걸음 갔다가 돌아와요" } };
+  var COLORS = ["#599bb7", "#cc925b", "#947bbb", "#66966c"], NAMES = ["하늘 탐험대", "노을 탐험대", "보라 탐험대", "초록 탐험대"];
+  var cfg = { teams: 2, rounds: 3, level: "normal", view: 16, limit: 40, device: "phone", demo: 0 };
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var bg = typeof Image === "function" ? new Image() : null; if (bg) bg.src = "img/g011-footprint-explorer-bg.jpg";
+  var started = false, stage = "idle", clock = 0, acc = 0, cd = 0, seed = 11;
+  var PL, R, PR;
+  function rnd() { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }
+  function reset() {
+    clock = 0; acc = 0; seed = 11; stage = started ? "practice" : "idle";
+    PL = [];
+    for (var i = 0; i < cfg.teams * 2; i++) PL.push({ id: "P" + (i + 1), seat: i, team: i % cfg.teams, bot: !!cfg.demo });
+    PR = { i: 0, passed: {}, at: NaN };
+    R = { phase: "idle", round: 0, team: 0, routes: [], path: [], step: 0, misses: 0, bad: -1, start: 0, end: 0, autoAt: 0, mistake: false, explorer: null, rot: {}, trips: [], last: null };
+  }
+  function len(r) { var l = LEVELS[cfg.level]; return Math.min(MAXLEN, l[0] + (r - 1) * l[1]); }
+  function near(n) { var r = Math.floor(n / N), c = n % N, a = []; if (r > 0) a.push(n - N); if (r < N - 1) a.push(n + N); if (c > 0) a.push(n - 1); if (c < N - 1) a.push(n + 1); return a; }
+  function shuffled(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), k = a[i]; a[i] = a[j]; a[j] = k; } return a; }
+  function makePath(size) {
+    var route = [(N - 1) * N + Math.floor(rnd() * N)];
+    (function walk() { if (route.length === size) return true; var nx = shuffled(near(route[route.length - 1]));
+      for (var i = 0; i < nx.length; i++) { if (route.indexOf(nx[i]) >= 0) continue; route.push(nx[i]); if (walk()) return true; route.pop(); } return false; })();
+    return route;
+  }
+  function stepFrom(n, d) { var r = Math.floor(n / N), c = n % N; return d === "up" ? (r > 0 ? n - N : -1) : d === "down" ? (r < N - 1 ? n + N : -1) : d === "left" ? (c > 0 ? n - 1 : -1) : (c < N - 1 ? n + 1 : -1); }
+  function coord(n) { return "ABCD"[Math.floor(n / N)] + (n % N + 1); }
+  function enter(p, t, s) { R.phase = p; R.start = t; R.end = t + s; }
+  function gainOf(ok, left, miss) { return ok ? Math.max(100, 300 + Math.floor(Math.max(0, left) + 1e-9) * 5 - miss * 40) : 0; }
+  function nextRound(t) {
+    R.round++; R.team = 0; R.routes = [];
+    for (var i = 0; i < cfg.teams; i++) { var p = makePath(len(R.round));
+      for (var k = 0; k < 30 && R.routes.some(function (q) { return q.join() === p.join(); }); k++) p = makePath(len(R.round)); R.routes.push(p); }
+    prepare(t);
+  }
+  function prepare(t) {
+    R.path = R.routes[R.team]; R.step = 0; R.misses = 0; R.bad = -1; R.mistake = false; R.last = null;
+    var n = R.rot[R.team] || 0; R.rot[R.team] = n + 1;
+    var m = PL.filter(function (p) { return p.team === R.team; }); R.explorer = m.length ? m[n % m.length] : null;
+    enter("ready", t, READY);
+  }
+  function moveTo(n, t) {
+    R.bad = -1;
+    if (n === R.path[R.step + 1]) { R.step++; if (R.step === R.path.length - 1) complete(true, t); return; }
+    R.misses++; R.bad = n; R.step = 0;
+  }
+  function complete(ok, t) {
+    var left = Math.max(0, R.end - t), trip = { round: R.round, team: R.team, ok: ok, misses: R.misses, time: cfg.limit - left, gain: gainOf(ok, left, R.misses) };
+    R.trips.push(trip); R.last = trip; R.bad = -1; enter("review", t, REVIEW);
+  }
+  function next(t) { if (R.team + 1 < cfg.teams) { R.team++; prepare(t); } else if (R.round < cfg.rounds) nextRound(t); else { R.phase = "over"; stage = "over"; } }
+  function auto() { return !R.explorer || R.explorer.bot; }
+  function advance(t) {
+    if (stage === "practice") {
+      if (!isNaN(PR.at)) { if (t >= PR.at - EPS) { PR.at = NaN; PR.passed = {}; if (PR.i + 1 >= STAGES.length) { stage = "count"; cd = t; } else PR.i++; } return; }
+      if (PL.every(function (p) { return p.bot || PR.passed[p.id]; })) PR.at = t + FEEDBACK;
+      return;
+    }
+    if (stage === "count") { if (t - cd >= COUNTDOWN - EPS) { stage = "play"; R.round = 0; R.rot = {}; R.trips = []; nextRound(t); } return; }
+    if (stage !== "play") return;
+    if (R.phase === "ready" && t >= R.end - EPS) enter("observe", R.end, cfg.view);
+    else if (R.phase === "observe" && t >= R.end - EPS) { var s = R.end; enter("move", s, cfg.limit); R.autoAt = s + AUTO1; }
+    else if (R.phase === "move") {
+      if (t >= R.end - EPS) complete(false, R.end);
+      else if (auto() && t >= R.autoAt - EPS) {
+        var at = R.autoAt; R.autoAt += AUTO; var n = R.path[R.step + 1];
+        if (R.team === 1 && !R.mistake && R.step === 1) { var w = near(R.path[R.step]).filter(function (v) { return v !== n; }); if (w.length) { n = w[0]; R.mistake = true; } }
+        moveTo(n, at);
+      }
+    } else if (R.phase === "review" && t >= R.end - EPS) next(R.end);
+  }
+  /* 연습에서 키보드가 잡는 사람 = 아직 통과 못 한 첫 사람, 경기에서는 지금 탐험가 */
+  function driver() {
+    if (stage === "practice") { for (var i = 0; i < PL.length; i++) if (!PL[i].bot && !PR.passed[PL[i].id]) return PL[i]; return null; }
+    return R.phase === "move" && R.explorer && !R.explorer.bot ? R.explorer : null;
+  }
+  function go(dir) {
+    if (!started) return;
+    var p = driver(); if (!p) return;
+    if (stage === "practice") { if (isNaN(PR.at) && dir === STAGES[PR.i]) PR.passed[p.id] = true; return; }
+    var n = stepFrom(R.path[R.step], dir); if (n >= 0) moveTo(n, clock);
+  }
+  function teamStat(t) {
+    var l = R.trips.filter(function (h) { return h.team === t; });
+    return { score: l.reduce(function (a, h) { return a + h.gain; }, 0), wins: l.filter(function (h) { return h.ok; }).length, misses: l.reduce(function (a, h) { return a + h.misses; }, 0) };
+  }
+
+  /* ---- 그리기(UguiFootprintStage 배치) */
+  function rr(x, y, w, h, r, c) { ctx.fillStyle = c; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); ctx.fill(); }
+  function label(s, x, y, size, c, align) { ctx.fillStyle = c; ctx.font = "800 " + size + "px Pretendard, 'Malgun Gothic', sans-serif"; ctx.textAlign = align || "center"; ctx.textBaseline = "middle"; ctx.fillText(String(s), x, y); }
+  function fit(s, size, width) { return Math.min(size, width / Math.max(1, String(s).length) * 1.7); }
+  function poly(pts, c) { ctx.fillStyle = c; ctx.beginPath(); pts.forEach(function (p, i) { if (i) ctx.lineTo(p[0], p[1]); else ctx.moveTo(p[0], p[1]); }); ctx.closePath(); ctx.fill(); }
+  function cellRect(M, n) { var pad = M.w * .04, gap = M.w * .02, s = (M.w - pad * 2 - gap * 3) / N; return { x: M.x + pad + (n % N) * (s + gap), y: M.y + pad + Math.floor(n / N) * (s + gap), w: s }; }
+  function map(M, path, visible, cur, bad, m) {
+    rr(M.x, M.y, M.w, M.w, M.w * .04, "#e8efdc");
+    var start = path.length ? path[0] : -1, goal = path.length ? path[path.length - 1] : -1;
+    for (var n = 0; n < N * N; n++) {
+      var c = cellRect(M, n), i = path.indexOf(n), on = visible && i >= 0, k = c.w * (n === cur ? .06 : .035);
+      rr(c.x - k, c.y - k, c.w + k * 2, c.w + k * 2, c.w * .16 + k, n === bad ? "#bf866b" : n === cur ? "#36715a" : on ? "#cba641" : "#bdcdb0");
+      rr(c.x, c.y, c.w, c.w, c.w * .16, n === bad ? "#f4d7c7" : n === cur ? "#deedcc" : on ? "#f7df8b" : "#fbfcf5");
+      label(coord(n), c.x + c.w * .08, c.y + c.w * .13, m * .55, "#829079", "left");
+      var cx = c.x + c.w / 2, cy = c.y + c.w / 2, r = c.w * .22;
+      if (n === cur) { ctx.fillStyle = "#36715a"; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill(); ctx.fillStyle = "#fbfcf5"; ctx.beginPath(); ctx.arc(cx, cy, r * .78, 0, 7); ctx.fill();
+        poly([[cx, cy - r * .7], [cx + r * .22, cy], [cx - r * .22, cy]], "#d85a4a"); poly([[cx, cy + r * .7], [cx + r * .22, cy], [cx - r * .22, cy]], "#36715a"); }
+      else if (n === goal) { poly([[cx - r, cy - r * .35], [cx - r * .55, cy - r * .8], [cx + r * .55, cy - r * .8], [cx + r, cy - r * .35], [cx, cy + r * .9]], "#5bb8d8"); }
+      else if (n === start) { ctx.strokeStyle = "#314c42"; ctx.lineWidth = r * .14; ctx.beginPath(); ctx.moveTo(cx - r * .5, cy - r); ctx.lineTo(cx - r * .5, cy + r); ctx.stroke(); poly([[cx - r * .45, cy - r], [cx + r * .8, cy - r * .6], [cx - r * .45, cy - r * .2]], "#d85a4a"); }
+      else if (on) { ctx.fillStyle = "#314c42"; ctx.beginPath(); ctx.ellipse(cx - r * .45, cy + r * .15, r * .28, r * .45, 0, 0, 7); ctx.fill(); ctx.beginPath(); ctx.ellipse(cx + r * .45, cy - r * .3, r * .28, r * .45, 0, 0, 7); ctx.fill(); }
+      if (on && i > 0 && i < path.length - 1) label((i + 1) + "번째", cx, c.y + c.w * .84, m * .6, "#314c42");
+      else if (n === start || n === goal) label(n === start ? "출발" : "보물", cx, c.y + c.w * .84, m * .6, "#314c42");
+    }
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    if (bg && bg.complete && bg.naturalWidth) {
+      ctx.drawImage(bg, 0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(0, 0, W, H);
+      var gr = ctx.createLinearGradient(0, 0, 0, H * .2); gr.addColorStop(0, "rgba(0,0,0,.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H * .2);
+    } else { ctx.fillStyle = "#f4f5e9"; ctx.fillRect(0, 0, W, H); }
+    var m = H * .03, gap = W * .012, w = W - gap * 2, h = H - gap * 4, x0 = gap, y0 = gap;
+    var hud = { x: x0, y: y0, w: w, h: h * .11 }, ay = y0 + hud.h + gap, ah = h * .66, cw0 = w * .4, side = Math.min(ah, w - cw0 - gap);
+    var M = { x: x0 + (w - cw0 - gap - side) / 2, y: ay + (ah - side) / 2, w: side }, C = { x: x0 + w - cw0, y: ay, w: cw0, h: ah };
+    var cy = ay + ah + gap, ch = h * (1 - .11 - .66), tw = (w - gap * (cfg.teams - 1)) / cfg.teams;
+    var play = stage === "play" || stage === "over", tm = R.team, over = stage === "over";
+    /* 위 띠 */
+    if (play) {
+      label("ROUND " + R.round + " / " + cfg.rounds, hud.x, hud.y + hud.h * .2, m * .8, "#f4f5e9", "left");
+      var best = -1, wins = []; for (var t = 0; t < cfg.teams; t++) { var sc = teamStat(t).score; if (sc > best) { best = sc; wins = [NAMES[t]]; } else if (sc === best) wins.push(NAMES[t]); }
+      label(over ? (wins.length > 1 ? "공동 우승! " : "우승! ") + wins.join(" · ") : NAMES[tm] + "의 탐험", hud.x, hud.y + hud.h * .68, m * 1.5, "#ffffff", "left");
+      if (!over) {
+        rr(hud.x + hud.w * .62, hud.y + hud.h * .2, hud.w * .18, hud.h * .6, hud.h * .27, "#f1f6e9");
+        label(R.phase === "review" ? "완료" : Math.max(0, R.end - clock).toFixed(1) + "초", hud.x + hud.w * .71, hud.y + hud.h * .5, m * .9, "#314c42");
+        rr(hud.x + hud.w * .82, hud.y + hud.h * .2, hud.w * .18, hud.h * .6, hud.h * .27, "#f1f6e9");
+        label("실수 " + R.misses + "회", hud.x + hud.w * .91, hud.y + hud.h * .5, m * .9, "#314c42");
+      }
+    } else label("동작 연습 " + (PR.i + 1) + " / " + STAGES.length + " — 한 칸 연습", hud.x, hud.y + hud.h * .5, m * 1.5, "#ffffff", "left");
+    /* 지도 */
+    if (play) map(M, R.path, R.phase === "observe" || R.phase === "review", R.path.length ? R.path[Math.min(R.step, R.path.length - 1)] : -1, R.bad, m);
+    else {
+      map(M, [], false, 9, -1, m);
+      var to = stepFrom(9, STAGES[PR.i]);
+      if (to >= 0 && stage === "practice") { var a = cellRect(M, 9), b = cellRect(M, to); ctx.strokeStyle = "#cba641"; ctx.lineWidth = a.w * .12; ctx.lineCap = "round";
+        ctx.beginPath(); ctx.moveTo(a.x + a.w / 2, a.y + a.w / 2); ctx.lineTo(b.x + b.w / 2, b.y + b.w / 2); ctx.stroke(); ctx.fillStyle = "#cba641"; ctx.beginPath(); ctx.arc(b.x + b.w / 2, b.y + b.w / 2, b.w * .14, 0, 7); ctx.fill(); }
+    }
+    /* 안내 판 */
+    rr(C.x, C.y, C.w, C.h, C.w * .05, "rgba(255,255,255,.96)");
+    var cx = C.x + C.w * .06, cww = C.w * .88, y = C.y + C.h * .05;
+    if (play) {
+      var trip = R.last, tag = { ready: "탐험 준비", observe: "지도 관찰", move: "기억으로 탐험", review: trip && trip.ok ? "보물 발견" : "탐험 종료", over: "탐험 끝" }[R.phase];
+      rr(cx, y, cww * .42, m * 1.3, m * .58, "#e5edda"); label(tag, cx + cww * .21, y + m * .65, m * .75, "#36715a");
+      y += m * 1.7;
+      var say = { ready: "잠시 후 길이 나타나요", observe: "발자국 길을 기억하세요!", move: "보물까지 길을 찾아요", review: trip && trip.ok ? "기억한 길로 도착했어요!" : "다음에는 꼭 찾아봐요!", over: "탐험 끝!" }[R.phase];
+      label(say, cx, y + m * .85, fit(say, m * 1.3, cww), "#314c42", "left");
+      y += m * 2;
+      label("탐험가 " + (!R.explorer ? "자동" : R.explorer.bot ? "봇" : "P" + (R.explorer.seat + 1)), cx, y + m * .55, m * .8, "#5f705f", "left");
+      y += m * 1.5;
+      var half = (cww - m * .5) / 2;
+      [["이번 길", (R.step + 1) + " / " + R.path.length + "칸"], ["누적 팀 점수", teamStat(tm).score + "점"]].forEach(function (s, i) {
+        var sx = cx + i * (half + m * .5); rr(sx, y, half, m * 2.6, m * .5, "#f1f6e9");
+        label(s[0], sx + half * .08, y + m * .55, m * .65, "#5f705f", "left"); label(s[1], sx + half * .08, y + m * 1.7, m * 1.2, "#314c42", "left");
+      });
+      y += m * 3;
+      var share = R.phase === "ready" || R.phase === "observe" || R.phase === "move" ? Math.max(0, R.end - clock) / Math.max(.001, R.end - R.start) : 0;
+      rr(cx, y, cww, m * .4, m * .2, "#e5edda"); if (share > 0) rr(cx, y, cww * Math.min(1, share), m * .4, m * .2, "#36715a");
+      y += m * .9;
+      var fh = C.y + C.h - y - C.h * .05; rr(cx, y, cww, fh, m * .6, "#f1f6e9");
+      var msg = R.phase === "ready" ? (R.round > 1 ? "이전 라운드보다 " + LEVELS[cfg.level][1] + "칸 더 길어졌어요! " : "") + "이번 길은 " + R.path.length + "칸이에요."
+              : R.phase === "observe" ? "길을 다시 보여 주는 버튼은 없어요. 모양과 방향을 기억해요."
+              : R.phase === "move" ? (R.bad >= 0 ? "길을 벗어났어요! 출발점으로 돌아갑니다." : R.step > 0 ? "길을 잘 찾았어요! 다음 위치를 떠올려 보세요." : auto() ? "가상 탐험가가 걷는 중…" : "위·아래·왼쪽·오른쪽으로 한 칸씩!")
+              : R.phase === "review" && trip ? (trip.ok ? "보물 발견! +" + trip.gain + "점" : "시간 초과 · 0점") + " · 실수 " + trip.misses + "회 · 탐색 " + trip.time.toFixed(1) + "초"
+              : cfg.rounds + "라운드 탐험 완료!";
+      label(msg, cx + cww * .05, y + fh / 2, fit(msg, m * .8, cww * .9), "#314c42", "left");
+    } else {
+      var celebrating = !isNaN(PR.at), dir = STAGES[PR.i];
+      label(stage === "count" ? "곧 시작해요!" : celebrating ? "잘했어요!" : ARROW[dir] + "으로 한 칸", cx, C.y + C.h * .14, m * 1.4, celebrating ? "#36715a" : "#314c42", "left");
+      label(HOW[cfg.device][dir], cx, C.y + C.h * .3, fit(HOW[cfg.device][dir], m * .85, cww), "#5f705f", "left");
+      var d = driver();
+      label(d ? "지금 키보드: P" + (d.seat + 1) + " (방향키)" : "모두 준비됐어요", cx, C.y + C.h * .44, m * .8, "#5f705f", "left");
+      label("선생님은 「바로 시작」(Enter)으로 건너뛸 수 있어요.", cx, C.y + C.h * .82, fit("선생님은 「바로 시작」(Enter)으로 건너뛸 수 있어요.", m * .7, cww), "#5f705f", "left");
+    }
+    /* 팀 카드 */
+    for (var i = 0; i < cfg.teams; i++) {
+      var x = x0 + i * (tw + gap), s = teamStat(i), mine = PL.filter(function (p) { return p.team === i; }), ok = mine.filter(function (p) { return p.bot || PR.passed[p.id]; }).length;
+      var active = play ? i === tm && !over : ok === mine.length && stage !== "idle";
+      if (active) rr(x - m * .2, cy - m * .2, tw + m * .4, ch + m * .4, ch * .12, COLORS[i]);
+      rr(x, cy, tw, ch, ch * .1, "rgba(255,255,255,.97)"); rr(x, cy, tw, ch * .06, ch * .03, COLORS[i]);
+      label(NAMES[i], x + tw * .06, cy + ch * .2, m * .85, "#314c42", "left");
+      if (play) { label(s.score + "점", x + tw / 2, cy + ch * .48, m * 1.6, "#314c42"); label("보물 " + s.wins + "개 · 실수 " + s.misses + "회", x + tw / 2, cy + ch * .8, m * .7, "#5f705f"); }
+      else label(ok + " / " + mine.length + "명 통과", x + tw / 2, cy + ch * .55, m * 1.1, "#314c42");
+    }
+    if (stage === "count") { var cn = Math.max(1, Math.ceil(COUNTDOWN - (clock - cd) - EPS)); ctx.fillStyle = "rgba(54,113,90,.45)"; ctx.fillRect(0, 0, W, H); label(cn, W / 2, H / 2, H * .3, "#ffffff"); }
+    var info = stage === "practice" ? "한 칸 연습 — 방향키로 · Enter로 바로 시작" : stage === "count" ? "3초 뒤 시작" : over ? "경기 끝" : stage === "play" ? "ROUND " + R.round + " · " + NAMES[tm] : "";
+    var el = document.getElementById("score");
+    if (el) el.innerHTML = "<span>" + info + "</span>" + NAMES.slice(0, cfg.teams).map(function (n, i) { return "<span style='border-color:" + COLORS[i] + "'>" + n + " " + teamStat(i).score + "점</span>"; }).join("");
+  }
+  var last = 0;
+  function frame(t) {
+    var now = t / 1000; if (!last) last = now;
+    var dt = Math.min(0.25, now - last); last = now;
+    if (started && dt > 0) { acc += dt; while (acc >= STEP) { acc -= STEP; clock += STEP; advance(clock); } }
+    draw(); requestAnimationFrame(frame);
+  }
+  var KEYS = { ArrowUp: "up", ArrowDown: "down", ArrowLeft: "left", ArrowRight: "right" };
+  window.addEventListener("keydown", function (e) {
+    if (!started) return;
+    if (e.key === "Enter" && stage === "practice") { stage = "count"; cd = clock; e.preventDefault(); return; }
+    if (KEYS[e.key]) { e.preventDefault(); if (!e.repeat) go(KEYS[e.key]); }
+  });
+  function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
+  [["data-teams", "teams", 1], ["data-rounds", "rounds", 1], ["data-level", "level", 0], ["data-view", "view", 1], ["data-limit", "limit", 1], ["data-device", "device", 0], ["data-demo", "demo", 1]].forEach(function (o) {
+    document.querySelectorAll("[" + o[0] + "]").forEach(function (b) { b.onclick = function () { var v = b.getAttribute(o[0]); cfg[o[1]] = o[2] ? +v : v; pick(o[0], v); reset(); }; });
+  });
+  document.getElementById("restart").onclick = function () { reset(); };
+  window.__startDemo = function () { started = true; reset(); if (cv.focus) cv.focus(); };
+  window.__stopDemo = function () { started = false; reset(); };
+  window.__g011 = {
+    state: function () {
+      return { stage: stage, phase: R.phase, round: R.round, team: R.team, step: R.step, misses: R.misses, path: R.path.slice(), practice: PR.i, explorer: R.explorer && R.explorer.id,
+               trips: R.trips.length, last: R.last, scores: NAMES.slice(0, cfg.teams).map(function (n, i) { return teamStat(i).score; }), clock: clock };
+    },
+    go: go,
+    set: function (o) { Object.keys(o).forEach(function (k) { cfg[k] = o[k]; }); reset(); }
+  };
+  reset(); requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* 시작 화면 — 「경기 시작」을 누르면 체험판이 돈다, 「처음 화면」이면 멈추고 돌아온다 */
+(function(){
+  var start = document.getElementById("start"), go = document.getElementById("go"), home = document.getElementById("home");
+  go.addEventListener("click", function(){ start.hidden = true; home.hidden = false; window.__startDemo(); });
+  home.addEventListener("click", function(){ window.__stopDemo(); start.hidden = false; home.hidden = true; go.focus(); });
+})();
+</script>
+</body>
+</html>
