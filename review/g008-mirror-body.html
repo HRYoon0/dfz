@@ -1,0 +1,630 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G008 거울 인간! 다 함께 몸으로 표현해요 — C# 이식 확인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#202B3D; --surface:#30435A; --line:#46607E; --ink:#F4F8FF; --muted:#CCDCE9;
+  --lime:#D1F58E; --coral:#FF8A7A; --sun:#FFD66B;
+  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
+h2{font-size:22px;margin:44px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
+p{margin:0 0 12px}
+a{color:var(--lime)}
+.lead{color:var(--muted);max-width:46em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.chip b{color:var(--lime)}
+code{font-family:Consolas,'D2Coding',Menlo,monospace;font-size:.92em;background:#18212F;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-size:13px;font-weight:700}
+.wrap{overflow-x:auto}
+.demo{background:#141C29;border:1px solid var(--line);border-radius:14px;padding:12px}
+.demo canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:#1B2536;touch-action:none;cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button{font:inherit;font-weight:650;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 14px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.score{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:14px;font-weight:600}
+.score span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:14px}
+.ok{color:var(--lime);font-weight:700}
+.no{color:var(--coral);font-weight:700}
+ol li,ul li{margin-bottom:6px}
+.back{display:inline-block;margin-bottom:14px;font-weight:650;text-decoration:none}
+ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+
+.stagewrap{position:relative}
+.start{position:absolute;inset:0;border-radius:10px;background:#1B2536;display:grid;grid-template-columns:1.15fr .85fr;gap:20px;padding:22px 26px;overflow:auto;align-content:start}
+.start[hidden]{display:none}
+.start .eyebrow{color:var(--lime);font-weight:800;font-size:13px;letter-spacing:1px}
+.start h3{font-size:clamp(22px,2.6vw,32px);margin:4px 0 6px;font-weight:800;line-height:1.2}
+.start .lead2{margin:0 0 8px;color:var(--muted);font-size:15px;line-height:1.55}
+.start .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.start .tags span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:650}
+.start .how{background:#141C29;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.start .how b{font-size:14px}
+.start ol{margin:6px 0 0;padding-left:20px;font-size:15px;line-height:1.5}
+.start ol li{margin-bottom:3px}
+.start .set{display:grid;gap:12px;align-content:start}
+.start .set h4{margin:0;font-size:17px;font-weight:800}
+.start .opt>span{display:block;font-weight:700;font-size:14px;margin-bottom:4px;color:var(--muted)}
+.start .opt .controls{margin:0}
+.start .go{font:inherit;font-weight:800;font-size:18px;background:var(--lime);color:#13202F;border:0;border-radius:12px;padding:12px 18px;cursor:pointer}
+.start .safe{font-size:13px;color:var(--muted);background:#141C29;border:1px solid var(--line);border-radius:10px;padding:8px 10px;line-height:1.5;margin:0}
+@media (max-width:760px){.start{position:static;grid-template-columns:1fr;margin-bottom:10px}}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 변환 기록 전체</a>
+  <h1>G008 거울 인간! 다 함께 몸으로 표현해요 — C# 이식 확인</h1>
+  <p class="lead">HTML 게임 「거울 인간」(G008 v2.0 카메라판, 회원님이 주신 HTML 파일)을 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 화면 속 시범 자세를 보고 온몸으로 똑같이 만들어 잠깐 버티는 게임입니다. 표현 카드 열 가지와 비교 셈은 원본 숫자 그대로이고, 인원만 앱 카메라 상한에 맞춰 1~6명으로 했습니다. 주개발자 게임과 같은 흐름(참가 → 동작 연습 → 시작)을 넣었고, 앱 「웹 게임」에 붙여 넣는 <b>HTML 판(줄인 판)</b>도 함께 올렸습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b></p>
+  <div class="chips">
+    <span class="chip">브랜치 <b>claude/g008-mirror-body-native</b></span>
+    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/105">PR #105</a> 검토 대기</span>
+    <span class="chip">새 파일 <b>17개</b>(+ .meta 12개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">맥 Unity 컴파일 오류 <b>0</b> · G008 검사 <b>57건 통과</b></span>
+  </div>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g008-mirror-body-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g008-mirror-body-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/105">PR #105</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g008-mirror-body-native/docs/progress/2026-11-17-g008-mirror-body-native.md">진행 기록</a></p>
+
+  <!--@REQUEST@-->
+<style>
+.req{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+.req-btn{font:inherit;font-weight:700;font-size:14px;background:var(--bg);color:var(--ink);border:1px solid var(--lime);border-radius:999px;padding:5px 14px;cursor:pointer}
+.req-btn:hover{background:var(--lime);color:#13202F}
+.req-mark{font-size:14px;font-weight:650;color:#13202F;background:#FFD66B;border-radius:999px;padding:3px 12px}
+.req-mark.done{background:var(--lime)}
+dialog.req-dlg{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:min(520px,92vw)}
+dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
+.req-dlg h3{margin:0 0 4px}
+.req-dlg label{display:grid;gap:4px;margin-top:12px;font-weight:650;font-size:14px;color:var(--muted)}
+.req-dlg input,.req-dlg textarea{font:inherit;font-weight:450;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.req-dlg textarea{min-height:130px;resize:vertical}
+.req-dlg .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;align-items:center}
+.req-dlg .row button{font:inherit;font-weight:700;border-radius:10px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.req-dlg .row button.send{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.req-dlg .msg{margin-right:auto;font-size:14px;color:#FFB4A8}
+.req-dlg .open-note{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.req-thread{grid-column:1/-1;margin:8px 0 0;font-size:14px;font-weight:500}
+.req-thread summary{cursor:pointer;color:var(--muted);font-weight:650}
+.req-item{margin:8px 0 0;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.req-item .who{font-weight:700}
+.req-item .at{color:var(--muted);margin-left:8px}
+.req-item .st{margin-left:8px;font-weight:650;color:#13202F;background:var(--lime);border-radius:999px;padding:1px 10px}
+.req-item p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.req-reply{margin:8px 0 0 14px;padding:2px 0 2px 12px;border-left:3px solid var(--lime)}
+</style>
+<div class="req" data-slug="g008-mirror-body" data-title="G008 거울 인간! 다 함께 몸으로 표현해요" data-page="g008-mirror-body.html" style="margin:14px 0 0"><button type="button" class="req-btn">이 게임 수정 요청</button><span class="req-mark" hidden></span></div>
+<dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h">
+<form method="dialog">
+<h3 id="req-h">수정 요청</h3>
+<div class="game" style="font-weight:700"></div>
+<label>요청한 사람(선택)<input name="who" maxlength="40" autocomplete="name"></label>
+<label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요"></textarea></label>
+<p class="open-note">보낸 글과 이름은 이 페이지에 그대로 보입니다.</p>
+<div class="row"><span class="msg" role="status"></span><button type="button" class="cancel">취소</button><button type="submit" class="send">보내기</button></div>
+</form>
+</dialog>
+<script>
+(function(){
+  var URL_ = "https://script.google.com/macros/s/AKfycbwRpKn6QXcB_kITjF_YPSyPDp8Dx9tiD84oj90SO8u2FfV6lLIcHy5StBsAhaPeLg-S/exec", PAGES = "https://hryoon0.github.io/dfz/review/";
+  // 응답이 없을 때 「보내는 중」이 영원히 돌지 않게 15초에 끊는다
+  function fetchJSON(url, opts, ms){ var c = new AbortController(), t = setTimeout(function(){ c.abort(); }, ms || 15000);
+    return fetch(url, Object.assign({}, opts, { signal: c.signal })).then(function(r){ return r.json(); }).finally(function(){ clearTimeout(t); }); }
+  function mark(slug, g){
+    var el = document.querySelector('[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
+    var day = String(g.last || '').slice(0, 10);
+    el.textContent = (g.status ? g.status + ' · ' : '수정 요청함 · ') + day + (g.count > 1 ? ' (' + g.count + '건)' : '');
+    el.title = '마지막 요청 ' + g.last;
+    el.classList.toggle('done', !!g.status); el.hidden = false;
+  }
+  // 받은 글은 남이 쓴 것이라 textContent로만 넣는다(태그를 적어 보내도 글자로 보인다)
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  // 요청 글과 답글을 댓글처럼 — 목록에서는 접어 두고, 게임 페이지에서는 펴 둔다
+  function thread(slug, g){
+    var req = document.querySelector('.req[data-slug="' + slug + '"]'); if (!req || !g || !g.items || !g.items.length) return;
+    var box = req.nextElementSibling;
+    if (!box || !box.classList.contains('req-thread')) { box = el('details', 'req-thread'); box.open = !req.closest('ul.games'); req.after(box); }
+    box.textContent = '';
+    box.appendChild(el('summary', '', '수정 요청 ' + g.items.length + '건'));
+    g.items.forEach(function(it){
+      var d = el('div', 'req-item'), h = el('div');
+      h.appendChild(el('span', 'who', it.name)); h.appendChild(el('span', 'at', it.at)); if (it.status) h.appendChild(el('span', 'st', it.status));
+      d.appendChild(h); d.appendChild(el('p', '', it.text));
+      if (it.reply) { var r = el('div', 'req-reply'); r.appendChild(el('span', 'who', '답글')); r.appendChild(el('p', '', it.reply)); d.appendChild(r); }
+      box.appendChild(d);
+    });
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); }).catch(function(){}); }
+  var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
+  document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
+    cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
+    form.reset(); var n = localStorage.getItem('dfz-req-name'); if (n) W.who.value = n; dlg.showModal(); W.note.focus(); }); });
+  dlg.querySelector('.cancel').addEventListener('click', function(){ dlg.close(); });
+  form.addEventListener('submit', function(e){
+    e.preventDefault(); if (!cur) return;
+    var text = W.note.value.trim(); if (text.length < 2) { msg.textContent = '고칠 점을 적어 주세요.'; return; }
+    send.disabled = true; send.textContent = '보내는 중…'; msg.textContent = '';
+    localStorage.setItem('dfz-req-name', W.who.value.trim());
+    // text/plain — 브라우저가 사전 요청(OPTIONS)을 보내지 않게(Apps Script는 그것을 받지 못한다)
+    fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text }) })
+      .then(function(r){
+        if (!r || !r.ok) throw new Error(r && r.error || 'fail');
+        dlg.close(); load();
+        mark(cur.slug, { count: 1, last: r.at, status: '' });
+      })
+      .catch(function(err){ send.disabled = false; send.textContent = '다시 보내기';
+        msg.textContent = String(err.message) === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 보내 주세요.' : '보내지 못했어요. 다시 보내 주세요.'; });
+  });
+  load();
+})();
+</script>
+<!--@/REQUEST@-->
+
+  <h2>변환 기록</h2>
+  <!--@HISTORY@-->
+<ul class="log">
+<li><span class="when">2026-11-17 19:04</span><span>HTML 판(붙여넣기용)도 함께 — 줄인 판. 앱의 웹 게임 통로는 카메라 동작 이름(만세·앉기 등)과 손 하나의 위치만 넘기고 관절 골격은 넘기지 않아, 원본처럼 팔다리 각도를 비교할 수 없다. 그래서 동작 하나로 가려지는 두 자세(나무·개구리)만 쓰고 일치도·자세 유지·거울 규칙은 뺐다. 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함. 온전한 HTML 판은 통로에 골격을 더할지 주개발자 결정</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #105">PR #105</a></li>
+<li><span class="when">2026-11-17 19:04</span><span>처음 변환 — 참가 → 동작 연습(전신 보이기 → 반짝반짝 별 → 두 팔 ㄴ자로 시작) → 3초 → 시범 보기 3초·따라 하기 9초·결과 3초 × 표현 10개. 표현 카드 10가지·비교 셈 원본 그대로, 인원 1~6명(앱 카메라 상한), 결과 3초 뒤 자동 진행(회원님 결정)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #105">PR #105</a></li>
+</ul>
+<!--@/HISTORY@-->
+
+  <h2>흐름 — 참가 → 동작 연습 → 시작</h2>
+  <div class="wrap"><table>
+    <tr><th>단계</th><th>누가</th><th>무엇</th></tr>
+    <tr><td>1. 참가 화면</td><td>앱(그대로)</td><td>카메라 앞에서 참가 자세 → 모두 준비 자세 → 안내 단계로</td></tr>
+    <tr><td>2. 입장 뒤 동작 연습</td><td><b>이 게임</b>(<code>MirrorBodyPractice</code>)</td><td>전신 보이기(머리부터 발끝까지 1.5초 — 원본 준비 확인) → 「반짝반짝 별」(원본 준비 화면의 시범 자세, 경기와 같은 성공 규칙 72점 1.5초) → 시작 자세. <b>단계마다 참가자 전원</b>이 통과해야 다음으로, 모두 통과하면 「잘했어요!」 0.8초. <b>어느 단계든 한 명이 두 팔을 ㄴ자로 올리고 0.25초</b> 버티면 바로 시작. 선생님은 앱의 「바로 시작」/Enter.</td></tr>
+    <tr><td>3. 게임 시작</td><td>앱 3초 세기 → 이 게임</td><td>시범 보기 3초 → 따라 하기 9초 → 결과 3초를 표현 수만큼. 다 하면 앱이 경기를 닫고 결과 화면</td></tr>
+  </table></div>
+  <p class="note">「씩씩한 선인장」은 시작 자세(두 팔 ㄴ자)와 모양이 같아 연습에 쓰지 않았습니다. 별은 팔을 곧게 뻗어 시작 자세로 읽히지 않습니다(검사로 확인).</p>
+
+  <h2>직접 해 보기</h2>
+  <!--start-screen-->
+<style>#start{grid-template-columns:1fr 1fr}.start .set{gap:10px}.start .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}.start .grid2 .wide{grid-column:1/-1}.start .opt .controls{gap:5px}.start .opt .controls button{padding:5px 11px;font-size:14px}.start .set h4{font-size:16px}@media (max-width:760px){.start .grid2{grid-template-columns:1fr}}</style>
+<p class="note">C# 판정과 같은 규칙과 숫자로 움직입니다. 카메라 대신 원본의 「가상 체험」처럼 <b>가상 참여자</b>가 시범을 따라 합니다(마지막 사람은 세 번째 표현마다 일부러 따라 하지 않아 실패와 연속 끊김을 볼 수 있습니다). 「1번 참가자 = 키보드」로 두면 <b>1~0</b> 키로 표현 카드 1~10번 자세를(누르고 있는 동안), <b>Q</b>로 시작 자세를 냅니다. 아무 키도 안 누르면 팔 내리고 선 자세입니다. Enter는 선생님의 「바로 시작」.</p>
+  <div class="demo">
+    <div class="stagewrap">
+      <canvas id="cv" width="1600" height="900" tabindex="0" aria-label="거울 인간 체험판"></canvas>
+      <div class="start" id="start">
+        <div>
+          <div class="eyebrow">G008 · 6학년 체육 · 표현 활동</div>
+          <h3>거울 인간! 다 함께 몸으로 표현해요</h3>
+          <p class="lead2">화면 속 표현을 보고 → 온몸으로 똑같이 만들고 → 잠깐 멈춰 균형을 유지해요. 카메라가 팔·다리 방향을 시범과 비교해 일치도를 알려 줍니다.</p>
+          <div class="how"><b>진행 방법</b>
+            <ol>
+              <li>카메라에 머리부터 발끝까지 보이게 서고, 옆 사람과 겹치지 않게 간격을 둡니다.</li>
+              <li>시범을 3초 관찰한 뒤, 정해진 시간 동안 같은 자세를 만들어요.</li>
+              <li>일치도가 기준을 넘은 채로 정해진 시간을 버티면 성공! 연속 성공은 보너스.</li>
+              <li>몸이 잘 안 보이면 「평가 보류」 — 점수 없이 넘어갑니다.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="set">
+          <h4>경기 설정</h4>
+          <div class="grid2">
+          <div class="opt wide"><span>참가 인원</span><div class="controls">
+            <button data-players="1" aria-pressed="false">1명</button>
+            <button data-players="2" aria-pressed="false">2명</button>
+            <button data-players="3" aria-pressed="false">3명</button>
+            <button data-players="4" aria-pressed="false">4명</button>
+            <button data-players="5" aria-pressed="true">5명</button>
+            <button data-players="6" aria-pressed="false">6명</button>
+          </div></div>
+          <div class="opt"><span>표현 활동 수</span><div class="controls">
+            <button data-rounds="5" aria-pressed="false">5개</button>
+            <button data-rounds="10" aria-pressed="true">10개</button>
+            <button data-rounds="15" aria-pressed="false">15개</button>
+          </div></div>
+          <div class="opt"><span>따라 할 시간</span><div class="controls">
+            <button data-seconds="12" aria-pressed="false">12초</button>
+            <button data-seconds="9" aria-pressed="true">9초</button>
+            <button data-seconds="7" aria-pressed="false">7초</button>
+          </div></div>
+          <div class="opt"><span>복제 규칙</span><div class="controls">
+            <button data-mode="same" aria-pressed="true">일반</button>
+            <button data-mode="mirror" aria-pressed="false">거울(좌우 바꾸기)</button>
+          </div></div>
+          <div class="opt"><span>성공 기준</span><div class="controls">
+            <button data-threshold="60" aria-pressed="false">60점/1초</button>
+            <button data-threshold="72" aria-pressed="true">72점/1.5초</button>
+            <button data-threshold="82" aria-pressed="false">82점/2초</button>
+          </div></div>
+          <div class="opt wide"><span>1번 참가자</span><div class="controls">
+            <button data-me="0" aria-pressed="true">가상 참여자</button>
+            <button data-me="1" aria-pressed="false">키보드(1~0, Q)</button>
+          </div></div>
+          </div>
+          <button class="go" id="go">게임 시작</button>
+          <p class="safe"><b>안전</b> 팔을 펼칠 공간 확보 · 옆 사람과 간격 · 불편한 자세는 무리하지 않기</p>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="home" hidden>처음 화면</button>
+      <button id="restart" style="margin-left:auto">다시</button>
+    </div>
+    <div class="score" id="score"></div>
+  </div>
+
+  <h2>HTML 판 — 줄인 판으로 함께 올렸습니다</h2>
+  <p>주개발자 요청(「HTML·유니티 둘 다 올려 보라」)대로, 앱의 「AI로 게임 만들기 → HTML 붙여넣기」에 그대로 넣으면 도는 <b>HTML 한 파일</b>도 같은 PR에 넣었습니다: <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g008-mirror-body-native/docs/progress/g008-mirror-body-web/game.html"><code>docs/progress/g008-mirror-body-web/game.html</code></a>(설명 <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g008-mirror-body-native/docs/progress/g008-mirror-body-web/README.md">README</a>).</p>
+  <p><b>그런데 이 게임은 HTML 판을 원본 그대로 만들 수 없습니다.</b> 앱이 붙여 넣은 웹 게임에 넘겨 주는 카메라 입력은 <b>동작 이름</b>(Raise 두 팔 들기 · Squat 앉기 · Jump 점프 등)과 <b>손 하나의 위치</b>뿐이고, 어깨·팔꿈치·손목·무릎 같은 <b>관절 골격은 넘기지 않습니다</b>(저장소 <code>WebPlayerBridge.PromptContract</code>, 11-17 main 확인). 거울 인간은 팔다리 열두 관절의 각도를 시범과 비교하는 게임이라, 지금 통로로는 그 판정을 할 수 없습니다. 회원님 결정(11-17 「줄인 HTML 판도 만든다」)으로 넘어오는 동작만으로 가를 수 있는 판을 만들었습니다.</p>
+  <div class="wrap"><table>
+    <tr><th></th><th>Unity C# 판(앱 내장)</th><th>HTML 판(붙여넣기용, 줄인 판)</th></tr>
+    <tr><td>자세</td><td>표현 카드 <b>열 가지</b> 모두</td><td><b>두 가지</b> — 「쑥쑥 자라는 나무」(Raise 두 팔 들기) · 「낮게 앉은 개구리」(Squat 앉기)</td></tr>
+    <tr><td>판정</td><td>관절 12개로 뼈 10개 방향 비교 → 일치도 0~100</td><td>시범과 같은 <b>동작이 들어왔는지</b>만(맞으면 성공)</td></tr>
+    <tr><td>자세 유지(1~2초)·평가 보류</td><td>있음</td><td>없음 — 동작은 한순간 알림이라 버틴 시간을 모른다</td></tr>
+    <tr><td>거울 규칙(좌우 바꾸기)</td><td>있음</td><td>없음 — 두 자세 모두 좌우가 같다</td></tr>
+    <tr><td>점수</td><td>평균 일치도 + 성공 30 + 연속 보너스</td><td>성공 30 + 연속 보너스(10씩, 최대 50)</td></tr>
+    <tr><td>흐름·시간</td><td colspan="2">같다 — 시범 보기 3초 → 따라 하기 9초 → 결과 3초, 표현 10개(다 하면 스스로 끝)</td></tr>
+  </table></div>
+  <ul>
+    <li><span class="ok">통과</span> 앱이 붙여 넣은 HTML에 거는 검사기(<code>WebGameLint.Check</code> 규약 · <code>FindClassroomHazards</code> 교실 위험 · <code>WebGameImport</code> 바깥 주소)를 맥 Unity에서 돌려 문제 0건.</li>
+    <li><span class="no">안 함</span> 앱 안 격리 브라우저에서 실제 실행 — 그 엔진이 Windows 전용이라 맥에서는 못 돌립니다.</li>
+    <li><b>정할 것(주개발자)</b>: 온전한 HTML 판이 필요하면 웹 통로에 골격(관절 좌표) 입력을 더할지. 더하면 원본 열 가지와 같은 판정을 HTML로도 할 수 있습니다.</li>
+  </ul>
+
+  <h2>HTML판에서 달라진 것</h2>
+  <div class="wrap"><table>
+    <tr><th>원본 HTML판</th><th>앱판(C#)</th><th>까닭</th></tr>
+    <tr><td>5~8명</td><td><b>1~6명</b></td><td>앱 카메라 상한 6(회원님 결정). 최소 1명이라 봇 채우기는 필요 없다</td></tr>
+    <tr><td>설정 → 카메라·전신 확인 1.5초 → 선생님 시작</td><td><b>앱 참가 → 동작 연습(전신 → 별 → 시작 자세) → 앱 3초 → 경기</b></td><td>주개발자 게임 흐름</td></tr>
+    <tr><td>결과 뒤 선생님이 「다음 표현 →」·「이 표현 다시 하기」</td><td>결과 3초 뒤 저절로 다음 표현, 다시 하기 없음</td><td>회원님 결정(경기 중 단추 없이)</td></tr>
+    <tr><td>카메라를 사람 수만큼 칸으로 나눠 엉덩이 자리로 사람을 가름</td><td>앱 골격을 명단 번호로</td><td>앱은 사람을 따로 따라간다</td></tr>
+    <tr><td>관절 이름(왼·오)으로 비교</td><td><b>화면 왼쪽 어깨의 사슬이 「왼쪽」</b></td><td>카메라·거울 설정으로 이름이 뒤집혀 와도 같게 읽는다(앱 <code>JoinGesture</code>와 같은 방식)</td></tr>
+    <tr><td>카메라 영상 위 색 뼈대</td><td>자리마다 그 사람의 자세를 <b>시범과 같은 인형</b>(그 사람 색)으로. 키·서 있는 자리는 지우고 자세만</td><td>카메라 화면을 보이지 않는 앱 규칙. 팔다리 각도가 곧 정답이라 정해진 몸짓만 하는 콩콩이로는 그릴 수 없다</td></tr>
+    <tr><td>평균 + 30 + 연속 보너스를 한 번에</td><td>표현 점수를 십의 자리 Touch(+10)·일의 자리 Press(+1)로 흘림</td><td>규칙 파일은 동작마다 점수</td></tr>
+    <tr><td>가상 체험 모드·결과 저장(txt)</td><td>없음(가상 체험은 이 페이지 체험판에)</td><td>앱은 실제 카메라, 결과는 앱 결과판·기록</td></tr>
+    <tr><td>연둣빛 바탕</td><td><b>배경 그림(봄 정원과 거울 연못, GPT)</b>, 없으면 연둣빛 코드 바탕</td><td>게임마다 다른 밝은 장면</td></tr>
+  </table></div>
+  <p class="note">그대로 옮긴 것: 표현 카드 열 가지(좌표 숫자 그대로), 표현 수 5·10·15, 따라 할 시간 12·9·7초, 일반·거울 규칙, 성공 기준 60점/1초·72점/1.5초·82점/2초, 관찰 3초, 뼈 방향 차이 × 1.15 감점·몸통 두 뼈 무게 0.5·점수 = min(평균, 가장 나쁜 팔 + 25, 가장 나쁜 다리 + 30), 관절 12개와 머리가 화면 안에 있어야 인식, 평가 = 본 시간 ≥ min(3초, 시간 × 40%)이고 4장면 이상, 표현 점수 = 평균 + 성공 30 + min(연속 − 1, 5) × 10, 열 가지를 섞어 이어 붙이는 순서.</p>
+
+  <h2>새 파일</h2>
+  <div class="wrap"><table id="files">
+    <tr><th>파일</th><th>무엇</th></tr>
+  </table></div>
+
+  <h2>검증한 것과 안 한 것</h2>
+  <ul>
+    <li><span class="ok">Unity</span> 맥 Unity 6000.5.9f1, 빌드 대상 Win64(학교 PC와 같은 조건)로 가지를 받아 <b>컴파일 오류 0</b>, G008 EditMode 검사 <b>57건 모두 통과</b>(골라 돌림 — 전체 검사는 아님).</li>
+    <li><span class="ok">.NET</span> 같은 57건을 .NET 8·C# 9·경고를 오류로·NUnit 3.14로도 돌렸습니다(main의 실제 파일과 함께 묶음).</li>
+    <li><span class="ok">끝까지</span> 감독 검사는 골격 좌표만 넣어 연습 → 시작 자세 → 표현 5개를 돌리고, 흘린 Touch·Press가 판이 센 점수와 같은지 봅니다.</li>
+    <li><span class="ok">빨간불 확인</span> 판정·연습·감독 규칙 46개를 하나씩 끄면 모두 검사가 실패합니다. 처음엔 11개가 구멍이라 검사 10건을 더했고, 하는 일이 없던 중복 코드 하나는 지웠습니다. 검사가 잡은 결함도 하나 있었습니다 — 「나무」 손목이 인형 틀 위로 잘릴 뻔했습니다.</li>
+    <li><span class="ok">HTML 판</span> 앱 웹 게임 검사기 통과(위 절).</li>
+    <li><span class="no">안 함</span> 앱 화면 촬영(앱에 아직 연결 전이라 앱 화면이 없음), 실물 카메라로 한 판(만든 분들이 확인 — PR #100에서 주개발자께 문의 중), Windows 실행.</li>
+  </ul>
+
+  <h2>앱에 붙이려면</h2>
+  <ol>
+    <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>MirrorBody</code>, <code>FlowTypes.IsMovedHtmlGame</code>, <code>FlowSpec</code>·검증기·스키마에 <code>mirrorBodyRounds</code>(5·10·15)·<code>mirrorBodySeconds</code>(7·9·12)·<code>mirrorBodyMode</code>(same·mirror)·<code>mirrorBodyThreshold</code>(60·72·82). 값은 <code>MirrorBodySettings.From(...)</code>로 감독에.</li>
+    <li><b>연습</b>: 안내 단계(<code>SessionState.Intro</code>)에서 이 게임이면 안내 카드 대신 감독 연습 — <code>BeginPractice</code>, 장면마다 <code>SyncRoster</code> → <code>SyncPoses</code> → <code>TickPractice</code> → 무대 <code>SyncPractice</code>. <code>PracticeStartRequested</code>면 <code>RequestSkipIntro()</code>.</li>
+    <li><b>경기</b>: <code>UguiNativeActivities</code>에서 <code>SyncRoster</code> → <code>SyncPoses</code> → <code>Tick(경기 시간, 판)</code> → 무대 <code>Sync</code>. <code>Finished</code>면 <code>runner.CompleteCourse(now)</code>. 연습과 경기에 같은 감독.</li>
+    <li><b>그림</b>: <code>stage.Backdrop = _hud.StageArt;</code></li>
+    <li><b>출시</b>: <code>StreamingAssets/games/g008-mirror-body/ruleset.json</code>와 <code>assets/images</code>, <code>GameTitles.FolderById</code>, 표지, 말 표(<code>mirrorBody.*</code>, 진행 기록에 ko·en).</li>
+  </ol>
+
+  <h2>실물에서 봐 주셨으면 하는 것</h2>
+  <ul>
+    <li><b>좌우</b> — 학생이 왼팔을 들면 인형도 화면 왼쪽 팔을 드는지, 「왼쪽으로 반짝」·「왼발로 선 홍학」이 맞게 판정되는지. 앱 골격의 가로가 거울 화면 좌표라는 전제로 짰습니다.</li>
+    <li><b>6명</b>이 서면 사람마다 열두 관절이 다 잡히는지(원본도 다인 인식은 기기·거리·조명에 따라 다르다고 적었습니다). 안 잡히면 「평가 보류」가 늘어납니다.</li>
+    <li>홍학(한 발 들기)·개구리(낮게 앉기)에서 발목이 화면 아래로 잘리지 않는 카메라 거리.</li>
+    <li>72점/1.5초가 학생에게 알맞은지.</li>
+  </ul>
+</main>
+<script>
+/* 새 파일 목록 */
+(function(){
+  var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/g008-mirror-body-native/";
+  var rows = [
+    ["unity/Assets/DigitalFitZone/Game/Play/MirrorBody/MirrorBodySettings.cs", "놀이 값: 표현 수·따라 할 시간·복제 규칙·성공 기준, 비교 값, 점수, 연습 값"],
+    ["unity/Assets/DigitalFitZone/Game/Play/MirrorBody/MirrorPose.cs", "관절, 표현 카드 열 가지(원본 좌표), 좌우 바꾸기, 자세 비교·온몸 보임·시작 자세"],
+    ["unity/Assets/DigitalFitZone/Game/Play/MirrorBody/MirrorBodyRound.cs", "판: 섞기 → 시범 보기 → 따라 하기 → 결과, 유지·성공·평가 보류·연속, 점수 순간"],
+    ["unity/Assets/DigitalFitZone/Game/Play/MirrorBody/MirrorBodyPractice.cs", "입장 뒤 동작 연습: 전신 보이기 → 반짝반짝 별 → 시작 자세, 전원 통과"],
+    ["unity/Assets/DigitalFitZone/Game/Play/MirrorBody/MirrorBodyScoring.cs", "표현 점수 → 십의 자리 Touch(+10), 일의 자리 Press(+1)"],
+    ["unity/Assets/DigitalFitZone/UI/Session/MirrorBodyDirector.cs", "감독: 명단 맞추기, 골격 → 관절, 연습·경기 밀기, Award, 끝 알림"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiMirrorBodyStage.cs", "무대: 자리마다 인형 + 카드 | 시범 판, 연습 화면, 배경 그림"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MirrorBodyRoundTests.cs", "판·자세 비교 검사 31건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MirrorBodyPracticeTests.cs", "연습 검사 9건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MirrorBodyDirectorTests.cs", "감독 검사 10건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MirrorBodyStageTests.cs", "무대 검사 7건"],
+    ["docs/progress/2026-11-17-g008-mirror-body-native.md", "진행 기록, 붙이는 길, 말 표"],
+    ["docs/progress/g008-mirror-body-rulesets/g008-mirror-body.ruleset.json", "규칙 파일 초안"],
+    ["docs/progress/g008-mirror-body-rulesets/assets/images/bg.jpg", "배경 그림 — 봄 정원과 거울 연못(GPT 생성)"],
+    ["docs/progress/g008-mirror-body-web/game.html", "HTML 판(줄인 판) — 앱 「웹 게임」에 붙여 넣는 한 파일"],
+    ["docs/progress/g008-mirror-body-web/README.md", "HTML 판 붙이는 길·입력·Unity 판과 다른 점"],
+    ["docs/progress/g008-mirror-body-review.html", "이 페이지 사본"]
+  ];
+  var t = document.getElementById("files");
+  rows.forEach(function(r){
+    var tr = document.createElement("tr"), a = document.createElement("a"), td1 = document.createElement("td"), td2 = document.createElement("td");
+    a.href = base + r[0]; a.textContent = r[0].replace("unity/Assets/DigitalFitZone/", "");
+    td1.appendChild(a); td2.textContent = r[1]; tr.appendChild(td1); tr.appendChild(td2); t.appendChild(tr);
+  });
+})();
+
+/* 체험판 — MirrorPose.cs·MirrorBodyRound.cs·MirrorBodyPractice.cs 와 같은 규칙과 숫자, 1/60초 고정 걸음(남은 시간을 쌓아 꺼낸다).
+   흐름은 앱과 같다: 시작 화면(참가) → 동작 연습(전원 통과, 시작 자세로 바로 시작) → 3초 → 경기.
+   사람 대신 원본 「가상 체험」의 가상 참여자가 시범을 따라 한다(마지막 사람은 세 번째 표현마다 일부러 안 따라 함). 1번은 키보드로 할 수도 있다. */
+(function(){
+  "use strict";
+  var STEP = 1 / 60, EPS = 1e-9, ASPECT = 16 / 9, COUNTDOWN = 3;
+  var OBSERVE = 3, REVEAL = 3, PENALTY = 1.15, TORSO_W = 0.5, ARM_SLACK = 25, LEG_SLACK = 30, EDGE = 0.005, HEAD = 0.01;
+  var BONUS = 30, COMBO_STEP = 10, COMBO_STEPS = 5, FULL_BODY = 1.5, FEEDBACK = 0.8, START_HOLD = 0.25, START_H = 0.15;
+  var COL = ["#61bade", "#ffac78", "#b59ce6", "#85cf9f", "#e6ca66", "#e69fc6"];
+  function P(x, y) { return [x, y]; }
+  function body(key, name, hint, arms, legs) {
+    legs = legs || [P(-.17, 1.14), P(-.2, 1.65), P(.17, 1.14), P(.2, 1.65)];
+    return { key: key, name: name, hint: hint, pts: [P(-.23, 0), P(.23, 0), arms[0], arms[2], arms[1], arms[3], P(-.15, .65), P(.15, .65), legs[0], legs[2], legs[1], legs[3]] };
+  }
+  var POSES = [
+    body("star", "반짝반짝 별", "양팔을 대각선 위로! 다리를 넓게 벌려 큰 별을 만들어요.", [P(-.55, -.3), P(-.84, -.58), P(.55, -.3), P(.84, -.58)], [P(-.38, 1.09), P(-.64, 1.58), P(.38, 1.09), P(.64, 1.58)]),
+    body("plane", "하늘을 나는 비행기", "양팔을 어깨 높이로 곧게 펼쳐요. 시선은 앞을 봐요.", [P(-.62, 0), P(-1.02, 0), P(.62, 0), P(1.02, 0)]),
+    body("cactus", "씩씩한 선인장", "팔꿈치는 어깨 높이, 손은 위로! 양팔을 ㄴ자로 굽혀요.", [P(-.65, 0), P(-.65, -.43), P(.65, 0), P(.65, -.43)]),
+    body("tree", "쑥쑥 자라는 나무", "양팔을 머리 위로 쭉 뻗으며 길쭉한 나무가 되어 봐요.", [P(-.25, -.43), P(-.25, -.86), P(.25, -.43), P(.25, -.86)]),
+    body("leftSparkle", "왼쪽으로 반짝", "왼팔은 대각선 위, 오른팔은 대각선 아래로 길게 뻗어요.", [P(-.53, -.3), P(-.83, -.6), P(.53, .3), P(.83, .6)]),
+    body("rightSparkle", "오른쪽으로 반짝", "오른팔은 대각선 위, 왼팔은 대각선 아래로 길게 뻗어요.", [P(-.53, .3), P(-.83, .6), P(.53, -.3), P(.83, -.6)]),
+    body("frog", "낮게 앉은 개구리", "다리를 벌리고 무릎을 편안하게 굽혀요. 양팔은 옆으로 펼쳐요.", [P(-.6, 0), P(-.98, 0), P(.6, 0), P(.98, 0)], [P(-.53, .86), P(-.53, 1.32), P(.53, .86), P(.53, 1.32)]),
+    body("flamingoLeft", "왼발로 선 홍학", "왼발로 서고 오른 무릎을 들어요. 팔을 벌려 균형을 잡아요.", [P(-.6, 0), P(-.98, 0), P(.6, 0), P(.98, 0)], [P(-.17, 1.14), P(-.2, 1.65), P(.52, .72), P(.35, 1.12)]),
+    body("flamingoRight", "오른발로 선 홍학", "오른발로 서고 왼 무릎을 들어요. 팔을 벌려 균형을 잡아요.", [P(-.6, 0), P(-.98, 0), P(.6, 0), P(.98, 0)], [P(-.52, .72), P(-.35, 1.12), P(.17, 1.14), P(.2, 1.65)]),
+    body("hug", "나를 안아 주기", "팔을 가슴 앞에서 교차해 어깨 쪽으로 모아요. 몸은 곧게 세워요.", [P(-.43, .4), P(.2, .05), P(.43, .4), P(-.2, .05)])
+  ];
+  var REST = body("rest", "", "", [P(-.35, .36), P(-.38, .77), P(.35, .36), P(.38, .77)]).pts;
+  var BONES = [[0, 2], [2, 4], [1, 3], [3, 5], [6, 8], [8, 10], [7, 9], [9, 11], [0, 6], [1, 7]];
+  function flipped(p) { var q = []; for (var i = 0; i < 12; i += 2) { q[i] = P(-p[i + 1][0], p[i + 1][1]); q[i + 1] = P(-p[i][0], p[i][1]); } return q; }
+  function roundJs(v) { return Math.floor(v + 0.5); }
+
+  /* 몸 = 화면 쪽 점 12개(골격 좌표: 왼쪽 0, 바닥 0) + 코 */
+  function toBody(f, cx) { var s = 0.13, sy = 0.72, pts = f.map(function (q) { return [cx + q[0] * s / ASPECT, sy - q[1] * s]; }); return { pts: pts, nose: [cx, sy + 0.4 * s] }; }
+  function visible(b) {
+    if (!b) return false;
+    for (var i = 0; i < 12; i++) { var q = b.pts[i]; if (q[0] <= EDGE || q[0] >= 1 - EDGE || q[1] <= EDGE || q[1] >= 1 - EDGE) return false; }
+    return b.nose[1] <= 1 - HEAD;
+  }
+  function score(b, target) {   /* PoseScorer.TryScore — 못 보면 −1 */
+    if (!visible(b)) return -1;
+    var f = b.pts.map(function (q) { return [q[0] * ASPECT, -q[1]]; }), total = 0, weight = 0, armMin = 100, legMin = 100;
+    for (var i = 0; i < BONES.length; i++) {
+      var a = BONES[i][0], c = BONES[i][1], ux = f[c][0] - f[a][0], uy = f[c][1] - f[a][1], vx = target[c][0] - target[a][0], vy = target[c][1] - target[a][1];
+      var len = Math.hypot(ux, uy) * Math.hypot(vx, vy); if (len < 1e-6) return -1;
+      var ang = Math.acos(Math.max(-1, Math.min(1, (ux * vx + uy * vy) / len))) * 180 / Math.PI, sc = Math.max(0, 100 - ang * PENALTY), wt = i >= 8 ? TORSO_W : 1;
+      total += sc * wt; weight += wt; if (i < 4) armMin = Math.min(armMin, sc); else if (i < 8) legMin = Math.min(legMin, sc);
+    }
+    return roundJs(Math.min(total / weight, Math.min(armMin + ARM_SLACK, legMin + LEG_SLACK)));
+  }
+  function startPose(b) {   /* PoseScorer.StartPose — 두 팔 ㄴ자 */
+    if (!b) return false;
+    var p = b.pts, shY = (p[0][1] + p[1][1]) / 2, hipY = (p[6][1] + p[7][1]) / 2, scale = Math.max(0.01, shY - hipY), mid = (p[0][0] + p[1][0]) / 2;
+    function bent(s, e, w) {
+      var sh = p[s], el = p[e], wr = p[w], ux = (el[0] - sh[0]) * ASPECT, uy = el[1] - sh[1], fx = (wr[0] - el[0]) * ASPECT, fy = wr[1] - el[1];
+      var ul = Math.hypot(ux, uy), fl = Math.hypot(fx, fy); if (ul < scale * 0.2 || fl < scale * 0.2) return false;
+      var ang = Math.acos(Math.max(-1, Math.min(1, (-ux * fx - uy * fy) / (ul * fl)))) * 180 / Math.PI;
+      return ang >= 60 && ang <= 120 && Math.abs(uy) < Math.abs(ux) * 0.65 && fy > Math.abs(fx) && fy > scale * START_H && wr[1] - sh[1] > scale * START_H && (el[0] - sh[0]) * (sh[0] - mid) > 0;
+    }
+    return bent(0, 2, 4) && bent(1, 3, 5);
+  }
+
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var bg = typeof Image === "function" ? new Image() : null; if (bg) bg.src = "img/g008-mirror-body-bg.jpg";
+  var cfg = { players: 5, rounds: 10, seconds: 9, mode: "same", threshold: 72, me: false };
+  var keys = {}, started = false, stage = "home", clock = 0, acc = 0, cd = 0, seq = [], turn = 0, phase = "idle", phaseEnd = 0, phaseStart = 0, target = POSES[0].pts;
+  var PR = { step: 0, advanceAt: NaN, stepAt: 0 }, PL = [], seed = 8;
+  function hold() { return cfg.threshold >= 82 ? 2 : cfg.threshold >= 72 ? 1.5 : 1; }
+  function eligible() { return Math.min(3, cfg.seconds * 0.4); }
+  function forMode(p) { return cfg.mode === "mirror" ? flipped(p) : p; }
+  function rnd() { seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+
+  function reset() {
+    stage = started ? "practice" : "home"; clock = 0; acc = 0; turn = 0; phase = "idle"; seed = 8;
+    PR = { step: 0, advanceAt: NaN, stepAt: 0 };
+    PL = []; for (var i = 0; i < cfg.players; i++) PL.push({ i: i, cx: (i + 0.5) / cfg.players, b: null, match: -1, pts: 0, succ: 0, ev: 0, unk: 0, combo: 0, sum: 0, n: 0, seen: 0, hold: 0, ok: false, verdict: "", vavg: 0, vpts: 0, ph: 0, sh: 0, passed: false });
+    target = forMode(POSES[0].pts);
+  }
+
+  /* 가상 참여자 — 원본 simulate(): 시범으로 천천히 바뀌고 손이 흔들린다 */
+  function figureOf(p, t) {
+    if (cfg.me && p.i === 0) {
+      if (keys.q) return POSES[2].pts;
+      for (var k = 0; k < 10; k++) if (keys[String((k + 1) % 10)]) return forMode(POSES[k].pts);
+      return REST;
+    }
+    var goal, a;
+    if (stage === "practice") {
+      var since = clock - PR.stepAt;
+      goal = PR.step === 1 ? target : REST;
+      a = PR.step === 1 ? Math.max(0, Math.min(1, (since - 0.4 - p.i * 0.22) / 1.6)) : 0;
+      if (PR.step === 2 && p.i === PL.length - 1) { goal = POSES[2].pts; a = Math.min(1, Math.max(0, since - 1.5) * 4); }   /* 마지막 가상 참여자가 시작 자세 */
+    } else if (stage !== "play" || phase === "observe") { return REST; }
+    else {
+      var progress = phase === "perform" ? clock - phaseStart : 0;
+      a = phase === "perform" ? Math.max(0, Math.min(1, (progress - 0.4 - p.i * 0.22) / 1.6)) : phase === "reveal" ? 1 : 0;
+      goal = (p.i === PL.length - 1 && turn % 3 === 0) ? REST : target;
+    }
+    return REST.map(function (q, j) {
+      var w = (j === 4 || j === 5) ? Math.sin(t * 1.43 + p.i) * 0.025 * (p.i + 1) : 0;
+      return [q[0] * (1 - a) + goal[j][0] * a + w, q[1] * (1 - a) + goal[j][1] * a];
+    });
+  }
+
+  function makeSeq() {
+    var s = [];
+    while (s.length < cfg.rounds) { var ids = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]; for (var i = 9; i > 0; i--) { var j = Math.floor(rnd() * (i + 1)), x = ids[i]; ids[i] = ids[j]; ids[j] = x; } s = s.concat(ids); }
+    return s.slice(0, cfg.rounds);
+  }
+  function nextPose(t) {
+    turn++; target = forMode(POSES[seq[turn - 1]].pts);
+    PL.forEach(function (p) { p.verdict = ""; });
+    phase = "observe"; phaseStart = t; phaseEnd = t + OBSERVE;
+  }
+  function revealAll(t) {
+    PL.forEach(function (p) {
+      if (!(p.seen >= eligible() - EPS && p.n >= 4)) { p.unk++; p.combo = 0; p.verdict = "held"; p.vavg = p.vpts = 0; return; }
+      p.ev++; if (p.ok) { p.succ++; p.combo++; } else p.combo = 0;
+      var avg = roundJs(p.sum / p.n), gain = avg + (p.ok ? BONUS + Math.min(p.combo - 1, COMBO_STEPS) * COMBO_STEP : 0);
+      p.pts += gain; p.verdict = p.ok ? "ok" : "fail"; p.vavg = avg; p.vpts = gain;
+    });
+    phase = "reveal"; phaseStart = t; phaseEnd = t + REVEAL;
+  }
+
+  function advance(t) {
+    PL.forEach(function (p) { p.b = toBody(figureOf(p, t), p.cx); p.match = score(p.b, target); });
+    if (stage === "practice") {
+      var any = null;
+      PL.forEach(function (p) { p.sh = startPose(p.b) ? p.sh + STEP : 0; if (p.sh >= START_HOLD - EPS && !any) any = p; });
+      if (any || keys.Enter) { stage = "count"; cd = t; keys.Enter = false; return; }
+      if (!isNaN(PR.advanceAt)) { if (t >= PR.advanceAt - EPS) { PR.advanceAt = NaN; PR.step = Math.min(2, PR.step + 1); PR.stepAt = t; PL.forEach(function (p) { p.passed = false; p.ph = 0; }); } return; }
+      if (PR.step === 2) return;
+      var need = PR.step === 0 ? FULL_BODY : hold(), star = forMode(POSES[0].pts);
+      PL.forEach(function (p) {
+        if (p.passed) return;
+        var doing = PR.step === 0 ? visible(p.b) : score(p.b, star) >= cfg.threshold;
+        p.ph = doing ? p.ph + STEP : 0; if (p.ph >= need - EPS) p.passed = true;
+      });
+      if (PL.every(function (p) { return p.passed; })) PR.advanceAt = t + FEEDBACK;
+      return;
+    }
+    if (stage === "count") { if (t - cd >= COUNTDOWN - EPS) { stage = "play"; seq = makeSeq(); turn = 0; nextPose(t); } return; }
+    if (stage !== "play") return;
+    if (phase === "observe" && t >= phaseEnd - EPS) {
+      PL.forEach(function (p) { p.sum = 0; p.n = 0; p.seen = 0; p.hold = 0; p.ok = false; });
+      phase = "perform"; phaseStart = phaseEnd; phaseEnd += cfg.seconds;
+    } else if (phase === "perform") {
+      PL.forEach(function (p) {
+        if (p.match < 0) { p.hold = 0; return; }
+        p.sum += p.match; p.n++; p.seen += STEP; p.hold = p.match >= cfg.threshold ? p.hold + STEP : 0; if (p.hold >= hold() - EPS) p.ok = true;
+      });
+      if (t >= phaseEnd - EPS) revealAll(phaseEnd);
+    } else if (phase === "reveal" && t >= phaseEnd - EPS) {
+      if (turn >= cfg.rounds) { stage = "over"; phase = "over"; } else nextPose(phaseEnd);
+    }
+  }
+
+  /* ---- 그리기(UguiMirrorBodyStage 배치: 왼쪽 자리 + 카드, 오른쪽 시범 판) */
+  function font(px) { return "800 " + Math.round(px) + "px 'Pretendard Variable','Pretendard','Malgun Gothic',sans-serif"; }
+  function rr(x, y, w, h, r, fill) { ctx.fillStyle = fill; ctx.beginPath(); ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r); ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill(); }
+  function label(s, x, y, size, color, align) { ctx.fillStyle = color; ctx.font = font(size); ctx.textAlign = align || "center"; ctx.textBaseline = "middle"; ctx.fillText(s, x, y); }
+  function pill(x, y, w, h, s, size, fill, ink) { rr(x, y, w, h, h * .3, fill); label(s, x + w / 2, y + h / 2, size, ink); }
+  function figure(rx, ry, rw, rh, f, color) {   /* 그림 틀(어깨 가운데 0, 아래가 +) 점 12개 */
+    var k = Math.min(rh / (1.72 + 0.98), rw / 2.24), ox = rx + rw / 2, oy = ry + rh / 2 - (-0.98 + 1.72) / 2 * k;
+    function q(i) { return [ox + f[i][0] * k, oy + f[i][1] * k]; }
+    ctx.lineCap = "round"; ctx.fillStyle = color; ctx.beginPath(); [0, 1, 7, 6].forEach(function (i, n) { var a = q(i); if (n) ctx.lineTo(a[0], a[1]); else ctx.moveTo(a[0], a[1]); }); ctx.closePath(); ctx.fill();
+    for (var i = 0; i < 8; i++) { var a = q(BONES[i][0]), c = q(BONES[i][1]); ctx.strokeStyle = i >= 4 ? "#344f57" : color; ctx.lineWidth = k * (i >= 4 ? .14 : .15); ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(c[0], c[1]); ctx.stroke(); }
+    ctx.fillStyle = "#ffd5ae"; [4, 5].forEach(function (i) { var a = q(i); ctx.beginPath(); ctx.arc(a[0], a[1], k * .1, 0, 7); ctx.fill(); });
+    var nx = (q(0)[0] + q(1)[0]) / 2, ny = (q(0)[1] + q(1)[1]) / 2;
+    ctx.beginPath(); ctx.arc(nx, ny - k * .4, k * .3, 0, 7); ctx.fill();
+    ctx.fillStyle = "#344f57"; ctx.beginPath(); ctx.ellipse(nx, ny - k * .55, k * .3, k * .16, 0, 0, 7); ctx.fill();
+  }
+  function personFigure(b) {   /* UguiMirrorBodyStage.FigureOf — 어깨 가운데·몸통 길이로 맞춘다 */
+    var f = b.pts.map(function (q) { return [q[0] * ASPECT, -q[1]]; }), sx = (f[0][0] + f[1][0]) / 2, sy = (f[0][1] + f[1][1]) / 2, hx = (f[6][0] + f[7][0]) / 2, hy = (f[6][1] + f[7][1]) / 2;
+    var k = 0.65 / Math.hypot(hx - sx, hy - sy); return f.map(function (q) { return [(q[0] - sx) * k, (q[1] - sy) * k]; });
+  }
+  function fit(s, size, width) { return Math.min(size, width / Math.max(1, s.length) * 1.7); }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    if (bg && bg.complete && bg.naturalWidth) { ctx.drawImage(bg, 0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.12)"; ctx.fillRect(0, 0, W, H); var gr = ctx.createLinearGradient(0, 0, 0, H * .2); gr.addColorStop(0, "rgba(0,0,0,.35)"); gr.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H * .2); }
+    else { ctx.fillStyle = "#e5efdf"; ctx.fillRect(0, 0, W, H); }
+    var m = H * 0.032, gap = W * 0.012, cw = W * 0.27, lw = W - cw - gap * 3, ah = (H - gap * 3) * 0.64, ch = H - gap * 3 - ah, n = PL.length, sw = (lw - gap * (n - 1)) / n;
+    var c = { x: lw + gap * 2, y: gap, w: cw, h: H - gap * 2 };
+    PL.forEach(function (p, i) {
+      var x = gap + i * (sw + gap), col = COL[i % COL.length], cy = gap * 2 + ah;
+      ctx.fillStyle = "rgba(0,0,0,.16)"; ctx.beginPath(); ctx.ellipse(x + sw / 2, gap + ah * .96, Math.min(sw * .32, ah * .22), ah * .025, 0, 0, 7); ctx.fill();
+      pill(x + sw / 2 - m * 2.6, gap + ah * .01, m * 5.2, m * 1.3, "P" + (i + 1) + (cfg.me && i === 0 ? " 나" : ""), m * .9, col, "#243f46");
+      if (p.b) figure(x, gap + m * 1.5, sw, ah - m * 1.5, personFigure(p.b), col);
+      rr(x, cy, sw, ch, sw * .08, "rgba(255,255,255,.95)"); rr(x, cy, sw, ch * .045, ch * .02, col);
+      label("P" + (i + 1), x + sw * .08, cy + ch * .06 + m * .65, m, "#243f46", "left");
+      var big, state, ink = "#243f46";
+      if (stage === "practice" || stage === "count") {
+        big = p.passed ? "통과!" : Math.round(Math.min(1, p.ph / (PR.step === 0 ? FULL_BODY : hold())) * 100) + "%";
+        state = PR.step === 1 ? "일치도 " + Math.max(0, score(p.b, forMode(POSES[0].pts))) + "%" : "전신 인식 · 준비 완료"; ink = p.passed ? "#237f5e" : ink;
+      } else if ((phase === "reveal" || phase === "over") && p.verdict === "held") { big = "보류"; state = "판별 시간 부족 · 평가 보류"; ink = "#536c61"; }
+      else if ((phase === "reveal" || phase === "over") && p.verdict) { big = p.vavg + "%"; state = (p.verdict === "ok" ? "표현 성공! · +" : "조금 더 정확하게 · +") + p.vpts + "점"; ink = p.verdict === "ok" ? "#237f5e" : ink; }
+      else if (p.match < 0) { big = "—"; state = "전신 미인식 · 자세 / 거리 확인"; }
+      else if (phase === "perform") { big = p.match + "%"; state = p.ok ? "성공! 멋진 표현이에요" : "자세 유지 " + Math.min(p.hold, hold()).toFixed(1) + " / " + hold() + "초"; ink = p.ok ? "#237f5e" : ink; }
+      else { big = "준비"; state = "전신 인식 · 준비 완료"; }
+      label(big, x + sw / 2, cy + ch * .32, m * 2.1, ink);
+      label(state, x + sw / 2, cy + ch * .56, fit(state, m * .72, sw * .92), "#536c61");
+      var mx = x + sw * .08, mw = sw * .84, my = cy + ch * .72, mh = m * .3, k = phase === "perform" ? (p.ok ? 1 : Math.min(1, p.hold / hold())) : 0;
+      rr(mx, my, mw, mh, mh / 2, "#e8eee3"); if (k > 0) rr(mx, my, mw * k, mh, mh / 2, col);
+      var st = p.pts + "점 · " + p.combo + "콤보 · 성공 " + p.succ + "/" + p.ev;
+      label(st, x + sw / 2, my + mh * 2.6, fit(st, m * .68, sw * .92), "#536c61");
+    });
+    /* 시범 판 */
+    rr(c.x, c.y, c.w, c.h, c.w * .07, "rgba(229,239,223,.96)");
+    var y = c.y + c.h * .03;
+    if (stage === "practice" || stage === "count") {
+      var celebrating = !isNaN(PR.advanceAt), say = stage === "count" ? "곧 시작해요!" : celebrating ? "잘했어요!" : ["머리부터 발끝까지 화면에 보이게 서요", "시범처럼 「반짝반짝 별」을 만들고 버텨요", "두 팔을 ㄴ자로 올리면 시작해요"][PR.step];
+      pill(c.x + c.w * .12, y, c.w * .76, m * 1.5, "동작 연습 " + (PR.step + 1) + "/3", m, "#f7f9f2", "#243f46");
+      pill(c.x + c.w * .04, y + m * 1.9, c.w * .92, m * 2.6, say, fit(say, m * (celebrating ? 1.5 : 1), c.w * .9), celebrating ? "#237f5e" : "#dcf499", celebrating ? "#f7f9f2" : "#243f46");
+      figure(c.x + c.w * .08, c.y + c.h * .24, c.w * .84, c.h * .42, PR.step === 0 ? REST : PR.step === 1 ? forMode(POSES[0].pts) : POSES[2].pts, "#176b60");
+      var hy = c.y + c.h * .74, hh = m * 3.2, hx = c.x + c.w * .04, hw = c.w * .92, best = 0;
+      PL.forEach(function (p) { best = Math.max(best, p.sh); });
+      rr(hx, hy, hw, hh, hh * .25, "rgba(23,107,96,.95)"); label("언제든 두 팔을 ㄴ자로 올리면 바로 시작", hx + hw / 2, hy + hh * .35, fit("언제든 두 팔을 ㄴ자로 올리면 바로 시작", m * .8, hw * .92), "#f7f9f2");
+      rr(hx + hw * .08, hy + hh * .74, hw * .84, hh * .1, hh * .05, "rgba(247,249,242,.3)"); if (best > 0) rr(hx + hw * .08, hy + hh * .74, hw * .84 * Math.min(1, best / START_HOLD), hh * .1, hh * .05, "#dcf499");
+      if (stage === "count") { var cn = Math.max(1, Math.ceil(COUNTDOWN - (clock - cd) - EPS)); ctx.fillStyle = "rgba(23,59,55,.5)"; ctx.fillRect(0, 0, W, H); label(String(cn), W / 2, H / 2, H * .3, "#dcf499"); }
+    } else if (stage === "play" || stage === "over") {
+      var ps = POSES[seq[Math.max(0, turn - 1)]], perform = phase === "perform";
+      pill(c.x + c.w * .12, y, c.w * .76, m * 1.5, { observe: "먼저 보고 준비해요", perform: "같은 표현을 만들어요", reveal: "표현 결과", over: "모두 끝!" }[phase] || "", m, perform ? "#dcf499" : "#f7f9f2", "#243f46");
+      label("표현 " + turn + " / " + cfg.rounds, c.x + c.w / 2, y + m * 2.3, m * .85, "#536c61");
+      label(ps.name, c.x + c.w / 2, y + m * 3.9, m * 1.5, "#243f46");
+      figure(c.x + c.w * .08, c.y + c.h * .22, c.w * .84, c.h * .4, target, "#176b60");
+      var cut = ps.hint.indexOf(" ", Math.floor(ps.hint.length / 2) - 2);
+      label(ps.hint.slice(0, cut), c.x + c.w / 2, c.y + c.h * .655, m * .78, "#536c61");
+      label(ps.hint.slice(cut + 1), c.x + c.w / 2, c.y + c.h * .695, m * .78, "#536c61");
+      var total = phase === "observe" ? OBSERVE : cfg.seconds, left = Math.max(0, phaseEnd - clock), bar = phase === "observe" || perform ? left / total : 1;
+      label(phase === "reveal" ? "완료" : phase === "over" ? "서로에게 박수를!" : left.toFixed(1) + "초", c.x + c.w / 2, c.y + c.h * .78, m * (phase === "over" ? 1.1 : 2.2), "#243f46");
+      rr(c.x + c.w * .08, c.y + c.h * .85, c.w * .84, m * .45, m * .22, "#c5d6bc"); if (bar > 0) rr(c.x + c.w * .08, c.y + c.h * .85, c.w * .84 * bar, m * .45, m * .22, "#176b60");
+      label(cfg.mode === "mirror" ? "좌우 반전! 왼쪽과 오른쪽을 바꿔요" : "자기 몸 기준 · 시범과 같은 방향", c.x + c.w / 2, c.y + c.h * .92, m * .72, cfg.mode === "mirror" ? "#b45a1e" : "#536c61");
+    }
+    var info = stage === "practice" ? "동작 연습 — 단계마다 모두 통과해야 다음으로 · 시작 자세" + (cfg.me ? "(Q)" : "") + "나 Enter로 바로 시작" : stage === "count" ? "3초 뒤 시작" : stage === "over" ? "경기 끝" : stage === "play" ? "표현 " + turn + " / " + cfg.rounds : "";
+    document.getElementById("score").innerHTML = "<span>" + info + "</span>" + PL.map(function (p) {
+      return "<span style='border-color:" + COL[p.i] + "'>P" + (p.i + 1) + (cfg.me && p.i === 0 ? "(나)" : "") + " " + p.pts + "점 · 성공 " + p.succ + "/" + p.ev + (p.unk ? " · 보류 " + p.unk : "") + "</span>";
+    }).join("");
+  }
+  var last = 0;
+  function frame(t) {
+    var now = t / 1000; if (!last) last = now;
+    var dt = Math.min(0.25, now - last); last = now;
+    if (started && dt > 0) { acc += dt; while (acc >= STEP) { acc -= STEP; clock += STEP; advance(clock); } }
+    draw(); requestAnimationFrame(frame);
+  }
+  window.addEventListener("keydown", function (e) { if (!started) return; if (e.key === "Enter" || e.key === "q" || /^[0-9]$/.test(e.key)) { keys[e.key] = true; e.preventDefault(); } });
+  window.addEventListener("keyup", function (e) { if (e.key !== "Enter") keys[e.key] = false; });
+  function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
+  [["data-players", "players", true], ["data-rounds", "rounds", true], ["data-seconds", "seconds", true], ["data-mode", "mode", false], ["data-threshold", "threshold", true], ["data-me", "me", "bool"]].forEach(function (o) {
+    document.querySelectorAll("[" + o[0] + "]").forEach(function (b) { b.onclick = function () { var v = b.getAttribute(o[0]); cfg[o[1]] = o[2] === "bool" ? v === "1" : o[2] ? +v : v; pick(o[0], v); reset(); }; });
+  });
+  document.getElementById("restart").onclick = function () { reset(); };
+  window.__startDemo = function () { started = true; reset(); keys = {}; if (cv.focus) cv.focus(); };
+  window.__stopDemo = function () { started = false; reset(); };
+  window.__g008 = {
+    state: function () { return { stage: stage, step: PR.step, phase: phase, turn: turn, clock: clock, pts: PL.map(function (p) { return p.pts; }), succ: PL.map(function (p) { return p.succ; }), ev: PL.map(function (p) { return p.ev; }), unk: PL.map(function (p) { return p.unk; }), match: PL.map(function (p) { return p.match; }) }; },
+    key: function (k, down) { keys[k] = !!down; },
+    set: function (o) { Object.keys(o).forEach(function (k) { cfg[k] = o[k]; }); reset(); },
+    score: score, toBody: toBody, poses: POSES, flipped: flipped, startPose: startPose
+  };
+  reset(); requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* 시작 화면 — 「경기 시작」을 누르면 체험판이 돈다, 「처음 화면」이면 멈추고 돌아온다 */
+(function(){
+  var start = document.getElementById("start"), go = document.getElementById("go"), home = document.getElementById("home");
+  go.addEventListener("click", function(){ start.hidden = true; home.hidden = false; window.__startDemo(); });
+  home.addEventListener("click", function(){ window.__stopDemo(); start.hidden = false; home.hidden = true; go.focus(); });
+})();
+</script>
+</body>
+</html>
