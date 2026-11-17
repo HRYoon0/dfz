@@ -66,6 +66,8 @@ ul.games .stage.pr{background:#4A4430;border-color:#FFD66B;color:#FFE29A}
 ul.games a.game{font-size:20px;font-weight:750;text-decoration:none}
 ul.games a.game:hover{text-decoration:underline}
 ul.games .sub{display:block;color:var(--muted);font-size:15px;margin-top:2px}
+ul.games .gnote{display:block;margin-top:6px;font-size:15px;line-height:1.5;color:#E8EEF6;background:#2B3A4E;border-left:3px solid #FFD66B;border-radius:6px;padding:6px 10px}
+ul.games .gnote b{color:#FFE29A}
 ul.games .main .req-mark{display:inline-block;margin-top:6px;font-size:14px;border-radius:10px}
 ul.games .main .req-mark[hidden]{display:none}
 ul.games .links{font-size:15px;font-weight:600;white-space:nowrap;display:flex;gap:6px 14px;flex-wrap:wrap;justify-content:flex-end}
@@ -259,12 +261,13 @@ def build_index():
         label, cls = stage_of(g)
         pr = f'<a href="{GH}/pull/{g["pr"]}">PR #{g["pr"]}</a><span class="sep"> · </span>' if g.get("pr") else ""
         pr = "".join(f'<a data-fix="{n}" href="{GH}/pull/{n}">수정 PR #{n}</a><span class="sep"> · </span>' for n in g.get("fixes", [])) + pr
-        q = " ".join([g["title"], g["slug"], g.get("author", ""), g["source"], g["result"], label]).lower()
+        q = " ".join([g["title"], g["slug"], g.get("author", ""), g["source"], g["result"], g.get("note", ""), label]).lower()
         rows.append(
             f'<li class="st-{cls}" data-slug="{E(g["slug"])}" data-q="{E(q)}"><span class="stage {cls}" title="{E(g["status"])}">{E(label)}</span>'
             f'<span class="main"><a class="game" href="{E(g["page"])}">{E(g["title"])}</a>'
             f'<span class="sub">만든 사람 {E(g["author"]) or "미기재"} · 마지막 {last} · 고친 {len(g["history"])}건</span>'
-            f'<span class="req-mark" hidden></span></span>'
+            + (f'<span class="gnote">{E(g["note"])}</span>' if g.get("note") else "")
+            + f'<span class="req-mark" hidden></span></span>'
             f'<span class="links">{pr}<a href="{GH}/tree/{E(g["branch"])}">브랜치</a></span>'
             f'<div class="req" data-slug="{E(g["slug"])}" data-title="{E(g["title"])}" data-page="{E(g["page"])}"><button type="button" class="req-btn">수정 요청</button></div></li>')
 
