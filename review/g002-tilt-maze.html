@@ -148,7 +148,15 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
       box.appendChild(d);
     });
   }
-  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); }).catch(function(){}); }
+  // 게임별 목록 — 고친 기록과 수정 요청 중 더 늦은 시각이 위로(2026-11-17 회원님 「수정요청 받으면 또 그게 최신」)
+  function resort(games){
+    var ul = document.querySelector('ul.games'); if (!ul) return;
+    var rows = [].slice.call(ul.children);
+    rows.forEach(function(li){ var g = games[li.dataset.slug], at = g && String(g.last || '').slice(0, 16);
+      if (at && at > (li.dataset.last || '')) li.dataset.last = at; });
+    rows.sort(function(a, b){ return (b.dataset.last || '').localeCompare(a.dataset.last || ''); }).forEach(function(li){ ul.appendChild(li); });
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) { Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); resort(r.games); } }).catch(function(){}); }
   var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
   document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
     cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';

@@ -148,7 +148,15 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
       box.appendChild(d);
     });
   }
-  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); }).catch(function(){}); }
+  // 게임별 목록 — 고친 기록과 수정 요청 중 더 늦은 시각이 위로(2026-11-17 회원님 「수정요청 받으면 또 그게 최신」)
+  function resort(games){
+    var ul = document.querySelector('ul.games'); if (!ul) return;
+    var rows = [].slice.call(ul.children);
+    rows.forEach(function(li){ var g = games[li.dataset.slug], at = g && String(g.last || '').slice(0, 16);
+      if (at && at > (li.dataset.last || '')) li.dataset.last = at; });
+    rows.sort(function(a, b){ return (b.dataset.last || '').localeCompare(a.dataset.last || ''); }).forEach(function(li){ ul.appendChild(li); });
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) { Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); resort(r.games); } }).catch(function(){}); }
   var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
   document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
     cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
@@ -178,7 +186,6 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
-<li><span class="when">2026-11-17 19:20</span><span>수정 요청 반영 PR #100이 병합됐다(11-16, main 264dbca). 실물 폰 확인은 아직 없음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #100">PR #100</a></li>
 <li><span class="when">2026-11-15 18:24</span><span>수정 요청 반영 — 맞힌 고리만큼 카드가 열린다(노랑만 다 열리고 색, 빨강 75%·파랑 55%·검정 40%·그 밖 25%는 회색 창, 짝 판정은 그대로). 세워 든 폰(아이폰)에서 앞뒤 기울기가 안 잡히던 것을 앞뒤 = y − z로. 2·3·4팀 고르기 요청은 주개발자 #80(로비 묶음 카드)으로 해결됨</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #100">PR #100</a></li>
 <li><span class="when">2026-11-06 19:11</span><span>본줄기가 main으로 바뀌어 main을 합쳐 최신으로 맞추고 main 대상 PR을 열었다(server-checks 통과, 충돌 없음)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #45">PR #45</a></li>
 <li><span class="when">2026-11-06 10:31</span><span>배경 그림 — 가을 한국 전통 활터(기와 정자·단풍, 앱 무궁화 마당과 같은 손그림 화풍, GPT 생성). 그림이 없으면 지금처럼 초록 단색, 체험판에도 깔림</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/d65066303">d650663</a></li>

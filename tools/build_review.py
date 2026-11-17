@@ -144,7 +144,15 @@ REQUEST_JS = """
       box.appendChild(d);
     });
   }
-  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); }).catch(function(){}); }
+  // 게임별 목록 — 고친 기록과 수정 요청 중 더 늦은 시각이 위로(2026-11-17 회원님 「수정요청 받으면 또 그게 최신」)
+  function resort(games){
+    var ul = document.querySelector('ul.games'); if (!ul) return;
+    var rows = [].slice.call(ul.children);
+    rows.forEach(function(li){ var g = games[li.dataset.slug], at = g && String(g.last || '').slice(0, 16);
+      if (at && at > (li.dataset.last || '')) li.dataset.last = at; });
+    rows.sort(function(a, b){ return (b.dataset.last || '').localeCompare(a.dataset.last || ''); }).forEach(function(li){ ul.appendChild(li); });
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) { Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); resort(r.games); } }).catch(function(){}); }
   var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
   document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
     cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
@@ -256,14 +264,17 @@ def build_index():
         days.append(f'<section class="day"><h3>{day_label(d)}</h3>\n<ul class="log">\n{lis}\n</ul></section>')
 
     rows = []
-    for g in sorted(DATA["games"], key=lambda g: max(h["date"] + h.get("time", "") for h in g["history"]), reverse=True):
+    def latest(g):
+        return max(h["date"] + " " + h.get("time", "00:00") for h in g["history"])
+
+    for g in sorted(DATA["games"], key=latest, reverse=True):
         last = max(h["date"] for h in g["history"])
         label, cls = stage_of(g)
         pr = f'<a href="{GH}/pull/{g["pr"]}">PR #{g["pr"]}</a><span class="sep"> · </span>' if g.get("pr") else ""
         pr = "".join(f'<a data-fix="{n}" href="{GH}/pull/{n}">수정 PR #{n}</a><span class="sep"> · </span>' for n in g.get("fixes", [])) + pr
         q = " ".join([g["title"], g["slug"], g.get("author", ""), g["source"], g["result"], g.get("note", ""), label]).lower()
         rows.append(
-            f'<li class="st-{cls}" data-slug="{E(g["slug"])}" data-q="{E(q)}"><span class="stage {cls}" title="{E(g["status"])}">{E(label)}</span>'
+            f'<li class="st-{cls}" data-slug="{E(g["slug"])}" data-last="{E(latest(g))}" data-q="{E(q)}"><span class="stage {cls}" title="{E(g["status"])}">{E(label)}</span>'
             f'<span class="main"><a class="game" href="{E(g["page"])}">{E(g["title"])}</a>'
             f'<span class="sub">만든 사람 {E(g["author"]) or "미기재"} · 마지막 {last} · 고친 {len(g["history"])}건</span>'
             + (f'<span class="gnote">{E(g["note"])}</span>' if g.get("note") else "")
