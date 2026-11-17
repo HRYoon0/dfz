@@ -45,7 +45,7 @@ CODE=$?
 
 CS=$(grep -c "error CS" "$LOG")
 if [ "$CS" -gt 0 ] || [ ! -f "$XML" ]; then
-  echo "✗ 컴파일 오류 $CS건 또는 결과 없음(종료 코드 $CODE) — $LOG"; grep "error CS" "$LOG" | sort -u | head -20; exit 3
+  echo "✗ 컴파일 오류 ${CS}건 또는 결과 없음(종료 코드 $CODE) — $LOG"; grep "error CS" "$LOG" | sort -u | head -20; exit 3
 fi
 
 # 4. 요약 — PR 본문에 그대로 붙인다
