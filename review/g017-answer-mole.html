@@ -105,6 +105,13 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 .req-item .at{color:var(--muted);margin-left:8px}
 .req-item .st{margin-left:8px;font-weight:650;color:#13202F;background:var(--lime);border-radius:999px;padding:1px 10px}
 .req-item p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.req-pics{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.req-pics a,.req-pics .pic{position:relative;display:block}
+.req-pics img{display:block;max-height:160px;max-width:100%;border-radius:8px;border:1px solid var(--line);background:var(--bg)}
+.req-dlg .req-pics img{max-height:90px}
+.req-pics .del{position:absolute;top:4px;right:4px;font:inherit;font-weight:700;font-size:13px;line-height:1;border:0;border-radius:999px;padding:5px 8px;background:rgba(10,16,26,.8);color:#fff;cursor:pointer}
+.req-dlg .pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:14px;color:var(--muted)}
+.req-dlg .pick button{font:inherit;font-weight:700;font-size:14px;border-radius:10px;padding:7px 14px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
 .req-reply{margin:8px 0 0 14px;padding:2px 0 2px 12px;border-left:3px solid var(--lime)}
 </style>
 <div class="req" data-slug="g017-answer-mole" data-title="G017 정답 두더지 잡기" data-page="g017-answer-mole.html" style="margin:14px 0 0"><button type="button" class="req-btn">이 게임 수정 요청</button><span class="req-mark" hidden></span></div>
@@ -113,8 +120,10 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 <h3 id="req-h">수정 요청</h3>
 <div class="game" style="font-weight:700"></div>
 <label>요청한 사람(선택)<input name="who" maxlength="40" autocomplete="name"></label>
-<label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요"></textarea></label>
-<p class="open-note">보낸 글과 이름은 이 페이지에 그대로 보입니다.</p>
+<label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요 (화면 캡처는 여기에 붙여 넣어도 돼요)"></textarea></label>
+<div class="pick"><button type="button">그림 넣기</button><span>3장까지 · 글 칸에 Ctrl+V로 붙여 넣기</span><span class="pick-count"></span><input type="file" accept="image/*" multiple hidden></div>
+<div class="req-pics"></div>
+<p class="open-note">보낸 글·이름·그림은 이 페이지에 그대로 보입니다. 학생 얼굴이 나온 사진은 올리지 마세요.</p>
 <div class="row"><span class="msg" role="status"></span><button type="button" class="cancel">취소</button><button type="submit" class="send">보내기</button></div>
 </form>
 </dialog>
@@ -144,6 +153,12 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
       var d = el('div', 'req-item'), h = el('div');
       h.appendChild(el('span', 'who', it.name)); h.appendChild(el('span', 'at', it.at)); if (it.status) h.appendChild(el('span', 'st', it.status));
       d.appendChild(h); d.appendChild(el('p', '', it.text));
+      if (it.images && it.images.length) { var ps = el('div', 'req-pics');
+        it.images.forEach(function(id, i){ if (!/^[A-Za-z0-9_-]+$/.test(id)) return;
+          var a = el('a'), im = el('img'); a.href = 'https://drive.google.com/file/d/' + id + '/view'; a.target = '_blank'; a.rel = 'noopener';
+          im.src = 'https://drive.google.com/thumbnail?id=' + id + '&sz=w800'; im.alt = it.name + '이 올린 그림 ' + (i + 1); im.loading = 'lazy';
+          a.appendChild(im); ps.appendChild(a); });
+        d.appendChild(ps); }
       if (it.reply) { var r = el('div', 'req-reply'); r.appendChild(el('span', 'who', '답글')); r.appendChild(el('p', '', it.reply)); d.appendChild(r); }
       box.appendChild(d);
     });
@@ -158,25 +173,57 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   }
   function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) { Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); resort(r.games); } }).catch(function(){}); }
   var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
+  // 그림(2026-11-22) — 3장까지, 긴 변 1600px JPEG로 줄여 보낸다(휴대폰 사진 그대로면 수 MB라 느리고 잘 끊긴다)
+  var MAX = 3, pics = [], strip = dlg.querySelector('.req-pics'), file = dlg.querySelector('input[type=file]');
+  function shrink(f){ return new Promise(function(ok, bad){
+    var u = URL.createObjectURL(f), im = new Image();
+    im.onload = function(){ var k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(u); ok(c.toDataURL('image/jpeg', 0.85)); };
+    im.onerror = function(){ URL.revokeObjectURL(u); bad(new Error('not-image')); }; im.src = u; }); }
+  function drawPics(){ strip.textContent = '';
+    pics.forEach(function(d, i){ var w = el('div', 'pic'), im = el('img'), x = el('button', 'del', '×');
+      im.src = d; im.alt = '올릴 그림 ' + (i + 1); x.type = 'button'; x.setAttribute('aria-label', '그림 ' + (i + 1) + ' 빼기');
+      x.addEventListener('click', function(){ pics.splice(i, 1); drawPics(); }); w.appendChild(im); w.appendChild(x); strip.appendChild(w); });
+    dlg.querySelector('.pick-count').textContent = pics.length ? pics.length + ' / ' + MAX + '장' : ''; }
+  var pending = 0;
+  function addFiles(list){ [].slice.call(list || []).forEach(function(f){
+    if (String(f.type).indexOf('image/') !== 0) return;
+    if (pics.length + pending >= MAX) { msg.textContent = '그림은 ' + MAX + '장까지예요.'; return; }
+    pending++;
+    shrink(f).then(function(d){ pics.push(d); }).catch(function(){ msg.textContent = '그림을 읽지 못했어요.'; })
+      .finally(function(){ pending--; drawPics(); }); }); }
+  dlg.querySelector('.pick button').addEventListener('click', function(){ file.click(); });
+  file.addEventListener('change', function(){ addFiles(file.files); file.value = ''; });
+  // 화면 캡처를 글 칸에 바로 붙여 넣어도(Ctrl+V) 그림으로 받는다
+  W.note.addEventListener('paste', function(e){ var fs = [].slice.call((e.clipboardData || {}).files || []);
+    if (fs.length) { e.preventDefault(); addFiles(fs); } });
   document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
     cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
-    form.reset(); var n = localStorage.getItem('dfz-req-name'); if (n) W.who.value = n; dlg.showModal(); W.note.focus(); }); });
+    form.reset(); pics = []; drawPics(); var n = localStorage.getItem('dfz-req-name'); if (n) W.who.value = n; dlg.showModal(); W.note.focus(); }); });
   dlg.querySelector('.cancel').addEventListener('click', function(){ dlg.close(); });
   form.addEventListener('submit', function(e){
     e.preventDefault(); if (!cur) return;
     var text = W.note.value.trim(); if (text.length < 2) { msg.textContent = '고칠 점을 적어 주세요.'; return; }
+    if (pending) { msg.textContent = '그림을 준비하는 중이에요. 잠시 뒤 보내 주세요.'; return; }
     send.disabled = true; send.textContent = '보내는 중…'; msg.textContent = '';
     localStorage.setItem('dfz-req-name', W.who.value.trim());
     // text/plain — 브라우저가 사전 요청(OPTIONS)을 보내지 않게(Apps Script는 그것을 받지 못한다)
+    if (pics.length) send.textContent = '그림 올리는 중…';
+    var images = pics.map(function(d){ return { type: 'image/jpeg', data: d.split(',')[1] }; });
     fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text }) })
+      body: JSON.stringify({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text, images: images }) },
+      images.length ? 60000 : 15000)
       .then(function(r){
         if (!r || !r.ok) throw new Error(r && r.error || 'fail');
         dlg.close(); load();
         mark(cur.slug, { count: 1, last: r.at, status: '' });
       })
       .catch(function(err){ send.disabled = false; send.textContent = '다시 보내기';
-        msg.textContent = String(err.message) === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 보내 주세요.' : '보내지 못했어요. 다시 보내 주세요.'; });
+        var why = String(err.message);
+        msg.textContent = why === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 보내 주세요.'
+          : /image/.test(why) ? '그림을 올리지 못했어요. 그림을 빼고 보내 보세요.' : '보내지 못했어요. 다시 보내 주세요.'; });
   });
   load();
 })();

@@ -1,7 +1,9 @@
 /**
  * 디지털 핏 존 변환 기록(https://hryoon0.github.io/dfz/review/)의 「수정 요청」을 구글 시트 탭에 받는다.
  *
- * - POST(본문 JSON, text/plain): { slug, title, page, name, text } → 탭 「수정 요청」에 한 줄. 답 { ok, at }.
+ * - POST(본문 JSON, text/plain): { slug, title, page, name, text, images? } → 탭 「수정 요청」에 한 줄. 답 { ok, at }.
+ *   images = [{ type: 'image/jpeg', data: base64 }] 3장까지(2026-11-22 회원님 「이미지로 업로드할 수 있도록」) — 드라이브 폴더에 올려
+ *   링크 있는 사람 보기로 두고, 시트 「그림」 칸(I열)에 주소를 줄마다 적는다.
  * - GET ?action=list: 게임마다 요청 수·마지막 요청 시각·마지막 처리 상태와 요청 글 전부(댓글처럼 보여 준다).
  *   답 { ok, games: { slug: { count, last, status, items: [{ at, name, text, status, reply }] } } }.
  * - GET ?action=prs: 게임마다 변환 PR 단계(app·merged·open·closed)와 수정 PR — GitHub 읽기 전용 토큰(스크립트 속성 GITHUB_TOKEN), 5분 캐시.
@@ -14,10 +16,14 @@
  */
 var SHEET_ID = '1YYFMoVyPWgdroDd1h4kDmHMoguyhsi9WuaZaH_my5xw';
 var TAB = '수정 요청';
-var HEAD = ['요청 시각', '게임 ID', '게임 제목', '요청한 사람', '수정 요청 내용', '확인 페이지', '처리 상태', '답글'];
-var LIST_KEY = 'list-v2';
-var TAB_KEY = 'tab-ok-v2';
+var HEAD = ['요청 시각', '게임 ID', '게임 제목', '요청한 사람', '수정 요청 내용', '확인 페이지', '처리 상태', '답글', '그림'];
+var LIST_KEY = 'list-v3';
+var TAB_KEY = 'tab-ok-v3';   // v3 — 「그림」 머리칸
 var LIMIT_PER_10MIN = 30;
+var MAX_IMAGES = 3;
+var MAX_IMAGE_CHARS = 3500000;   // base64 글자 수 — 그림 한 장 약 2.6MB까지(페이지가 긴 변 1600px JPEG로 줄여 보내 보통 0.3MB 안팎)
+var IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+var FOLDER_PROP = 'IMAGE_FOLDER_ID';
 
 /** 받은 값을 검사해 시트 한 줄로. 틀리면 { ok:false, error }. 순수 함수(검사용). */
 function buildRow(p, at) {
@@ -32,7 +38,15 @@ function buildRow(p, at) {
   if (text.length > 1000) return { ok: false, error: 'too-long' };
   if (name.length > 40 || title.length > 80) return { ok: false, error: 'too-long' };
   if (page && !/^https:\/\/hryoon0\.github\.io\/dfz\/review\//.test(page)) page = '';
-  return { ok: true, row: [at, slug, title, name || '(이름 없음)', text, page, ''] };
+  var images = Array.isArray(p.images) ? p.images : [];
+  if (images.length > MAX_IMAGES) return { ok: false, error: 'too-many-images' };
+  for (var i = 0; i < images.length; i++) {
+    var im = images[i] || {};
+    if (IMAGE_TYPES.indexOf(String(im.type)) < 0) return { ok: false, error: 'bad-image' };
+    if (typeof im.data !== 'string' || !/^[A-Za-z0-9+\/=]+$/.test(im.data)) return { ok: false, error: 'bad-image' };
+    if (im.data.length > MAX_IMAGE_CHARS) return { ok: false, error: 'image-too-big' };
+  }
+  return { ok: true, row: [at, slug, title, name || '(이름 없음)', text, page, '', '', ''], images: images };
 }
 
 /** 시트 줄들 → 게임마다 요약. 순수 함수(검사용). 시각은 「yyyy-MM-dd HH:mm」 글이라 글자 비교가 시간 비교다. */
@@ -45,10 +59,37 @@ function summarize(rows) {
     var at = String(r[0] || '');
     var g = games[slug] || (games[slug] = { count: 0, last: '', status: '', items: [] });
     g.count++;
-    g.items.push({ at: at, name: String(r[3] || ''), text: String(r[4] || ''), status: String(r[6] || ''), reply: String(r[7] || '') });
+    g.items.push({ at: at, name: String(r[3] || ''), text: String(r[4] || ''), status: String(r[6] || ''), reply: String(r[7] || ''),
+                   images: imageIds(r[8]) });
     if (at >= g.last) { g.last = at; g.status = String(r[6] || ''); }
   }
   return games;
+}
+
+/** 「그림」 칸의 드라이브 주소들 → 파일 ID 목록. 순수 함수(검사용). */
+function imageIds(cell) {
+  var ids = [], re = /\/d\/([A-Za-z0-9_-]{10,})/g, m;
+  while ((m = re.exec(String(cell || ''))) !== null) ids.push(m[1]);
+  return ids;
+}
+
+/** 그림을 드라이브 폴더에 올리고 링크 있는 사람 보기로 — 주소 목록. 익명 웹앱이라 내장 DriveApp 대신 고급 Drive 서비스(v2). */
+function saveImages(images, at, slug) {
+  if (!images.length) return [];
+  var props = PropertiesService.getScriptProperties();
+  var folder = props.getProperty(FOLDER_PROP);
+  if (!folder) {
+    folder = Drive.Files.insert({ title: 'dfz 수정 요청 그림', mimeType: 'application/vnd.google-apps.folder' }).id;
+    props.setProperty(FOLDER_PROP, folder);
+  }
+  return images.map(function (im, i) {
+    var ext = im.type === 'image/png' ? 'png' : im.type === 'image/webp' ? 'webp' : 'jpg';
+    var name = at.replace(/[^0-9]/g, '') + '-' + slug + '-' + (i + 1) + '.' + ext;
+    var blob = Utilities.newBlob(Utilities.base64Decode(im.data), im.type, name);
+    var file = Drive.Files.insert({ title: name, mimeType: im.type, parents: [{ id: folder }] }, blob);
+    Drive.Permissions.insert({ role: 'reader', type: 'anyone' }, file.id);
+    return 'https://drive.google.com/file/d/' + file.id + '/view';
+  });
 }
 
 // ── PR 상태(2026-11-15 회원님 「페이지가 새로고침 될 때 확인되도록」) ──
@@ -145,6 +186,11 @@ function doPost(e) {
   try {
     if (!allowOne()) return json({ ok: false, error: 'rate-limit' });
     ensureTab();
+    try {
+      built.row[8] = saveImages(built.images, at, String(p.slug).trim()).join('\n');
+    } catch (err) {
+      return json({ ok: false, error: 'image-failed' });
+    }
     Sheets.Spreadsheets.Values.append({ values: [built.row] }, SHEET_ID, "'" + TAB + "'!A1",
       { valueInputOption: 'RAW', insertDataOption: 'INSERT_ROWS' });
     CacheService.getScriptCache().remove(LIST_KEY);
@@ -165,13 +211,13 @@ function ensureTab() {
   if (!has) {
     Sheets.Spreadsheets.batchUpdate({ requests: [{ addSheet: { properties: { title: TAB, gridProperties: { frozenRowCount: 1 } } } }] }, SHEET_ID);
   }
-  Sheets.Spreadsheets.Values.update({ values: [HEAD] }, SHEET_ID, "'" + TAB + "'!A1:H1", { valueInputOption: 'RAW' });
+  Sheets.Spreadsheets.Values.update({ values: [HEAD] }, SHEET_ID, "'" + TAB + "'!A1:I1", { valueInputOption: 'RAW' });
   cache.put(TAB_KEY, '1', 21600);
 }
 
 function readRows() {
   try {
-    var res = Sheets.Spreadsheets.Values.get(SHEET_ID, "'" + TAB + "'!A2:H");
+    var res = Sheets.Spreadsheets.Values.get(SHEET_ID, "'" + TAB + "'!A2:I");
     return res.values || [];
   } catch (err) {
     if (String(err).indexOf('Unable to parse range') >= 0) return [];   // 탭이 아직 없다 — 요청 0건
@@ -196,6 +242,9 @@ function json(o) { return ContentService.createTextOutput(JSON.stringify(o)).set
 /** 처음 한 번 편집기에서 실행해 권한을 승인한다(익명 웹앱은 소유자 권한으로 돈다). 탭도 만든다. */
 function authorize() {
   ensureTab();
+  // 드라이브 권한(그림 올리기)도 이때 승인한다 — 폴더가 없으면 만든다
+  Logger.log('그림 폴더: ' + (PropertiesService.getScriptProperties().getProperty(FOLDER_PROP) || '(첫 그림 때 만듦)'));
+  Drive.Files.list({ maxResults: 1 });
   Logger.log('ok: ' + readRows().length + '줄');
   CacheService.getScriptCache().remove(PRS_KEY);
   Logger.log('PR 상태: ' + JSON.stringify(readPrs()));   // 토큰을 넣은 뒤 한 번 — 외부 요청 권한도 이때 승인한다
