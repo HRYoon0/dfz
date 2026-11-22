@@ -186,6 +186,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 한 번 쏠 조준 시간을 고정(끝나면 조준선 자리로 저절로 쏨, 남은 초 표시). 「게임 다듬기 → 난이도」로 쉬움 10초·과녁 1.25배 / 보통 10초 / 어려움 5초·0.75배. 2·3·4팀은 로비에서 카드 한 장으로 묶음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-17 20:38</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 웹 통로가 폰 기울기·단추를 넘겨 같은 규칙을 옮길 수 있다(설정은 기본값 고정, 팀 수는 앱). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #107">PR #107</a></li>
 <li><span class="when">2026-11-17 20:38</span><span>처음 변환 — 입력은 회원님 결정 「폰 기울여 조준 + 단추로 쏘기」(G015와 같은 조작), 나머지는 원본대로: 2·3·4팀이 번갈아 시도를 이어서, 라운드 3·5·시도 2·3·5·과녁 움직임 0~3, 과녁 움직임·크기·고리 점수 10·7·5·3 그대로. 시도마다 팀 안 사수가 돌아가고, 사람 없는 팀·봇은 원본 시범 입력, 쏜 뒤 0.9초 뒤 다음 시도. 참가 → 동작 연습(조준 연습) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #107">PR #107</a></li>
 </ul>
@@ -247,6 +248,11 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
             <button data-speed="1" aria-pressed="true">천천히</button>
             <button data-speed="2" aria-pressed="false">보통</button>
             <button data-speed="3" aria-pressed="false">빠르게</button>
+          </div></div>
+          <div class="opt wide"><span>난이도(조준 시간 · 과녁 크기)</span><div class="controls">
+            <button data-level="0" aria-pressed="false">쉬움(10초 · 큰 과녁)</button>
+            <button data-level="1" aria-pressed="true">보통(10초)</button>
+            <button data-level="2" aria-pressed="false">어려움(5초 · 작은 과녁)</button>
           </div></div>
           <div class="opt wide"><span>참가</span><div class="controls">
             <button data-demo="0" aria-pressed="true">키보드(방향키 · 스페이스)</button>
@@ -365,7 +371,10 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   var TILT_SPEED = 0.7, DEAD = 0.12, HOLD = 0.3, SMOOTH = 14, FLIP_Y = -1;
   var COLORS = ["#4c91bd", "#df925c", "#8b79c5", "#4b9c7b"], NAMES = ["하늘 팀", "노을 팀", "보라 팀", "초록 팀"];
   var RINGS = ["#4d77a8", "#faf7e4", "#ef9b65", "#edcc66"];
-  var cfg = { teams: 4, rounds: 3, tries: 3, speed: 1, distance: 2, demo: 0 };
+  var cfg = { teams: 4, rounds: 3, tries: 3, speed: 1, distance: 2, demo: 0, level: 1 };
+  /* 2026-11-22 수정 요청 — 난이도(앱 「게임 다듬기」): 쉬움 10초·과녁 1.25배 / 보통 10초 / 어려움 5초·0.75배. 조준 시간이 다 되면 조준선 자리로 저절로 쏜다. */
+  function aimSeconds() { return cfg.level === 2 ? 5 : 10; }
+  function sizeScale() { return [1.25, 1, 0.75][cfg.level]; }
   var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
   var bg = typeof Image === "function" ? new Image() : null; if (bg) bg.src = "img/g010-target-master-bg.jpg";
   var started = false, stage = "idle", clock = 0, acc = 0, cd = 0, keys = {};
@@ -381,7 +390,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   function rIdx() { return Math.floor(R.cursor / (cfg.teams * cfg.tries)); }
   function team() { return Math.floor(R.cursor / cfg.tries) % cfg.teams; }
   function attempt() { return R.cursor % cfg.tries; }
-  function radius() { return 80 * Math.max(0.55, 1 - rIdx() * 0.09); }
+  function radius() { return 80 * sizeScale() * Math.max(0.55, 1 - rIdx() * 0.09); }
   function center() { return [480 + Math.sin(R.elapsed * 0.8 * cfg.speed) * 260, 245 + Math.sin(R.elapsed * 0.5 * cfg.speed) * 72]; }
   function pointsAt(x, y) { var c = center(), d = Math.hypot(x - c[0], y - c[1]) / radius(); return d <= .25 ? 10 : d <= .5 ? 7 : d <= .75 ? 5 : d <= 1 ? 3 : 0; }
   function centerP(p) { p.cx = p.cy = p.tx = p.ty = .5; p.vx = p.vy = 0; p.at = -9; }
@@ -425,7 +434,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
     if (stage !== "play") return;
     if (R.phase === "aim") {
       R.elapsed += STEP;
-      if (R.shooter && !R.shooter.bot) steer(R.shooter, t);
+      if (R.shooter && !R.shooter.bot) { steer(R.shooter, t); if (R.elapsed >= aimSeconds() - EPS) { var s = R.shooter, x = s.cx * FW, y = s.cy * FH; record(pointsAt(x, y), s.id, x, y, t); } }
       if ((!R.shooter || R.shooter.bot) && R.elapsed >= AUTO - EPS) autoShot(t);
     } else if (R.phase === "shown" && t >= R.end - EPS) {
       if (R.cursor + 1 >= total()) { R.phase = "over"; stage = "over"; } else { R.cursor++; begin(R.end); }
@@ -489,7 +498,11 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
     } else label("동작 연습 — 조준 연습", hud.x, hud.y + hud.h * .5, m * 1.5, "#ffffff", "left");
     field(f);
     if (stage === "practice" || stage === "count") PL.forEach(function (p) { if (!p.bot) { cross(f, p, COLORS[p.team]); label("P" + (p.seat + 1), f.x + p.cx * f.w + m * .6, f.y + p.cy * f.h - m, m * .7, COLORS[p.team], "left"); } });
-    else if (R.phase === "aim" && R.shooter && !R.shooter.bot) cross(f, R.shooter, col);
+    else if (R.phase === "aim" && R.shooter && !R.shooter.bot) {
+      cross(f, R.shooter, col);
+      var left = Math.max(0, Math.ceil(aimSeconds() - R.elapsed));   /* 남은 조준 시간 — 과녁 판 오른쪽 위 */
+      rr(f.x + f.w - m * 4.6, f.y + m * 0.4, m * 4.2, m * 1.6, m * 0.7, "#edf4e3"); label(left + "초", f.x + f.w - m * 2.5, f.y + m * 1.2, m * 1.1, left <= 3 ? "#984c39" : "#254748");
+    }
     label("중심 10 · 안쪽 7 · 중간 5 · 바깥 3", f.x + f.w / 2, f.y + f.h - m * .7, m * .65, "#5f746f");
     /* 도전 팀 판 */
     rr(J.x, J.y, J.w, J.h, J.w * .08, "rgba(255,255,255,.96)");
@@ -550,7 +563,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   });
   window.addEventListener("keyup", function (e) { if (/^Arrow/.test(e.key)) keys[e.key] = false; });
   function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
-  [["data-teams", "teams"], ["data-rounds", "rounds"], ["data-tries", "tries"], ["data-speed", "speed"], ["data-distance", "distance"], ["data-demo", "demo"]].forEach(function (o) {
+  [["data-teams", "teams"], ["data-rounds", "rounds"], ["data-tries", "tries"], ["data-speed", "speed"], ["data-distance", "distance"], ["data-level", "level"], ["data-demo", "demo"]].forEach(function (o) {
     document.querySelectorAll("[" + o[0] + "]").forEach(function (b) { b.onclick = function () { var v = b.getAttribute(o[0]); cfg[o[1]] = +v; pick(o[0], v); reset(); }; });
   });
   document.getElementById("restart").onclick = function () { reset(); };

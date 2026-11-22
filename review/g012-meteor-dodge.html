@@ -74,7 +74,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <p class="lead">HTML 게임 「운석 피하기! 좌우 점프」(G012 v1.0, 회원님이 주신 HTML 파일)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 1~4명이 저마다 3칸 길에서 같은 위험에 동시에 도전해, 떨어지는 운석은 옆 칸으로 피하고 다가오는 충격파는 점프로 넘는 게임입니다. 회원님 결정대로 <b>입력만 단추·키보드 → 카메라(옆 걸음·제자리 점프) + 폰(좌우 기울기·단추 점프)</b>로 바꾸고 나머지는 모두 원본대로 옮겼습니다. 주개발자 게임과 같은 흐름(참가 → 동작 연습 → 시작)을 넣었고, 앱 「웹 게임」에 붙여 넣는 <b>HTML 판</b>도 함께 올렸습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b></p>
   <div class="chips">
     <span class="chip">브랜치 <b>claude/g012-meteor-dodge-native</b></span>
-    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/109">PR #109</a> 검토 대기</span>
+    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/109">PR #109</a> 병합(11-18) · 수정 요청 반영(11-22)</span>
     <span class="chip">새 파일 <b>17개</b>(+ .meta 12개) · 고친 파일 <b>0개</b></span>
     <span class="chip">맥 Unity 컴파일 오류 <b>0</b> · 검사 <b>45/45</b> 통과</span>
   </div>
@@ -186,10 +186,22 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 폰 기울기 문턱 0.3·쉬는 손 자리 보정(오른쪽이 덜 잡히던 것), 12초마다 빨라져 1.0초까지, 레벨 3(24초)부터 두 칸에 한꺼번에 떨어지는 운석. 폰·카메라 두 장은 로비에서 카드 한 장으로 묶음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-17 22:25</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 폰 기울기·단추로 같은 규칙(웹에 오는 카메라 동작으로는 좌우 칸을 받을 수 없어 폰만, 설정은 기본값 고정). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #109">PR #109</a></li>
 <li><span class="when">2026-11-17 22:25</span><span>처음 변환 — 입력은 회원님 결정 「카메라 + 폰 둘 다」(카메라는 선 자리가 곧 칸·제자리 점프, 폰은 좌우로 기울였다 돌아오면 한 칸·단추 점프), 나머지는 원본대로: 1~4명 동시, 30·60·90초, 보호막 5·4·3, 위험 종류 셋, 예고 1.1초·20초마다 낙하 빨라짐, 회피 +30·생존 1초당 2점. 봇은 원본 시범 조작. 참가 → 동작 연습(왼쪽·오른쪽·점프) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #109">PR #109</a></li>
 </ul>
 <!--@/HISTORY@-->
+
+  <h2>2026-11-22 수정 요청 반영</h2>
+  <p class="note">요청(김권수, 11-22): 「스마트폰 연결 동작 시 오른쪽으로 이동하는 것이 인식이 잘 안 됨」 · 「진행 자체가 재미가 없어요 … 속도가 빨라지거나 하는 변수」.</p>
+  <div class="wrap"><table>
+    <tr><th>무엇</th><th>전</th><th>후</th><th>까닭</th></tr>
+    <tr><td>폰 좌우 문턱</td><td>0.5(약 30°) · 되돌림 0.25</td><td><b>0.3(약 17°) · 되돌림 0.15</b></td><td>앱의 기울이기 퀴즈는 0.2 — 우리 게임만 두 배 넘게 기울여야 했다</td></tr>
+    <tr><td>기울기를 재는 기준</td><td>앱 영점(폰을 처음 잇던 자세)</td><td><b>쉬는 자리</b> — 쉬는 손의 작은 흔들림을 천천히 따라가고, 덜 돌아온 채 1초 쉬면 그 자리를 새 가운데로</td><td>쉬는 손이 영점에서 왼쪽으로 치우쳐 있으면 오른쪽만 더 기울여야 한다(추정 원인 — 실물로 재 보지 않았다)</td></tr>
+    <tr><td>빨라지는 속도</td><td>20초마다 낙하 −0.2초, 1.3초까지</td><td><b>12초마다 −0.25초, 1.0초까지</b></td><td>「속도가 빨라지거나」</td></tr>
+    <tr><td>두 칸 운석(새로)</td><td>운석은 늘 한 칸</td><td><b>레벨 3부터 운석 둘째마다 두 칸</b>에 떨어진다 — 안전한 칸은 하나</td><td>「재밌을 수 있는 요소」 — 끝 칸에 있으면 두 칸을 건너야 해서 판단이 늘어난다</td></tr>
+  </table></div>
+  <p class="note">점수(회피 +30 · 생존 1초당 2점)·보호막·점프·충격파는 그대로. 카메라 판정도 그대로.</p>
 
   <h2>흐름 — 참가 → 동작 연습 → 시작</h2>
   <div class="wrap"><table>
@@ -215,7 +227,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
             <ol>
               <li>주황 표시가 뜬 칸으로 운석이 내려와요. 옆 칸으로 피하세요 — 점프로는 못 피해요.</li>
               <li>보라색 충격파는 아래 판정선에 닿기 직전에 점프! 연속 점프에는 잠깐 회복 시간이 필요해요.</li>
-              <li>회피 +30점 · 생존 1초당 2점. 20초마다 낙하가 조금씩 빨라져요.</li>
+              <li>회피 +30점 · 생존 1초당 2점. 12초마다 낙하가 빨라지고, 레벨 3부터는 운석이 두 칸에 떨어지기도 해요.</li>
               <li>보호막을 모두 잃으면 그 탐험가는 응원해요.</li>
             </ol>
           </div>
@@ -290,7 +302,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
     <tr><td>탐험가 그림(헬멧 쓴 아이)</td><td>앱 캐릭터 「콩콩이」(사람 색)</td><td>학년별 게임과 같은 캐릭터</td></tr>
     <tr><td>어두운 우주 바탕</td><td><b>배경 그림(밝은 파스텔 행성, GPT)</b> 위에 원본 길 그림</td><td>게임마다 다른 밝은 장면</td></tr>
   </table></div>
-  <p class="note">그대로 옮긴 것: 1~4명 동시, 탐험 시간 30·60·90초, 난이도(보호막 5·4·3, 낙하 3.1·2.6·2.1초), 위험 종류 셋, 예고 1.1초, 20초마다 레벨 +1·낙하 −0.2초(1.3초까지), 첫 위험 0.6초·다음 0.55초, 운석은 점프로 못 피함, 충격파는 떠 있어야(뛴 뒤 0.12~0.67초) 넘음, 점프 0.85초·회복 1.1초·점프 중 좌우 이동, 회피 +30·생존 1초당 2점, 보호막을 다 잃은 사람만 끝·모두 잃으면 경기 끝, 공동 우승.</p>
+  <p class="note">그대로 옮긴 것: 1~4명 동시, 탐험 시간 30·60·90초, 난이도(보호막 5·4·3, 낙하 3.1·2.6·2.1초), 위험 종류 셋, 예고 1.1초, 첫 위험 0.6초·다음 0.55초, 운석은 점프로 못 피함, 충격파는 떠 있어야(뛴 뒤 0.12~0.67초) 넘음, 점프 0.85초·회복 1.1초·점프 중 좌우 이동, 회피 +30·생존 1초당 2점, 보호막을 다 잃은 사람만 끝·모두 잃으면 경기 끝, 공동 우승. 2026-11-22부터 원본과 다른 것: 빨라지는 속도(원본 20초마다 −0.2초·1.3초까지 → 12초마다 −0.25초·1.0초까지)와 두 칸 운석(레벨 3부터).</p>
 
   <h2>새 파일</h2>
   <div class="wrap"><table id="files">
@@ -300,8 +312,8 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>검증한 것과 안 한 것</h2>
   <ul>
     <li><span class="ok">Unity</span> 맥 Unity 6000.5.9f1 · 빌드 대상 Win64 · 가지 95deef8 스냅샷: 컴파일 오류 0, EditMode(골라 돌림 — 「MeteorDodge」, 전체 아님) 45건 모두 통과.</li>
-    <li><span class="ok">.NET</span> 같은 45건을 .NET 8·C# 9·경고를 오류로·NUnit 3.14로도 돌렸습니다(main의 실제 파일과 함께 묶음).</li>
-    <li><span class="ok">빨간불 확인</span> 판정·칸 읽기·연습·감독·무대 규칙 96개를 하나씩 끄면 모두 검사가 실패합니다. 처음엔 10개가 구멍이라 검사 3건을 더하고 5건을 보강했습니다.</li>
+    <li><span class="ok">.NET</span> 같은 52건을 .NET 8·C# 9·경고를 오류로·NUnit 3.14로도 돌렸습니다(main의 실제 파일과 함께 묶음).</li>
+    <li><span class="ok">빨간불 확인</span> 판정·칸 읽기·연습·감독·무대 규칙 96개를 하나씩 끄면 모두 검사가 실패합니다. 처음엔 10개가 구멍이라 검사 3건을 더하고 5건을 보강했습니다. 2026-11-22 고친 판(쉬는 자리 기울기·빨라짐·두 칸 운석)은 규칙 115개 — 처음 구멍 2개를 검사 1건 보강으로 메웠습니다.</li>
     <li><span class="ok">HTML 판</span> 앱 웹 게임 검사기 통과(위 절).</li>
     <li><span class="no">안 함</span> 앱 화면 촬영(앱에 아직 연결 전이라 앱 화면이 없음), 실물 카메라·폰으로 한 판(만든 분들이 확인), Windows 실행.</li>
   </ul>
@@ -319,7 +331,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <ul>
     <li><b>카메라 칸 경계</b> — 어깨 너비 0.6배(옆 칸)·0.4배(가운데)가 사이드스텝 한 번에 알맞은지, 좌우가 거울처럼 맞는지, 4명이 나란히 설 자리가 되는지.</li>
     <li><b>카메라 점프</b> — 앱 카메라 점프가 충격파 판정 창(뛴 뒤 0.12~0.67초)에 늦지 않게 오는지.</li>
-    <li><b>폰</b> — 좌우 문턱 0.5·되돌림 0.25와 단추 점프가 손에 맞는지.</li>
+    <li><b>폰</b> — 좌우 문턱 0.3·되돌림 0.15(2026-11-22 낮춤)와 쉬는 자리 맞추기로 오른쪽·왼쪽이 같은 크기로 되는지, 단추 점프가 손에 맞는지.</li>
   </ul>
 </main>
 <script>
@@ -334,8 +346,8 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
     ["unity/Assets/DigitalFitZone/Game/Play/MeteorDodge/MeteorDodgeScoring.cs", "회피 +30·생존 +1 → 그 사람에게 Move(+1) 그 점수만큼"],
     ["unity/Assets/DigitalFitZone/UI/Session/MeteorDodgeDirector.cs", "감독: 명단(봇), 기울기 → 한 칸, 누르기·톡·점프 → 점프, 골격 → 칸, 연습·경기 밀기, Award, 끝 알림"],
     ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiMeteorDodgeStage.cs", "무대: 위 띠 · 사람마다 3칸 길 · 사람 카드, 연습 화면, 배경 그림, 콩콩이"],
-    ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgeRoundTests.cs", "판 검사 20건"],
-    ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgePracticeTests.cs", "칸 읽기·연습 검사 10건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgeRoundTests.cs", "판 검사 23건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgePracticeTests.cs", "칸 읽기·연습 검사 14건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgeDirectorTests.cs", "감독 검사 11건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/MeteorDodgeStageTests.cs", "무대 검사 4건"],
     ["docs/progress/2026-11-17-g012-meteor-dodge-native.md", "진행 기록, 붙이는 길, 말 표"],
@@ -359,7 +371,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 (function(){
   "use strict";
   var STEP = 1 / 60, EPS = 1e-9, COUNTDOWN = 3, FEEDBACK = 0.8;
-  var WARN = 1.1, MIN_TRAVEL = 1.3, FIRST = 0.6, NEXT = 0.55, JUMP = 0.85, AIR_FROM = 0.12, AIR_TO = 0.67, COOL = 1.1, FLASH = 0.55, DODGE = 0.45, LEAD = 0.32;
+  var WARN = 1.1, MIN_TRAVEL = 1.0, LEVEL_SEC = 12, PER_LEVEL = 0.25, DOUBLE_FROM = 3, FIRST = 0.6, NEXT = 0.55, JUMP = 0.85, AIR_FROM = 0.12, AIR_TO = 0.67, COOL = 1.1, FLASH = 0.55, DODGE = 0.45, LEAD = 0.32;
   var LEVELS = { easy: [5, 3.1, "쉬움"], normal: [4, 2.6, "보통"], hard: [3, 2.1, "도전"] };
   var KEYS = [{ left: "ArrowLeft", right: "ArrowRight", jump: "Space", labels: "← → Space" }, { left: "KeyA", right: "KeyD", jump: "KeyW", labels: "A D W" },
               { left: "KeyJ", right: "KeyL", jump: "KeyI", labels: "J L I" }, { left: "KeyF", right: "KeyH", jump: "KeyT", labels: "F H T" }];
@@ -382,16 +394,20 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
     PR = { i: 0, passed: {}, at: NaN };
     R = { elapsed: 0, hazard: null, id: 0, passed: 0, wait: FIRST };
   }
-  function level() { return 1 + Math.floor(R.elapsed / 20 + 1e-9); }
+  function level() { return 1 + Math.floor(R.elapsed / LEVEL_SEC + 1e-9); }
   function score(p) { return p.avoided * 30 + Math.floor(p.survival * 2 + 1e-9); }
   function air(p) { return p.jump >= AIR_FROM - EPS && p.jump <= AIR_TO + EPS; }
   function move(p, d) { if (stage === "over" || p.hp <= 0) return false; var l = Math.max(0, Math.min(2, p.lane + d)); if (l === p.lane) return false; p.lane = l; return true; }
   function leap(p) { if (stage === "over" || p.hp <= 0 || p.cool > EPS || p.jump >= 0) return false; p.jump = 0; p.cool = COOL; p.status = "jump"; return true; }
   function animate(p, s) { p.flash = Math.max(0, p.flash - s); p.cool = Math.max(0, p.cool - s); if (p.jump >= 0) { p.jump += s; if (p.jump >= JUMP - EPS) p.jump = -1; } }
-  function spawn() { R.id++; var kind = cfg.hazards === "mixed" ? (R.id % 3 === 0 ? "wave" : "meteor") : cfg.hazards; R.hazard = { kind: kind, lane: Math.floor(rnd() * 3), age: 0, travel: Math.max(MIN_TRAVEL, LEVELS[cfg.level][1] - (level() - 1) * 0.2) }; }
+  function spawn() { R.id++; var kind = cfg.hazards === "mixed" ? (R.id % 3 === 0 ? "wave" : "meteor") : cfg.hazards, lane = Math.floor(rnd() * 3), lane2 = -1;
+    // 2026-11-22 두 칸 운석 — 레벨 3부터 운석 둘째마다 옆 칸 하나를 더 덮는다(한 칸만 안전)
+    if (kind === "meteor" && level() >= DOUBLE_FROM && R.id % 2 === 0) lane2 = (lane + 1 + Math.floor(rnd() * 2)) % 3;
+    R.hazard = { kind: kind, lane: lane, lane2: lane2, age: 0, travel: Math.max(MIN_TRAVEL, LEVELS[cfg.level][1] - (level() - 1) * PER_LEVEL) }; }
+  function covers(h, l) { return h.kind === "meteor" && (l === h.lane || l === h.lane2); }
   function resolve() {
     var h = R.hazard;
-    PL.forEach(function (p) { if (p.hp <= 0) return; var hit = h.kind === "meteor" ? p.lane === h.lane : !air(p);
+    PL.forEach(function (p) { if (p.hp <= 0) return; var hit = h.kind === "meteor" ? covers(h, p.lane) : !air(p);
       if (hit) { p.hp--; p.hits++; p.flash = FLASH; p.status = p.hp > 0 ? "hit" : "out"; } else { p.avoided++; p.status = "avoided"; } });
     R.passed++; R.hazard = null; R.wait = NEXT;
     if (PL.length && PL.every(function (p) { return p.hp <= 0; })) stage = "over";
@@ -411,7 +427,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
     if (h) {
       h.age += s;
       PL.forEach(function (p) { if (!p.bot || p.hp <= 0) return;
-        if (h.kind === "meteor" && p.lane === h.lane && h.age > DODGE) move(p, h.lane === 0 ? 1 : -1);
+        if (covers(h, p.lane) && h.age > DODGE) move(p, h.lane2 >= 0 ? Math.sign(3 - h.lane - h.lane2 - p.lane) : (h.lane === 0 ? 1 : -1));
         if (h.kind === "wave" && WARN + h.travel - h.age <= LEAD + EPS && p.jump < 0) leap(p); });
       if (h.age >= WARN + h.travel - EPS) resolve();
     } else { R.wait -= s; if (R.wait <= EPS) spawn(); }
@@ -472,10 +488,11 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
       if (h) {
         var pr = Math.max(0, Math.min(1, (h.age - WARN) / h.travel)), y = Y(95 + 375 * pr);
         if (h.kind === "meteor") {
-          var mx = cx0 + lw * (h.lane + .5); ctx.fillStyle = "rgba(241,163,106,.22)"; ctx.fillRect(cx0 + lw * h.lane, Y(70), lw, Y(480) - Y(70));
+          for (var ln = 0; ln < 3; ln++) { if (!covers(h, ln)) continue;
+          var mx = cx0 + lw * (ln + .5); ctx.fillStyle = "rgba(241,163,106,.22)"; ctx.fillRect(cx0 + lw * ln, Y(70), lw, Y(480) - Y(70));
           if (h.age < WARN) label("!", mx, Y(125), m * 1.8, "#c47c59");
           else { ctx.strokeStyle = "#ffb570"; ctx.lineWidth = 7 * k; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(mx - 13 * k, y - 52 * k); ctx.lineTo(mx, y - 12 * k); ctx.stroke();
-            ctx.fillStyle = "#c47c59"; ctx.beginPath(); ctx.arc(mx, y, Math.min(25 * k, lw * .27), 0, 7); ctx.fill(); ctx.fillStyle = "#8c5b53"; ctx.beginPath(); ctx.arc(mx - 6 * k, y - 5 * k, 7 * k, 0, 7); ctx.fill(); }
+            ctx.fillStyle = "#c47c59"; ctx.beginPath(); ctx.arc(mx, y, Math.min(25 * k, lw * .27), 0, 7); ctx.fill(); ctx.fillStyle = "#8c5b53"; ctx.beginPath(); ctx.arc(mx - 6 * k, y - 5 * k, 7 * k, 0, 7); ctx.fill(); } }
         } else {
           if (h.age < WARN) label("점프 준비!", cx0 + cw / 2, Y(125), m * 1.1, "#9b6ff0");
           else { ctx.strokeStyle = "#9b6ff0"; ctx.lineWidth = 9 * k; ctx.beginPath(); ctx.moveTo(cx0 + 6, y); ctx.lineTo(cx0 + cw - 6, y); ctx.stroke(); ctx.strokeStyle = "#e9dcff"; ctx.lineWidth = 2 * k; ctx.beginPath(); ctx.moveTo(cx0 + 6, y - 8 * k); ctx.lineTo(cx0 + cw - 6, y - 8 * k); ctx.stroke(); }
@@ -495,7 +512,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
       var st = play ? STATUS[p.status] : "모두 해 보면 시작 · Enter로 바로 시작";
       label(st, cx0 + cw * .06, cy + ch * .83, fit(st, m * .7, cw * .88), p.status === "avoided" && play ? "#2e8a5e" : "#565f7e", "left");
     });
-    if (play && PL.length) { var t0 = !h ? "다음 신호 대기" : (h.kind === "meteor" ? "운석 · " + (h.lane + 1) + "번 칸" : "충격파 · 모든 칸") + (h.age < WARN ? " / 예고" : " / 접근 중");
+    if (play && PL.length) { var t0 = !h ? "다음 신호 대기" : (h.kind === "meteor" ? "운석 · " + (h.lane2 < 0 ? (h.lane + 1) : (Math.min(h.lane, h.lane2) + 1) + "·" + (Math.max(h.lane, h.lane2) + 1)) + "번 칸" : "충격파 · 모든 칸") + (h.age < WARN ? " / 예고" : " / 접근 중");
       rr(x0 + m * .4, ay + m * .4, m * 9, m * 1.4, m * .5, "rgba(255,255,255,.92)"); label(t0, x0 + m * .6, ay + m * 1.1, m * .7, "#222b4a", "left"); }
     if (stage === "count") { var cn = Math.max(1, Math.ceil(COUNTDOWN - (clock - cd) - EPS)); ctx.fillStyle = "rgba(34,43,74,.45)"; ctx.fillRect(0, 0, W, H); label(cn, W / 2, H / 2, H * .3, "#ffffff"); }
     var info = stage === "practice" ? "동작 연습 — 사람마다 자기 키로 · Enter로 바로 시작" : stage === "count" ? "3초 뒤 시작" : over ? "경기 끝" : stage === "play" ? "LEVEL " + level() : "";

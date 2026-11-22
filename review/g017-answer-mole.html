@@ -186,6 +186,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 시작 전 안내 카드 대신 실제 동작 연습(왼쪽·오른쪽 두더지에 손을 대고 원이 찰 때까지, 모두 통과하거나 한 명이 ㄴ자로 바로 시작) → 3초 → 경기. 잡는 방식은 경기와 같음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-06 19:11</span><span>본줄기가 main으로 바뀌어 main을 합쳐 최신으로 맞추고 main 대상 PR을 열었다(server-checks 통과, 충돌 없음)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #46">PR #46</a></li>
 <li><span class="when">2026-11-06 12:29</span><span>모둠마다 자기 색 콩콩이 — 자기 모둠이 정답을 잡으면 환호·오답이면 아쉬움·손이 보이면 만세, 끝나면 1등 모둠만 환호</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/582314695">5823146</a></li>
 <li><span class="when">2026-11-06 12:19</span><span>모둠 차례전 → 모둠 동시 진행 — 모든 모둠이 한 판·같은 문제로 60초 함께, 정답은 먼저 0.3초를 채운 손이 가져감, 모둠 점수판·손 동그라미 모둠 색, 쉬는 시간 없앰(경기 130초 → 62초). 체험판에 다른 모둠 자동 손</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/33d73498f">33d7349</a></li>
@@ -196,7 +197,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 
   <h2>직접 해 보기</h2>
   <!--start-screen-->
-<p class="note">C# 판정과 같은 규칙과 숫자(구멍 9개, 보통 1.25초·최대 3마리·간격 0.72초, 손 대고 0.3초, 정답 +10 + 빠르기 보너스, 오답 −5, 모든 모둠이 함께 60초)로 움직입니다. 원본처럼 <b>시작 화면</b>에서 모둠 수·난이도·문항 세트를 고르고 시작합니다. 카메라 손 대신 <b>마우스(또는 손가락)</b>가 고른 모둠의 손이고, 나머지 모둠은 <b>자동 손</b>(체험판에만 있는 흉내, 0.6~1.5초 머뭇거린 뒤 대개 정답을 노림)이 같은 판에서 동시에 잡습니다. 하얀 원이 다 차면 잡히고, 먼저 채운 손이 가져갑니다. 「경기 20초」로 짧게 볼 수 있습니다.</p>
+<p class="note">C# 판정과 같은 규칙과 숫자(구멍 9개, 보통 1.25초·최대 3마리·간격 0.72초, 손 대고 0.3초, 정답 +10 + 빠르기 보너스, 오답 −5, 모든 모둠이 함께 60초)로 움직입니다. 원본처럼 <b>시작 화면</b>에서 모둠 수·난이도·문항 세트를 고르고 시작합니다. 카메라 손 대신 <b>마우스(또는 손가락)</b>가 고른 모둠의 손이고, 나머지 모둠은 <b>자동 손</b>(체험판에만 있는 흉내, 0.6~1.5초 머뭇거린 뒤 대개 정답을 노림)이 같은 판에서 동시에 잡습니다. 하얀 원이 다 차면 잡히고, 먼저 채운 손이 가져갑니다. 「경기 20초」로 짧게 볼 수 있습니다. <b>2026-11-22부터</b> 「경기 시작」을 누르면 앱처럼 먼저 <b>동작 연습</b>을 합니다 — 왼쪽 두더지 → 오른쪽 두더지에 마우스(손)를 대고 원이 찰 때까지, 그다음 시작 자세(앱: 두 팔 ㄴ자 · 체험판: <b>L 키</b>를 누르고 있기)나 <b>Enter</b>(선생님 「바로 시작」)로 3초 뒤 경기. 다른 모둠 자동 손은 카메라에 없는 봇처럼 연습을 바로 통과한 것으로 봅니다.</p>
   <div class="demo">
     <div class="stagewrap">
       <canvas id="cv" width="1600" height="900" aria-label="정답 두더지 잡기 체험판"></canvas>
@@ -500,6 +501,11 @@ var Buddy = (function () {
   var TEAM = ["#3E7BFA", "#E5484D", "#F2A818", "#8E5CE8"], TEAMNAME = ["파랑 모둠", "빨강 모둠", "노랑 모둠", "보라 모둠"], TEAMINK = ["#3E7BFA", "#E5484D", "#8A6600", "#8E5CE8"];
   var started = false, mode = "normal", teams = 2, setIdx = 0, playSec = 60, mine = 0, botsOn = true;
   var M, rng, botRng, clock, acc, phase, ends, q, qAt, order, qi, moles, nextId, lastSpawn, lastCorrect, lockUntil, nextQAt, pts, ok, bad, hand, bots, cheers;
+  // 입장 뒤 동작 연습(2026-11-22 수정 요청) — AnswerMolePractice.cs와 같은 약속: 왼쪽 두더지 → 오른쪽 두더지 → 시작 자세, 잘했어요 0.8초, 시작 자세 0.25초
+  var pstep, phold, ppass, pcele, startHold, countEnd, lHeld = false, enterAsked = false;
+  var PSTEPS = 3, PHOLES = [3, 5], FEEDBACK = 0.8, STARTHOLD = 0.25, COUNT = 3;
+  addEventListener("keydown", function (e) { if (e.key === "l" || e.key === "L") lHeld = true; if (e.key === "Enter" && phase === "practice") enterAsked = true; });
+  addEventListener("keyup", function (e) { if (e.key === "l" || e.key === "L") lHeld = false; });
   var holes = [];
   [0.37, 0.49, 0.61].forEach(function (y) { [0.24, 0.5, 0.76].forEach(function (x) { holes.push({ x: x, y: y, r: 0.056 }); }); });
   function lcg(s) { return function () { s = (s * 1103515245 + 12345) & 0x7fffffff; return s / 0x7fffffff; }; }
@@ -510,7 +516,19 @@ var Buddy = (function () {
     hand = hand || { x: 0.5, y: 0.5 }; hand.seen = false; hand.target = 0; hand.hold = 0;
     // 다른 모둠의 자동 손 — 체험판에서 여러 모둠이 동시에 겨루는 모습을 보이려고. 앱에서는 카메라가 모든 사람의 손목을 본다.
     bots = []; for (var k = 0; k < teams; k++) { if (k !== mine) bots.push({ team: k, x: buddyX(k, teams), y: 0.72, seen: true, target: 0, hold: 0, goal: null, wait: 1 + k * 0.3 }); }
-    begin(0);
+    phase = "practice"; pstep = 0; phold = 0; ppass = false; pcele = -1; startHold = 0; enterAsked = false;
+  }
+  function touches(h, x, y) { var dx = (x - h.x) * ASPECT, dy = y - (h.y - h.r * 1.7); return Math.sqrt(dx * .85 * dx * .85 + dy * .9 * dy * .9) < h.r * 1.6; }
+  function practice(t) {
+    // 시작 자세(체험판: L 키를 누르고 있기) 0.25초 또는 선생님 「바로 시작」(Enter) — 어느 단계든 3초 세고 경기
+    startHold = lHeld ? startHold + STEP : 0;
+    if (startHold + EPS >= STARTHOLD || enterAsked) { phase = "count"; countEnd = t + COUNT; return; }
+    if (pcele >= 0) { if (t + EPS >= pcele) { pcele = -1; pstep++; phold = 0; ppass = false; } return; }
+    if (pstep >= PSTEPS - 1) return;
+    var on = hand.seen && touches(holes[PHOLES[pstep]], hand.x, hand.y);
+    phold = on ? phold + STEP : 0;
+    if (phold + EPS >= DWELL) ppass = true;   // 다른 모둠 자동 손은 카메라에 없는 봇처럼 바로 통과
+    if (ppass) pcele = t + FEEDBACK;
   }
   function vis(m, t) {
     if (m.state === "hit" || m.state === "wrong") { var k = (t - m.hitAt) / 0.45; return Math.max(0, 1 - Math.max(0, k - 0.4) * 1.7); }
@@ -597,6 +615,8 @@ var Buddy = (function () {
     if (botsOn) bots.forEach(function (b) { steer(b, t); press(b, b.team, t, b.goal); });
   }
   function advance(t) {
+    if (phase === "practice") { practice(t); return; }
+    if (phase === "count") { if (t + EPS >= countEnd) begin(countEnd); return; }
     if (phase !== "play") return;
     if (t + EPS >= ends) { end(ends); return; }
     if (t + EPS >= nextQAt) nextQuestion(nextQAt);
@@ -663,7 +683,63 @@ var Buddy = (function () {
     return phase === "play" && seen ? "raise" : "idle";
   }
   function buddyX(i, n) { return n <= 1 ? 0.5 : 0.27 + 0.46 * i / (n - 1); }
+  function drawPractice() {
+    if (!backdrop()) field();
+    var tgt = pstep < PSTEPS - 1 ? PHOLES[pstep] : -1;
+    holes.forEach(function (h, i) {
+      var x = h.x * W, y = h.y * H, r = h.r * H;
+      ell(x, y + r * .06, r * 1.25, r * .42, "#6E4329"); ell(x, y, r * 1.05, r * .3, "#2B1D12");
+      var m = { state: pcele >= 0 ? "hit" : "up", text: "여기!", born: -10, up: 1e9 }, at = null;
+      if (i === tgt) { if (ready(ART["mole-up"])) at = drawMoleArt(x, y, r, m, 1); else drawMole(x, y, r, m, 1); }
+      ell(x, y + r * .06, r * 1.25, r * .42, "#8B5A3C", true);
+      if (at) drawSign(x, at.sy, r, m, false);
+    });
+    ctx.textBaseline = "middle"; ctx.textAlign = "center";
+    var pw = W * .56, px = W * .22, py = H * .02, ph = H * .16;
+    rr(px, py + H * .009, pw, ph, H * .025, "#6E4329"); rr(px, py, pw, ph, H * .025, "#8B5A3C"); rr(px + H * .006, py + H * .006, pw - H * .012, ph - H * .012, H * .02, "#FFF6DC");
+    ctx.fillStyle = "#6E4329"; ctx.font = font(H * .032); ctx.fillText("동작 연습 " + Math.min(pstep + 1, PSTEPS) + " / " + PSTEPS, W / 2, py + H * .04);
+    var say = pcele >= 0 ? "잘했어요!" : pstep === 0 ? "왼쪽 두더지에 손을 대고 원이 찰 때까지!" : pstep === 1 ? "오른쪽 두더지에 손을 대고 원이 찰 때까지!" : "준비됐으면 두 팔을 ㄴ자로 올려요";
+    ctx.fillStyle = pcele >= 0 ? "#2FA85A" : "#2B1D12"; fit(say, pw * .92, H * .05); ctx.fillText(say, W / 2, py + H * .105);
+    // 왼쪽 — 모둠(사람)마다 통과·차오름. 다른 모둠 자동 손은 카메라에 없는 봇처럼 바로 통과
+    var row = H * .075, pad = W * .012, lx = W * .015, ly = H * .22, lw = W * .19;
+    rr(lx, ly, lw, row * teams + pad * 2, H * .025, "#2B1D12");
+    for (var k = 0; k < teams; k++) {
+      var yy = ly + pad + row * (k + .5), passed = k !== mine || ppass;
+      ctx.fillStyle = TEAM[k]; ctx.beginPath(); ctx.arc(lx + pad + row * .22, yy, row * .16, 0, 7); ctx.fill();
+      ctx.textAlign = "left"; ctx.fillStyle = "#F4F8FF"; ctx.font = font(row * .36); ctx.fillText(k === mine ? "마우스" : "자동", lx + pad + row * .45, yy);
+      var bx = lx + lw * .5, bw = lw * .45;
+      if (passed) { ctx.textAlign = "center"; ctx.fillStyle = "#2FA85A"; ctx.font = font(row * .4); ctx.fillText("통과!", bx + bw / 2, yy); }
+      else if (pstep < PSTEPS - 1) { rr(bx, yy - row * .11, bw, row * .22, row * .11, "rgba(255,255,255,.25)"); if (phold > 0) rr(bx, yy - row * .11, bw * Math.min(1, phold / DWELL), row * .22, row * .11, "#2FA85A"); }
+    }
+    // 마우스 손
+    if (hand.seen) {
+      var hx = hand.x * W, hy = hand.y * H;
+      ctx.fillStyle = TEAM[mine]; ctx.beginPath(); ctx.arc(hx, hy, H * .03, 0, 7); ctx.fill();
+      ctx.strokeStyle = "#fff"; ctx.lineWidth = H * .004; ctx.beginPath(); ctx.arc(hx, hy, H * .045, 0, 7); ctx.stroke();
+      if (phold > 0) { ctx.lineWidth = H * .008; ctx.beginPath(); ctx.arc(hx, hy, H * .05, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, phold / DWELL)); ctx.stroke(); }
+    }
+    // 아래 — 늘 시작 자세 안내와 버틴 정도
+    var hh = H * .1, hx2 = W * .22, hw = W * .56, hy2 = H * .97 - hh;
+    rr(hx2, hy2, hw, hh, hh * .3, "#2B1D12");
+    var fx = hx2 + hh * .6, fy = hy2 + hh * .5, fs = hh * .42, ink = pstep >= PSTEPS - 1 ? "#D1F58E" : "#FFF6DC";
+    ctx.strokeStyle = ink; ctx.fillStyle = ink; ctx.lineWidth = fs * .14; ctx.lineCap = "round";
+    ctx.beginPath(); ctx.arc(fx, fy - fs * .55, fs * .2, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(fx, fy - fs * .32); ctx.lineTo(fx, fy + fs * .45);
+    [-1, 1].forEach(function (d) { ctx.moveTo(fx, fy - fs * .2); ctx.lineTo(fx + d * fs * .45, fy - fs * .2); ctx.lineTo(fx + d * fs * .45, fy - fs * .75); ctx.moveTo(fx, fy + fs * .45); ctx.lineTo(fx + d * fs * .22, fy + fs * .95); });
+    ctx.stroke();
+    ctx.textAlign = "left"; ctx.fillStyle = "#FFF6DC"; fit("두 팔을 ㄴ자로 올리면 바로 시작 (체험판: L 키 누르고 있기 · Enter 바로 시작)", hw - hh * 1.4, hh * .3);
+    ctx.fillText("두 팔을 ㄴ자로 올리면 바로 시작 (체험판: L 키 누르고 있기 · Enter 바로 시작)", hx2 + hh * 1.2, hy2 + hh * .38);
+    rr(hx2 + hh * 1.2, hy2 + hh * .74, hw - hh * 1.5, hh * .12, hh * .06, "rgba(255,246,220,.25)");
+    if (startHold > 0) rr(hx2 + hh * 1.2, hy2 + hh * .74, (hw - hh * 1.5) * Math.min(1, startHold / STARTHOLD), hh * .12, hh * .06, "#D1F58E");
+    if (phase === "count") {
+      var n = Math.max(1, Math.ceil(countEnd - clock - EPS));
+      rr(W * .42, H * .32, W * .16, H * .26, H * .04, "#FFF6DC");
+      ctx.textAlign = "center"; ctx.fillStyle = "#2B1D12"; ctx.font = font(H * .2); ctx.fillText(String(n), W / 2, H * .45);
+    }
+    document.getElementById("score").innerHTML = "동작 연습 — 점수는 경기에서부터";
+  }
   function draw() {
+    if (phase === "practice" || phase === "count") { drawPractice(); return; }
     if (!backdrop()) field();
     holes.forEach(function (h, i) {
       var x = h.x * W, y = h.y * H, r = h.r * H;
@@ -724,7 +800,7 @@ var Buddy = (function () {
       if (sub) { ctx.font = font(H * .028); ctx.fillText(sub, x, y + sz * .9); }
       ctx.globalAlpha = 1;
     });
-    if (phase !== "play") {
+    if (phase === "over") {
       var bx = W * .22, by = H * .2, bw = W * .56, bh = H * .4;
       rr(bx, by + H * .012, bw, bh, H * .035, "#6E4329"); rr(bx, by, bw, bh, H * .035, "#8B5A3C"); rr(bx + H * .007, by + H * .007, bw - H * .014, bh - H * .014, H * .03, "#FFF6DC");
       ctx.textAlign = "center";
@@ -754,8 +830,11 @@ var Buddy = (function () {
   document.getElementById("restart").onclick = reset;
   window.__startDemo = function () { reset(); started = true; };
   window.__stopDemo = function () { started = false; reset(); };
-  window.__g017 = { state: function () { return { phase: phase, mine: mine, clock: clock, q: q && q[0], moles: moles.map(function (m) { return [m.hole, m.text, m.correct, m.state]; }), pts: pts.slice(), ok: ok.slice(), bad: bad.slice() }; },
+  window.__g017 = { state: function () { return { phase: phase, pstep: pstep, mine: mine, clock: clock, q: q && q[0], moles: moles.map(function (m) { return [m.hole, m.text, m.correct, m.state]; }), pts: pts.slice(), ok: ok.slice(), bad: bad.slice() }; },
                     bots: function (on) { botsOn = !!on; },
+                    practiceAim: function (onTarget) { var h = holes[PHOLES[Math.min(pstep, 1)]]; hand.x = onTarget ? h.x : 0.5; hand.y = onTarget ? h.y - h.r * 1.7 : 0.9; hand.seen = true; },
+                    startPose: function (on) { lHeld = !!on; },
+                    skip: function () { enterAsked = true; },
                     aim: function (correct) { var m = moles.find(function (x) { return x.state === "up" && x.correct === correct && vis(x, clock) >= 1; }); if (!m) return false; var h = holes[m.hole]; hand.x = h.x; hand.y = h.y - h.r * 1.7; hand.seen = true; return true; } };
   reset(); requestAnimationFrame(frame);
 })();

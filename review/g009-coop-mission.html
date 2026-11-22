@@ -186,6 +186,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 연습 화면에 「이 게임은 이렇게 해요」 세 줄(신호 순서 기억 → 내 색 차례에 동작 + 단추 → 틀리면 3초 줄고 다시), 경기 중 카드마다 「지금 할 일」 한 줄, 미션이 바뀔 때 안내. 규칙·점수는 그대로. 「게임이 없다」는 업데이트로 해결</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-17 20:01</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 입력이 단추라 웹 통로로도 같은 규칙을 옮길 수 있다(설정은 기본값 90초·5단계·4개 고정). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #106">PR #106</a></li>
 <li><span class="when">2026-11-17 20:01</span><span>처음 변환 — 회원님 「입력 부분 제외하고는 모두 원본대로」: 4인 4역할·신호 한 번만·입력 때만 제한 시간·잠금장치 3·5·7·신호 4·6·8·점수 모두 원본 그대로, 입력만 키보드 → 자기 폰·컨트롤러 단추. 모자란 역할은 앱 봇이 원본 시범 모드처럼 저절로 누르고, 팀 점수는 모두에게 같게. 참가 → 동작 연습(내 역할 확인) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #106">PR #106</a></li>
 </ul>
@@ -600,6 +601,24 @@ var Buddy = (function () {
     if (R.phase === "input" && R.fb.kind === "good" && R.fb.at >= R.start) return R.fb.role;
     return -1;
   }
+  var HOW = ["장치에 색 신호가 하나씩 켜져요. 모두 함께 순서를 기억해요.",
+    "신호가 끝나면 그 순서대로! 내 색 차례에 내 동작을 하고 단추를 눌러요.",
+    "틀리면 3초가 줄고 그 신호부터 다시. 잠금장치를 모두 풀면 성공!"];
+  function task(i) {   /* 카드의 지금 할 일 — 입력 중에는 모두 같은 글(숨긴 정답을 알리지 않는다) */
+    if (stage !== "play") return null;
+    if (R.phase === "ready") return "곧 신호! 장치를 봐요";
+    if (R.phase === "observe") return i === R.seq[R.sig] ? "지금 내 색! 몇 번째인지 기억" : "신호 순서를 기억해요";
+    if (R.phase === "input") return "내 차례에 동작하고 단추";
+    if (R.phase === "clear") return "성공! 다음 미션 준비";
+    return null;
+  }
+  function wrapLabel(text, x, y, size, color, width) {   /* 왼쪽 맞춤 여러 줄 */
+    ctx.font = "800 " + size + "px Pretendard, system-ui, sans-serif";
+    var lines = [], cur = "";
+    text.split(" ").forEach(function (wd) { var t = cur ? cur + " " + wd : wd; if (cur && ctx.measureText(t).width > width) { lines.push(cur); cur = wd; } else cur = t; });
+    if (cur) lines.push(cur);
+    lines.forEach(function (l, i) { label(l, x, y + (i - (lines.length - 1) / 2) * size * 1.2, fit(l, size, width), color, "left"); });
+  }
   function tile(i) {
     if (R.phase === "observe") return i === R.sig ? "reveal" : "hidden";
     if (R.phase === "input") return i < R.step ? "done" : i === R.step ? "active" : "hidden";
@@ -620,7 +639,14 @@ var Buddy = (function () {
     var play = stage === "play" || stage === "over", L = lit();
     /* 위 띠 */
     if (play) label("MISSION " + String(Math.max(1, R.turn)).padStart(2, "0") + " / " + cfg.rounds, hud.x, hud.y + hud.h * .2, m * .8, "#a4f4cc", "left");
-    label("우리는 한 팀", hud.x, hud.y + hud.h * .68, m * 1.6, "#eff7f4", "left");
+    if (play) label("우리는 한 팀", hud.x, hud.y + hud.h * .68, m * 1.6, "#eff7f4", "left");
+    else {
+      rr(hud.x, hud.y, hud.w, hud.h, hud.h * .2, "rgba(25,44,60,.96)");
+      rr(hud.x + hud.w * .015, hud.y + (hud.h - m * 1.4) / 2, hud.w * .3, m * 1.4, m * .63, "rgba(164,244,204,.2)");
+      label("동작 연습 — 내 역할 확인", hud.x + hud.w * .165, hud.y + hud.h / 2, fit("동작 연습 — 내 역할 확인", m, hud.w * .28), "#a4f4cc");
+      var say = stage === "count" ? "곧 시작해요!" : !isNaN(PR.at) ? "잘했어요!" : "내 색 동작을 하고 단추를 한 번 눌러요";
+      label(say, hud.x + hud.w * .33, hud.y + hud.h / 2, fit(say, m * 1.5, hud.w * .65), !isNaN(PR.at) ? "#a4f4cc" : "#eff7f4", "left");
+    }
     if (play) {
       [["남은 활동 시간", Math.max(0, R.left).toFixed(1) + "초"], ["팀 점수", R.score], ["연속 성공", R.combo]].forEach(function (s, i) {
         var sw = w * .17, sg = w * .012, sx = hud.x + w - (3 - i) * (sw + sg) + sg;
@@ -654,16 +680,27 @@ var Buddy = (function () {
       t2 = "모두 누르면 미션을 시작해요. 아래 카드에서 내 색과 동작을 확인해요." + (cfg.humans ? " (키보드 " + ROLES.slice(0, cfg.humans).map(function (r) { return r.K; }).join("·") + ", Enter 바로 시작)" : "");
     } else {
       tag = { ready: "작전 준비", observe: "신호 관찰", input: "협동 입력", clear: "잠금 해제", over: "결과" }[R.phase];
-      if (R.phase === "ready") { t1 = "작전 시작까지 " + Math.max(1, Math.ceil(R.end - clock - EPS)); t2 = "잠시 후 색 신호를 딱 한 번 보여 줍니다. 순서를 기억하세요."; }
+      if (R.phase === "ready") { t1 = "작전 시작까지 " + Math.max(1, Math.ceil(R.end - clock - EPS)); t2 = "미션 " + Math.max(1, R.turn) + " — 신호 " + cfg.length + "개가 한 번씩 켜져요. 순서를 함께 기억해요!"; }
       else if (R.phase === "observe") { var sr = R.seq[R.sig]; t1 = (R.sig + 1) + "번째 · " + ROLES[sr].name; t2 = ROLES[sr].K + " · " + ROLES[sr].move; }
       else if (R.phase === "input") { t1 = "우리 팀, 순서대로!"; t2 = "신호는 한 번만 보여 줍니다. 기억한 순서를 말로 확인하고, 동작 후 단추를 눌러요."; }
       else if (R.phase === "clear") { t1 = R.cleared >= cfg.rounds ? "모든 신호가 연결됐어요!" : "한 단계 안정화 성공!"; t2 = "단계 성공 보너스 +200점 · 다음 단계까지 시간 정지"; }
       else { t1 = R.success ? "해체 성공! 우리 팀 최고!" : "아쉬워요! 다시 힘을 모아요"; t2 = R.cleared + "/" + cfg.rounds + "단계 · 정확도 " + (R.ok + R.miss ? Math.round(R.ok / (R.ok + R.miss) * 100) : 0) + "% · 최고 콤보 " + R.best + "회"; }
     }
-    rr(cx, con.y + con.h * .05, cww * (play ? .32 : .5), m * 1.4, m * .63, "rgba(164,244,204,.2)");
-    label(tag, cx + cww * (play ? .16 : .25), con.y + con.h * .05 + m * .7, m * .8, "#a4f4cc");
+    if (!play) {
+      var th0 = m * 1.5, top = con.y + con.h * .05 + th0 + con.h * .03, rowH = (con.y + con.h * .96 - top) / 4;
+      rr(cx, con.y + con.h * .05, cww * .55, th0, th0 * .45, "rgba(164,244,204,.2)");
+      label("이 게임은 이렇게 해요", cx + cww * .275, con.y + con.h * .05 + th0 / 2, m * 1.1, "#a4f4cc");
+      HOW.concat([t2]).forEach(function (line, i) {
+        var ry = top + i * rowH + rowH * .47, r = m * .7, lead = 0;
+        if (i < 3) { ctx.fillStyle = "#a4f4cc"; ctx.beginPath(); ctx.arc(cx + r, ry, r, 0, 7); ctx.fill(); label(i + 1, cx + r, ry, m * .9, "#102331"); lead = r * 2.6; }
+        wrapLabel(line, cx + lead, ry, m, i < 3 ? "#eff7f4" : "#a8bdc9", cww - lead);
+      });
+    } else {
+    rr(cx, con.y + con.h * .05, cww * .32, m * 1.4, m * .63, "rgba(164,244,204,.2)");
+    label(tag, cx + cww * .16, con.y + con.h * .05 + m * .7, m * .8, "#a4f4cc");
     label(t1, cx, con.y + con.h * .245, fit(t1, m * 1.7, cww), "#eff7f4", "left");
-    label(t2, cx, con.y + con.h * .39, fit(t2, m * .75, cww), "#a8bdc9", "left");
+    label(t2, cx, con.y + con.h * .39, fit(t2, m * .9, cww), "#a8bdc9", "left");
+    }
     if (play) {
       var n = R.seq.length, tg = cww * .015, tw = Math.min((cww - tg * (n - 1)) / n, con.h * .2 * .88), ty = con.y + con.h * .47, th = con.h * .2;
       R.seq.forEach(function (r, i) {
@@ -684,12 +721,14 @@ var Buddy = (function () {
     ROLES.forEach(function (ro, i) {
       var x = x0 + i * (cw + gap), active = play ? i === L : PR.passed[i] && stage !== "idle";
       if (active) rr(x - cw * .02, cy - cw * .02, cw * 1.04, ch + cw * .04, cw * .1, ro.color);
-      rr(x, cy, cw, ch, cw * .08, "rgba(25,44,60,.97)"); rr(x, cy, cw, ch * .035, ch * .017, ro.color);
+      rr(x, cy, cw, ch, cw * .08, "rgba(25,44,60,.97)");
       symbol(i, x + cw * .1, cy + ch * .1, m * .4, ro.color);
       label(ro.name + " 담당", x + cw * .17, cy + ch * .1, m * .85, ro.color, "left");
       label(human(i) ? "P" + (i + 1) + " · " + ro.K : "봇", x + cw * .96, cy + ch * .1, m * .8, "#eff7f4", "right");
-      roleBuddy(i, x + cw / 2, cy + ch * .66, Math.min(ch * .42, cw * .5), clock);
-      label(ro.move, x + cw / 2, cy + ch * .765, fit(ro.move, m * .8, cw * .92), "#eff7f4");
+      var tk = task(i), mine = tk && R.phase === "observe" && i === R.seq[R.sig];
+      if (tk) { rr(x + cw * .05, cy + ch * .17, cw * .9, ch * .13, ch * .06, mine ? ro.color : "rgba(16,35,49,.95)"); label(tk, x + cw / 2, cy + ch * .235, fit(tk, m, cw * .86), mine ? "#102331" : "#eff7f4"); }
+      roleBuddy(i, x + cw / 2, cy + ch * .68, Math.min(ch * .34, cw * .5), clock);
+      label(ro.move, x + cw / 2, cy + ch * .775, fit(ro.move, m * .9, cw * .92), "#eff7f4");
       if (play) label("정확한 신호 " + R.okBy[i] + "회 · 실수 " + R.errBy[i] + "회", x + cw / 2, cy + ch * .92, m * .65, "#a8bdc9");
       else if (PR.passed[i]) { rr(x + cw * .2, cy + ch * .85, cw * .6, ch * .12, ch * .05, "#164335"); label("통과!", x + cw / 2, cy + ch * .91, m * .8, "#bbf8d7"); }
       else label("단추(" + ro.K + ")를 눌러요", x + cw / 2, cy + ch * .92, m * .7, "#a8bdc9");

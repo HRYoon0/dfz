@@ -74,7 +74,7 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
   <p class="lead">HTML 게임 「사라지는 발자국! 기억력 탐험」(G011 v2.1, 회원님이 주신 HTML 파일)을 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 2~4팀이 번갈아, 4×4 보물 지도에 잠깐 나타난 발자국 길을 기억해 출발부터 보물까지 한 칸씩 찾아가는 팀 게임입니다. 회원님 결정대로 <b>입력만 클릭·방향키 → 폰 기울기 + 카메라(만세·앉기·옆 걸음)</b>로 바꾸고 나머지는 모두 원본대로 옮겼습니다. 주개발자 게임과 같은 흐름(참가 → 동작 연습 → 시작)을 넣었고, 앱 「웹 게임」에 붙여 넣는 <b>HTML 판</b>도 함께 올렸습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b></p>
   <div class="chips">
     <span class="chip">브랜치 <b>claude/g011-footprint-explorer-native</b></span>
-    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/108">PR #108</a> 검토 대기</span>
+    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/108">PR #108</a> 병합(11-18) · 수정 요청 반영(11-22)</span>
     <span class="chip">새 파일 <b>17개</b>(+ .meta 12개) · 고친 파일 <b>0개</b></span>
     <span class="chip">맥 Unity 컴파일 오류 <b>0</b> · 검사 <b>53/53</b> 통과</span>
   </div>
@@ -186,10 +186,20 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 폰 기울기 문턱을 0.5 → 0.3(약 17°)으로 낮추고, 쉬는 손이 한쪽으로 치우쳐 있어도 그 자리를 가운데로 따라가 다음 칸이 막히지 않게. 2·3·4팀 × 폰·카메라 6장은 로비에서 카드 한 장으로 묶음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-17 21:33</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 폰 기울기로 같은 규칙(웹에 오는 카메라 동작으로는 좌우를 받을 수 없어 폰만, 설정은 기본값 고정, 팀 수는 앱). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #108">PR #108</a></li>
 <li><span class="when">2026-11-17 21:33</span><span>처음 변환 — 입력은 회원님 결정 「폰 기울기 + 카메라 둘 다」(폰은 기울였다 돌아오면 한 칸, 카메라는 만세 위·앉기 아래·옆 걸음 좌우), 나머지는 원본대로: 2·3·4팀이 번갈아, 라운드 3·5·난이도 셋·관찰 12~25초·제한 25·40·60초, 틀리면 출발점, 300 + 남은 초×5 − 실수×40. 라운드마다 팀 안 탐험가가 돌아가고, 사람 없는 팀·봇은 원본 시범 걸음, 결과 2.7초 뒤 다음 팀. 참가 → 동작 연습(위·아래·왼쪽·오른쪽 한 칸) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #108">PR #108</a></li>
 </ul>
 <!--@/HISTORY@-->
+
+  <h2>2026-11-22 수정 요청 반영</h2>
+  <p class="note">요청(김권수, 11-22): 「핸드폰을 연결해서 동작을 하는데, 인식이 잘 되지 않습니다.」</p>
+  <div class="wrap"><table>
+    <tr><th>무엇</th><th>전</th><th>후</th><th>까닭</th></tr>
+    <tr><td>폰 기울기 문턱</td><td>0.5(약 30°) · 되돌림 0.25</td><td><b>0.3(약 17°) · 되돌림 0.15</b></td><td>앱의 기울이기 퀴즈는 0.2 — 우리 게임만 두 배 넘게 기울여야 했다</td></tr>
+    <tr><td>기울기를 재는 기준</td><td>앱 영점(폰을 처음 잇던 자세)</td><td><b>쉬는 자리</b> — 쉬는 손의 작은 흔들림을 천천히 따라가고, 덜 돌아온 채 1초 쉬면 그 자리를 새 가운데로</td><td>쉬는 손이 영점에서 치우쳐 있으면 한쪽은 더 기울여야 하고, 덜 돌아온 채로는 다음 칸이 안 됐다(추정 원인 — 실물로 재 보지 않았다)</td></tr>
+  </table></div>
+  <p class="note">길·점수·차례·카메라 판정은 그대로. 폰을 책상에 둔 채 잇고 세워 들면 영점이 크게 어긋난다 — 그때는 폰의 「기준 다시 잡기」를 눌러 주세요.</p>
 
   <h2>흐름 — 참가 → 동작 연습 → 시작</h2>
   <div class="wrap"><table>
@@ -308,7 +318,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <ul>
     <li><span class="ok">Unity</span> 맥 Unity 6000.5.9f1 · 빌드 대상 Win64 · 가지 85b9550 스냅샷: 컴파일 오류 0, EditMode(골라 돌림 — 「Footprint」, 전체 아님) 53건 모두 통과.</li>
     <li><span class="ok">.NET</span> 같은 53건을 .NET 8·C# 9·경고를 오류로·NUnit 3.14로도 돌렸습니다(main의 실제 파일과 함께 묶음).</li>
-    <li><span class="ok">빨간불 확인</span> 판정·한 칸 읽기·연습·감독·무대 규칙 98개를 하나씩 끄면 모두 검사가 실패합니다. 처음엔 12개가 구멍이라 검사 3건을 더하고 8건을 보강했습니다.</li>
+    <li><span class="ok">빨간불 확인</span> 판정·한 칸 읽기·연습·감독·무대 규칙 98개를 하나씩 끄면 모두 검사가 실패합니다. 처음엔 12개가 구멍이라 검사 3건을 더하고 8건을 보강했습니다. 2026-11-22 고친 판(쉬는 자리 기울기)은 규칙 108개 — 처음 구멍 3개를 검사 2건 보강으로 메웠습니다.</li>
     <li><span class="ok">HTML 판</span> 앱 웹 게임 검사기 통과(위 절).</li>
     <li><span class="no">안 함</span> 앱 화면 촬영(앱에 아직 연결 전이라 앱 화면이 없음), 실물 폰·카메라로 한 판(만든 분들이 확인), Windows 실행.</li>
   </ul>
@@ -325,7 +335,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 
   <h2>실물에서 봐 주셨으면 하는 것</h2>
   <ul>
-    <li><b>폰 앞뒤 방향</b> — 앞으로 기울이면 위 칸으로 가는지. 문턱 0.5·되돌림 0.25가 한 칸씩 끊어 가기에 알맞은지.</li>
+    <li><b>폰 앞뒤 방향</b> — 앞으로 기울이면 위 칸으로 가는지. 문턱 0.3·되돌림 0.15(2026-11-22 낮춤)가 한 칸씩 끊어 가기에 알맞은지, 쉬는 자리 맞추기로 네 방향이 같은 크기로 되는지.</li>
     <li><b>카메라 옆 걸음</b> — 어깨 너비 0.6배가 한 걸음에 알맞은지, 좌우가 거울처럼 맞는지.</li>
     <li>결과 2.7초(원본 시범 모드 값)가 정답 길을 다시 보기에 넉넉한지.</li>
   </ul>
@@ -343,7 +353,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
     ["unity/Assets/DigitalFitZone/UI/Session/FootprintDirector.cs", "감독: 명단(팀·봇), 기울기(앞뒤 y − z)·만세·앉기·골격 옆 걸음 → 한 칸, 연습·경기 밀기, Award, 끝 알림"],
     ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiFootprintStage.cs", "무대: 위 띠 · 보물 지도 | 안내 판 · 팀 카드, 연습 화면, 배경 그림"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintRoundTests.cs", "판·지도 검사 23건"],
-    ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintPracticeTests.cs", "한 칸 읽기·연습 검사 13건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintPracticeTests.cs", "한 칸 읽기·연습 검사 17건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintDirectorTests.cs", "감독 검사 12건"],
     ["unity/Assets/DigitalFitZone/Tests/EditMode/FootprintStageTests.cs", "무대 검사 5건"],
     ["docs/progress/2026-11-17-g011-footprint-explorer-native.md", "진행 기록, 붙이는 길, 말 표"],

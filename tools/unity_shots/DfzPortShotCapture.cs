@@ -52,7 +52,11 @@ namespace DigitalFitZone.Tests.PlayMode
             var host = InputRouterHost.Instance;
             Assert.That(controller, Is.Not.Null);
             UnityEngine.Object.FindAnyObjectByType<DigitalFitZone.UI.Home.HomeScreen>()?.Close();
-            controller.Config.introSeconds = 0;
+            // DFZ_SHOT_INTRO=1 이면 안내 단계(동작 연습)를 찍는다 — 안내를 길게 두고 시작하지 않는다
+            bool introShot = Environment.GetEnvironmentVariable("DFZ_SHOT_INTRO") == "1";
+            controller.Config.introSeconds = introShot ? 600 : 0;
+            // DFZ_SHOT_PRACTICE=1 이면 연습 판(N 키 「연습 중」)으로 돈다
+            if (Environment.GetEnvironmentVariable("DFZ_SHOT_PRACTICE") == "1") controller.SetPractice(true);
 
             Canvas canvas = UiCanvasBootstrap.Ensure().Canvas;
             var viewport = new GameObject("dfz-port-shot-viewport").AddComponent<Camera>();
@@ -91,7 +95,8 @@ namespace DigitalFitZone.Tests.PlayMode
                     controller.RequestStart();
                     yield return new WaitForSeconds(0.2f);
                 }
-                yield return TestWait.Until(() => controller.Runner.State == SessionState.Play, 15, "경기에 들어가지 못했다");
+                SessionState want = introShot ? SessionState.Intro : SessionState.Play;
+                yield return TestWait.Until(() => controller.Runner.State == want, 15, "그 단계에 들어가지 못했다: " + want);
                 Directory.CreateDirectory(output);
                 float started = Time.realtimeSinceStartup;
                 foreach (float at in times)
