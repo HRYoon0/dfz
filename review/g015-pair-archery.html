@@ -276,6 +276,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-26 22:30</span><span>앱에서 다시 확인(맥 에디터 · 흉내 장치, 연습 판) — 두 폰 참가 → 안내 카드 → 「바로 시작」 → 두 발마다 파랑·빨강 차례 교대. / 기울이면 조준점이 그쪽으로(앞 = 위, 뒤 = 아래), 0.4초 꾹 누르면 화살이 줄고 카드가 뒤집힘. / 확인 못 함: 짝 맞추기 점수 — 아무 데나 쏘아 10발 동안 짝을 못 맞힘.</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-26 12:30</span><span>수정 요청 반영(남은 것) — 판의 마지막 짝을 맞혔을 때도 — 판이 곧바로 새 판을 깔지만 무대가 옛 판을 1.25초 더 그려 마지막 화살·뒤집기를 보인 뒤 새 판으로(PR #138 세 번째 커밋)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-26 10:50</span><span>수정 요청 반영 — 화살이 아래에서 맞힌 자리로 0.3초 날아가 꽂히고, 카드가 열릴 때·덮일 때 0.35초 가로로 뒤집힌다(무대만, 판·점수 그대로). 체험판도 같은 모션</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-15 18:24</span><span>수정 요청 반영 — 맞힌 고리만큼 카드가 열린다(노랑만 다 열리고 색, 빨강 75%·파랑 55%·검정 40%·그 밖 25%는 회색 창, 짝 판정은 그대로). 세워 든 폰(아이폰)에서 앞뒤 기울기가 안 잡히던 것을 앞뒤 = y − z로. 2·3·4팀 고르기 요청은 주개발자 #80(로비 묶음 카드)으로 해결됨</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #100">PR #100</a></li>
@@ -351,6 +352,18 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <div class="wrap"><table id="files">
     <tr><th>파일</th><th>무엇</th></tr>
   </table></div>
+
+  <h2>앱에서 해 본 것 (2026-11-26 · 다시 확인)</h2>
+  <style>.appshots{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin:10px 0 18px}.appshots figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px}.appshots img{width:100%;border-radius:6px;display:block}.appshots figcaption{font-size:13px;margin-top:6px;font-weight:500}</style>
+  <p>맥 Unity 에디터 <code>SessionTest</code> Play, 가지 <code>claude/fixes-1126</code>(PR #138)에 최신 main을 합친 55aa86e, <b>연습 판</b>(기록·순위에 안 올림). 폰은 실물이 아니라 앱이 여는 폰 페이지를 브라우저로 열고 W3C 정의대로 기울기·중력 값과 누르기를 넣었습니다(폰 페이지 → 폰 서버 → 해석기 → 판정은 실제 코드).</p>
+  <ul>
+    <li>두 폰 참가 → 안내 카드 → 「바로 시작」 → 두 발마다 파랑·빨강 차례 교대.</li>
+    <li>기울이면 조준점이 그쪽으로(앞 = 위, 뒤 = 아래), 0.4초 꾹 누르면 화살이 줄고 카드가 뒤집힘.</li>
+    <li>확인 못 함: 짝 맞추기 점수 — 아무 데나 쏘아 10발 동안 짝을 못 맞힘.</li>
+  </ul>
+  <div class="appshots">
+    <figure><img src="img/g015-pair-archery-app1126-1.jpg" alt="빨강 팀 차례 · 조준 십자선, 맞힌 카드에 화살" loading="lazy"><figcaption>빨강 팀 차례 · 조준 십자선, 맞힌 카드에 화살</figcaption></figure>
+  </div>
 
   <h2>검증한 것과 안 한 것</h2>
   <ul>

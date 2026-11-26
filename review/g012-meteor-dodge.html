@@ -276,6 +276,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-26 22:30</span><span>앱에서 다시 확인(맥 에디터 · 흉내 장치, 연습 판) — 카메라판: 두 명 참가 → 연습(왼쪽 · 오른쪽 · 점프) → 경기. 선 자리로 칸이 바뀌고, 물결은 점프하면 넘고 가만히 있으면 맞음, 체력 0이면 탈락. / 폰판: 연습(기울였다 돌아오기 왼쪽 · 오른쪽, 누르기 점프) → 경기. 운석 칸에서 기울여 옮기면 피함, 가만히 있으면 맞음. / 흉내 한계: 한 장면에 두 칸을 순간 이동시키면 칸이 안 바뀐 적이 있고(실제 사람은 순간 이동하지 않음), 흉내 폰은 누르기가 1초 넘게 늦어 폰판 물결 점프는 못 넘김. / 디자인: 사람별 점수판 위쪽 색 띠 — 회원님이 쓰지 말라 하신 「한쪽 색 띠」 꼴, 고칠 것.</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 폰 기울기 문턱 0.3·쉬는 손 자리 보정(오른쪽이 덜 잡히던 것), 12초마다 빨라져 1.0초까지, 레벨 3(24초)부터 두 칸에 한꺼번에 떨어지는 운석. 폰·카메라 두 장은 로비에서 카드 한 장으로 묶음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-17 22:25</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 폰 기울기·단추로 같은 규칙(웹에 오는 카메라 동작으로는 좌우 칸을 받을 수 없어 폰만, 설정은 기본값 고정). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #109">PR #109</a></li>
 <li><span class="when">2026-11-17 22:25</span><span>처음 변환 — 입력은 회원님 결정 「카메라 + 폰 둘 다」(카메라는 선 자리가 곧 칸·제자리 점프, 폰은 좌우로 기울였다 돌아오면 한 칸·단추 점프), 나머지는 원본대로: 1~4명 동시, 30·60·90초, 보호막 5·4·3, 위험 종류 셋, 예고 1.1초·20초마다 낙하 빨라짐, 회피 +30·생존 1초당 2점. 봇은 원본 시범 조작. 참가 → 동작 연습(왼쪽·오른쪽·점프) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #109">PR #109</a></li>
@@ -398,6 +399,20 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <div class="wrap"><table id="files">
     <tr><th>파일</th><th>무엇</th></tr>
   </table></div>
+
+  <h2>앱에서 해 본 것 (2026-11-26 · 다시 확인)</h2>
+  <style>.appshots{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin:10px 0 18px}.appshots figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px}.appshots img{width:100%;border-radius:6px;display:block}.appshots figcaption{font-size:13px;margin-top:6px;font-weight:500}</style>
+  <p>맥 Unity 에디터 <code>SessionTest</code> Play, 가지 <code>claude/fixes-1126</code>(PR #138)에 최신 main을 합친 55aa86e, <b>연습 판</b>(기록·순위에 안 올림). 카메라는 실물이 아니라 앱 안의 시험 장치(<code>CameraPoseHost.StartWithForTest</code> + <code>FakePoseEstimator</code>)로 골격만 넣었습니다 — 맥 카메라는 켜지 않았습니다. 골격 → 참가 → 판정 → 점수는 실제 코드입니다. 폰은 실물이 아니라 앱이 여는 폰 페이지를 브라우저로 열고 W3C 정의대로 기울기·중력 값과 누르기를 넣었습니다(폰 페이지 → 폰 서버 → 해석기 → 판정은 실제 코드).</p>
+  <ul>
+    <li>카메라판: 두 명 참가 → 연습(왼쪽 · 오른쪽 · 점프) → 경기. 선 자리로 칸이 바뀌고, 물결은 점프하면 넘고 가만히 있으면 맞음, 체력 0이면 탈락.</li>
+    <li>폰판: 연습(기울였다 돌아오기 왼쪽 · 오른쪽, 누르기 점프) → 경기. 운석 칸에서 기울여 옮기면 피함, 가만히 있으면 맞음.</li>
+    <li>흉내 한계: 한 장면에 두 칸을 순간 이동시키면 칸이 안 바뀐 적이 있고(실제 사람은 순간 이동하지 않음), 흉내 폰은 누르기가 1초 넘게 늦어 폰판 물결 점프는 못 넘김.</li>
+    <li>디자인: 사람별 점수판 위쪽 색 띠 — 회원님이 쓰지 말라 하신 「한쪽 색 띠」 꼴, 고칠 것.</li>
+  </ul>
+  <div class="appshots">
+    <figure><img src="img/g012-meteor-dodge-app1126-1.jpg" alt="카메라판 — 칸을 옮겨 운석을 피함" loading="lazy"><figcaption>카메라판 — 칸을 옮겨 운석을 피함</figcaption></figure>
+    <figure><img src="img/g012-meteor-dodge-app1126-2.jpg" alt="폰판 — 기울였다 돌아오면 한 칸" loading="lazy"><figcaption>폰판 — 기울였다 돌아오면 한 칸</figcaption></figure>
+  </div>
 
   <h2>검증한 것과 안 한 것</h2>
   <ul>

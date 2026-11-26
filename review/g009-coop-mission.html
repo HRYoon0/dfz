@@ -276,6 +276,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-26 22:30</span><span>앱에서 다시 확인(맥 에디터 · 흉내 장치, 연습 판) — ⚠️ 문제: 정원 4·최소 4·봇 채우기라, 첫 아이가 참가하자마자 로비에서 봇 3이 자리를 채움(TeamBots.Tick). 정원 셈에 봇이 들어가(ParticipantRoster.IsFull) 두 번째 아이부터 참가하지 못함(SessionRunner 「!Roster.IsFull」). 흉내 폰 B가 실제로 막힘. 교실에서 4명이 폰을 들면 1명 + 봇 3으로만 시작됨. / 폰 A + 봇 셋: 자기 역할 차례에 0.4초 꾹 누르면 「맞음」, 봇과 함께 폭탄 2개 해체(틀림 0). 짧게 톡(0.12초)은 「누르기」로 안 들어감 — 안내대로 길게 눌러야 함.</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 연습 화면에 「이 게임은 이렇게 해요」 세 줄(신호 순서 기억 → 내 색 차례에 동작 + 단추 → 틀리면 3초 줄고 다시), 경기 중 카드마다 「지금 할 일」 한 줄, 미션이 바뀔 때 안내. 규칙·점수는 그대로. 「게임이 없다」는 업데이트로 해결</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-17 20:01</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 입력이 단추라 웹 통로로도 같은 규칙을 옮길 수 있다(설정은 기본값 90초·5단계·4개 고정). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #106">PR #106</a></li>
 <li><span class="when">2026-11-17 20:01</span><span>처음 변환 — 회원님 「입력 부분 제외하고는 모두 원본대로」: 4인 4역할·신호 한 번만·입력 때만 제한 시간·잠금장치 3·5·7·신호 4·6·8·점수 모두 원본 그대로, 입력만 키보드 → 자기 폰·컨트롤러 단추. 모자란 역할은 앱 봇이 원본 시범 모드처럼 저절로 누르고, 팀 점수는 모두에게 같게. 참가 → 동작 연습(내 역할 확인) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #106">PR #106</a></li>
@@ -385,6 +386,18 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <div class="wrap"><table id="files">
     <tr><th>파일</th><th>무엇</th></tr>
   </table></div>
+
+  <h2>앱에서 해 본 것 (2026-11-26 · 다시 확인)</h2>
+  <style>.appshots{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin:10px 0 18px}.appshots figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px}.appshots img{width:100%;border-radius:6px;display:block}.appshots figcaption{font-size:13px;margin-top:6px;font-weight:500}</style>
+  <p>맥 Unity 에디터 <code>SessionTest</code> Play, 가지 <code>claude/fixes-1126</code>(PR #138)에 최신 main을 합친 55aa86e, <b>연습 판</b>(기록·순위에 안 올림). 폰은 실물이 아니라 앱이 여는 폰 페이지를 브라우저로 열고 W3C 정의대로 기울기·중력 값과 누르기를 넣었습니다(폰 페이지 → 폰 서버 → 해석기 → 판정은 실제 코드).</p>
+  <ul>
+    <li>⚠️ <b>문제</b>: 정원 4·최소 4·봇 채우기라, 첫 아이가 참가하자마자 로비에서 봇 3이 자리를 채움(<code>TeamBots.Tick</code>). 정원 셈에 봇이 들어가(<code>ParticipantRoster.IsFull</code>) <b>두 번째 아이부터 참가하지 못함</b>(<code>SessionRunner</code> 「!Roster.IsFull」). 흉내 폰 B가 실제로 막힘. 교실에서 4명이 폰을 들면 1명 + 봇 3으로만 시작됨.</li>
+    <li>폰 A + 봇 셋: 자기 역할 차례에 0.4초 꾹 누르면 「맞음」, 봇과 함께 폭탄 2개 해체(틀림 0). 짧게 톡(0.12초)은 「누르기」로 안 들어감 — 안내대로 길게 눌러야 함.</li>
+  </ul>
+  <div class="appshots">
+    <figure><img src="img/g009-coop-mission-app1126-1.jpg" alt="⚠️ 폰 2대 접속인데 「4/4 자리가 다 찼습니다 — P1 A · 봇 셋」" loading="lazy"><figcaption>⚠️ 폰 2대 접속인데 「4/4 자리가 다 찼습니다 — P1 A · 봇 셋」</figcaption></figure>
+    <figure><img src="img/g009-coop-mission-app1126-2.jpg" alt="폰 A + 봇 셋으로 해체 진행" loading="lazy"><figcaption>폰 A + 봇 셋으로 해체 진행</figcaption></figure>
+  </div>
 
   <h2>검증한 것과 안 한 것</h2>
   <ul>

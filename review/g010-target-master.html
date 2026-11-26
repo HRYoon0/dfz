@@ -276,6 +276,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-26 22:30</span><span>앱에서 다시 확인(맥 에디터 · 흉내 장치, 연습 판) — 두 폰 참가 → 연습(기울여 조준선 움직이고 꾹 누르기) 통과하자 스스로 시작 → 팀마다 3발씩 차례. / 기울이면 조준선이 그쪽으로(앞 = 위), 누르면 그 자리에 쏘고 기록(자리·점수)이 남음. / 확인 못 함: 과녁 맞힘 점수 — 과녁이 사인 곡선으로 움직여 흉내로 따라 조준하지 못함(11발 모두 0점). / 디자인: 오른쪽 「하늘 팀」 안내 상자 왼쪽 파란 세로 띠 — 「한쪽 색 띠」 꼴, 고칠 것.</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 한 번 쏠 조준 시간을 고정(끝나면 조준선 자리로 저절로 쏨, 남은 초 표시). 「게임 다듬기 → 난이도」로 쉬움 10초·과녁 1.25배 / 보통 10초 / 어려움 5초·0.75배. 2·3·4팀은 로비에서 카드 한 장으로 묶음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-17 20:38</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 웹 통로가 폰 기울기·단추를 넘겨 같은 규칙을 옮길 수 있다(설정은 기본값 고정, 팀 수는 앱). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #107">PR #107</a></li>
 <li><span class="when">2026-11-17 20:38</span><span>처음 변환 — 입력은 회원님 결정 「폰 기울여 조준 + 단추로 쏘기」(G015와 같은 조작), 나머지는 원본대로: 2·3·4팀이 번갈아 시도를 이어서, 라운드 3·5·시도 2·3·5·과녁 움직임 0~3, 과녁 움직임·크기·고리 점수 10·7·5·3 그대로. 시도마다 팀 안 사수가 돌아가고, 사람 없는 팀·봇은 원본 시범 입력, 쏜 뒤 0.9초 뒤 다음 시도. 참가 → 동작 연습(조준 연습) → 3초 → 경기</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #107">PR #107</a></li>
@@ -394,6 +395,19 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <div class="wrap"><table id="files">
     <tr><th>파일</th><th>무엇</th></tr>
   </table></div>
+
+  <h2>앱에서 해 본 것 (2026-11-26 · 다시 확인)</h2>
+  <style>.appshots{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;margin:10px 0 18px}.appshots figure{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px}.appshots img{width:100%;border-radius:6px;display:block}.appshots figcaption{font-size:13px;margin-top:6px;font-weight:500}</style>
+  <p>맥 Unity 에디터 <code>SessionTest</code> Play, 가지 <code>claude/fixes-1126</code>(PR #138)에 최신 main을 합친 55aa86e, <b>연습 판</b>(기록·순위에 안 올림). 폰은 실물이 아니라 앱이 여는 폰 페이지를 브라우저로 열고 W3C 정의대로 기울기·중력 값과 누르기를 넣었습니다(폰 페이지 → 폰 서버 → 해석기 → 판정은 실제 코드).</p>
+  <ul>
+    <li>두 폰 참가 → 연습(기울여 조준선 움직이고 꾹 누르기) 통과하자 스스로 시작 → 팀마다 3발씩 차례.</li>
+    <li>기울이면 조준선이 그쪽으로(앞 = 위), 누르면 그 자리에 쏘고 기록(자리·점수)이 남음.</li>
+    <li>확인 못 함: 과녁 맞힘 점수 — 과녁이 사인 곡선으로 움직여 흉내로 따라 조준하지 못함(11발 모두 0점).</li>
+    <li>디자인: 오른쪽 「하늘 팀」 안내 상자 왼쪽 파란 세로 띠 — 「한쪽 색 띠」 꼴, 고칠 것.</li>
+  </ul>
+  <div class="appshots">
+    <figure><img src="img/g010-target-master-app1126-1.jpg" alt="하늘 팀 차례 — 조준선, 왼쪽 안내 상자의 세로 띠" loading="lazy"><figcaption>하늘 팀 차례 — 조준선, 왼쪽 안내 상자의 세로 띠</figcaption></figure>
+  </div>
 
   <h2>검증한 것과 안 한 것</h2>
   <ul>
