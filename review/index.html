@@ -196,6 +196,14 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   // 내가 보낸 요청의 고치기 열쇠 — 이 브라우저에만 있다(2026-11-26 「수정하거나 삭제하고 싶은데」)
   function keys(){ try { return JSON.parse(localStorage.getItem('dfz-req-keys') || '{}'); } catch (e) { return {}; } }
   function keep(id, key){ var k = keys(); k[id] = key; localStorage.setItem('dfz-req-keys', JSON.stringify(k)); }
+  // 옛 요청 열쇠 받기 링크(#claim=…) — 열쇠는 # 뒤라 서버로 안 가고, 받은 뒤 주소창에서 지운다(2026-11-26)
+  (function(){ var m = /[#&]claim=([A-Za-z0-9_-]+)/.exec(location.hash); if (!m) return;
+    try { var got = JSON.parse(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))), k = keys(), n = 0;
+      Object.keys(got).forEach(function(id){ if (/^[a-f0-9]{12}$/.test(id) && /^[a-f0-9-]{36}$/.test(got[id])) { k[id] = got[id]; n++; } });
+      localStorage.setItem('dfz-req-keys', JSON.stringify(k));
+      if (n) setTimeout(function(){ alert('보내신 수정 요청 ' + n + '건을 이 브라우저에서 고치거나 지울 수 있게 됐어요.'); }, 300);
+    } catch (e) {}
+    history.replaceState(null, '', location.pathname + location.search); })();
   function post(body, ms){ return fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }, ms)
     .then(function(r){ if (!r || !r.ok) throw new Error(r && r.error || 'fail'); return r; }); }
   function why(err){ var w = String(err.message);
