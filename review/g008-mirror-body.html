@@ -276,6 +276,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-26 22:45</span><span>카드 한쪽 색 띠 없앰 — 둘레 전체 같은 색 테두리(c61d186, main 합친 acad5fb: 컴파일 오류 0 · EditMode 6083/6094, 맥 전용 7건 제외). 맥 에디터에서 경기 화면 확인</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-26 22:30</span><span>앱에서 다시 확인(맥 에디터 · 흉내 장치, 연습 판) — 두 명 참가 → 연습 3단계(전신 보이기 · 반짝반짝 별 · ㄴ자) → 카드 10장(관찰 3초 → 따라 하기 → 결과). / 카드 좌표대로 선 사람은 10장 모두 성공(평균 88%), 2번 카드에서 일부러 다른 자세를 한 사람은 그 장만 실패(9/10).</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-26 12:30</span><span>수정 요청 반영(남은 것) — 「거울 나라」에서 「아직」 때 따라 하고 「지금」까지 버틴 자세도 맞음으로 — 판정 창이 열릴 때 지금도 그 자세면 카메라가 동작을 한 번 더 냄(풀었으면 안 남). 실험 0점 → 12점(PR #138 세 번째 커밋)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-26 10:50</span><span>수정 요청 반영 — 동작 연습·경기의 사람 인형을 테두리·둥근 마디·옷·머리카락·얼굴이 있는 아이 인형으로 다시 그림(판정 그대로). 「지금! 스쿼트」·「아직/스쿼트」 겹침 그림은 G008이 아니라 주개발자 게임 「거울 나라」였다 — 같은 PR에서 겹침·안내 글 정렬을 공용 화면으로 고침. 「동작 익히기가 반응하지 않아요」는 맥 Unity에서 가짜 카메라로 재현해 원인을 찾음 — 발목이 화면에 안 보이면 앉기가 한 번도 안 나던 공용 판정을 무릎으로도 잡게 고침</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
@@ -405,8 +406,10 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <ul>
     <li>두 명 참가 → 연습 3단계(전신 보이기 · 반짝반짝 별 · ㄴ자) → 카드 10장(관찰 3초 → 따라 하기 → 결과).</li>
     <li>카드 좌표대로 선 사람은 10장 모두 성공(평균 88%), 2번 카드에서 일부러 다른 자세를 한 사람은 그 장만 실패(9/10).</li>
+    <li>디자인: 사람 카드 위 색 띠 — 「한쪽 색 띠」 꼴 → <b>고침</b>(PR #138 c61d186): 둘레 전체 같은 색 테두리.</li>
   </ul>
   <div class="appshots">
+    <figure><img src="img/g008-mirror-body-app1126-stripe.jpg" alt="색 띠 고친 뒤 — 사람 카드 둘레 전체 자리 색 테두리" loading="lazy"><figcaption>색 띠 고친 뒤 — 사람 카드 둘레 전체 자리 색 테두리</figcaption></figure>
     <figure><img src="img/g008-mirror-body-app1126-1.jpg" alt="「오른발로 선 홍학」 — 따라 하면 100%, 다른 자세는 25%" loading="lazy"><figcaption>「오른발로 선 홍학」 — 따라 하면 100%, 다른 자세는 25%</figcaption></figure>
     <figure><img src="img/g008-mirror-body-app1126-2.jpg" alt="10장 끝 — 연습 끝" loading="lazy"><figcaption>10장 끝 — 연습 끝</figcaption></figure>
   </div>

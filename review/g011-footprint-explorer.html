@@ -276,6 +276,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-26 22:45</span><span>카드 한쪽 색 띠 없앰 — 둘레 전체 같은 색 테두리(c61d186, main 합친 acad5fb: 컴파일 오류 0 · EditMode 6083/6094, 맥 전용 7건 제외). 맥 에디터에서 경기 화면 확인</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-26 22:30</span><span>앱에서 다시 확인(맥 에디터 · 흉내 장치, 연습 판) — 카메라판: 연습(만세 = 위 · 앉기 = 아래 · 옆걸음 좌우) → 판 3까지 두 팀 번갈아 길 따라가기, 기록 450 · 445 · 375(일부러 한 번 틀려 감점) · 440 · 425. 틀리면 출발로 돌아감. / 폰판: 연습(기울였다 돌아오기 네 방향) → 경기에서 앞으로 기울이면 위 칸, 오른쪽이면 오른쪽 칸 — 다섯 걸음 틀림 없이 끝. / 디자인: 팀 점수판 위쪽 색 띠 — 「한쪽 색 띠」 꼴, 고칠 것.</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #138">PR #138</a></li>
 <li><span class="when">2026-11-22 21:40</span><span>수정 요청 반영 — 폰 기울기 문턱을 0.5 → 0.3(약 17°)으로 낮추고, 쉬는 손이 한쪽으로 치우쳐 있어도 그 자리를 가운데로 따라가 다음 칸이 막히지 않게. 2·3·4팀 × 폰·카메라 6장은 로비에서 카드 한 장으로 묶음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #130">PR #130</a></li>
 <li><span class="when">2026-11-17 21:33</span><span>HTML 판(붙여넣기용)도 원본 형식 그대로 — 폰 기울기로 같은 규칙(웹에 오는 카메라 동작으로는 좌우를 받을 수 없어 폰만, 설정은 기본값 고정, 팀 수는 앱). 앱 웹 게임 검사기 통과, 앱 안 실행(Windows)은 못 함</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #108">PR #108</a></li>
@@ -411,9 +412,10 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <ul>
     <li>카메라판: 연습(만세 = 위 · 앉기 = 아래 · 옆걸음 좌우) → 판 3까지 두 팀 번갈아 길 따라가기, 기록 450 · 445 · 375(일부러 한 번 틀려 감점) · 440 · 425. 틀리면 출발로 돌아감.</li>
     <li>폰판: 연습(기울였다 돌아오기 네 방향) → 경기에서 앞으로 기울이면 위 칸, 오른쪽이면 오른쪽 칸 — 다섯 걸음 틀림 없이 끝.</li>
-    <li>디자인: 팀 점수판 위쪽 색 띠 — 「한쪽 색 띠」 꼴, 고칠 것.</li>
+    <li>디자인: 팀 점수판 위쪽 색 띠 — 「한쪽 색 띠」 꼴 → <b>고침</b>(PR #138 c61d186): 둘레 전체 같은 색 테두리·색 점.</li>
   </ul>
   <div class="appshots">
+    <figure><img src="img/g011-footprint-explorer-app1126-stripe.jpg" alt="색 띠 고친 뒤 — 팀 카드 둘레 전체 테두리(차례인 팀은 굵게)" loading="lazy"><figcaption>색 띠 고친 뒤 — 팀 카드 둘레 전체 테두리(차례인 팀은 굵게)</figcaption></figure>
     <figure><img src="img/g011-footprint-explorer-app1126-1.jpg" alt="카메라판 — 하늘 탐험대 차례, 발자국 길 따라가기" loading="lazy"><figcaption>카메라판 — 하늘 탐험대 차례, 발자국 길 따라가기</figcaption></figure>
   </div>
 
