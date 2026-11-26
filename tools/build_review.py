@@ -385,6 +385,7 @@ def build_index():
 <main>
 <h1>디지털 핏 존 변환 기록</h1>
 <p class="lead">여러 사람이 만든 게임을 <a href="{GH}">{E(REPO)}</a>의 C# 형식(판정 → 감독 → 무대)으로 옮긴 기록입니다. 게임마다 작업 브랜치(<code>claude/…</code>)를 기준 브랜치 <code>{E(DATA['base'])}</code>에서 만들고, <code>{E(DATA['base'])}</code> 대상 PR로 올려 주개발자가 검토·병합합니다(2026-11-06부터 — 그전 기준은 <code>feature/stage-1-4a</code>). 날짜별에는 그날 변환하거나 고친 게임만 나옵니다. 게임 이름을 누르면 그 게임의 확인 페이지(고친 기록, 달라진 것, 파일, 검증, 앱에 붙이는 길, 체험판)가 열립니다. 고칠 점이 있으면 게임 줄의 「수정 요청」을 눌러 보내 주세요 — 요청과 답글은 그 게임 줄 아래 「수정 요청 ○건」을 누르면 댓글처럼 보입니다. 저장소 링크는 권한이 있는 사람에게만 열립니다.</p>
+<p class="lead"><b>병합 요청 전 확인 범위</b>(2026-11-26 정함): ① 맥 Unity로 Windows 대상 컴파일과 그 게임 검사 → ② 맥 에디터에서 앱의 시험 장치(카메라 골격)와 폰 페이지 흉내로 참가부터 결과까지 연습 판 한 판 → ③ 맥에서 Windows 테스트 실행본 빌드(3D 캐릭터가 들어갔는지까지 확인). 실물 폰·실물 카메라·Windows에서 실행·포털 실행은 하지 않으며, PR과 각 게임 페이지에 「확인하지 못한 것」으로 적습니다.</p>
 <div class="search"><input type="search" id="q" placeholder="게임 찾기 — 이름, 번호(G021), 만든 사람, 원본" aria-label="게임 찾기"><span class="count" id="q-count"></span></div>
 <h2>게임별 ({len(DATA['games'])}개)</h2>
 <ul class="log games">
