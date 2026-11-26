@@ -56,9 +56,8 @@ ul.log .note{color:var(--muted);font-size:14px;white-space:nowrap}
 .card dd{margin:0;overflow-wrap:anywhere}
 .empty{color:var(--muted)}
 ul.games{gap:10px}
-ul.games li{grid-template-columns:11.5em minmax(0,1fr) auto auto;align-items:center;gap:6px 24px;padding:16px 22px 16px 18px;border-left:6px solid var(--line);border-radius:12px}
-ul.games li.st-app{border-left-color:var(--lime)}
-ul.games li.st-pr{border-left-color:#FFD66B;background:#36475C}
+ul.games li{grid-template-columns:11.5em minmax(0,1fr) auto auto;align-items:center;gap:6px 24px;padding:16px 22px;border:1px solid var(--line);border-radius:12px}
+ul.games li.st-pr{background:#36475C}
 ul.games li:hover{border-color:#6A86A6}
 ul.games .stage{font-size:15px;font-weight:750;border-radius:999px;padding:6px 12px;text-align:center;white-space:nowrap;background:var(--bg);border:1.5px solid var(--line);color:var(--muted)}
 ul.games .stage.app{background:var(--lime);border-color:var(--lime);color:#13202F}
@@ -66,7 +65,7 @@ ul.games .stage.pr{background:#4A4430;border-color:#FFD66B;color:#FFE29A}
 ul.games a.game{font-size:20px;font-weight:750;text-decoration:none}
 ul.games a.game:hover{text-decoration:underline}
 ul.games .sub{display:block;color:var(--muted);font-size:15px;margin-top:2px}
-ul.games .gnote{display:block;margin-top:6px;font-size:15px;line-height:1.5;color:#E8EEF6;background:#2B3A4E;border-left:3px solid #FFD66B;border-radius:6px;padding:6px 10px}
+ul.games .gnote{display:block;margin-top:6px;font-size:15px;line-height:1.5;color:#E8EEF6;background:#2B3A4E;border:1px solid #5C5436;border-radius:8px;padding:6px 10px}
 ul.games .gnote b{color:#FFE29A}
 ul.games .main .req-mark{display:inline-block;margin-top:6px;font-size:14px;border-radius:10px}
 ul.games .main .req-mark[hidden]{display:none}
@@ -121,7 +120,8 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 .req-pics .del{position:absolute;top:4px;right:4px;font:inherit;font-weight:700;font-size:13px;line-height:1;border:0;border-radius:999px;padding:5px 8px;background:rgba(10,16,26,.8);color:#fff;cursor:pointer}
 .req-dlg .pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:14px;color:var(--muted)}
 .req-dlg .pick button{font:inherit;font-weight:700;font-size:14px;border-radius:10px;padding:7px 14px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
-.req-reply{margin:8px 0 0 14px;padding:2px 0 2px 12px;border-left:3px solid var(--lime)}
+.req-reply{margin:8px 0 0 14px;padding:8px 12px;background:#2B3A4E;border:1px solid var(--line);border-radius:10px}
+.req-reply .who{color:var(--lime)}
 """
 
 # 수정 요청 — Apps Script 웹앱(tools/review-requests/Code.gs)이 구글 시트 「게임 템플릿 100」의 탭 「수정 요청」에 받는다.
