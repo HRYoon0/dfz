@@ -107,6 +107,13 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 .req-item .at{color:var(--muted);margin-left:8px}
 .req-item .st{margin-left:8px;font-weight:650;color:#13202F;background:var(--lime);border-radius:999px;padding:1px 10px}
 .req-item p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.req-item .ed{color:var(--muted);margin-left:6px;font-size:13px}
+.req-item .own{float:right;display:flex;gap:6px}
+.req-item .own button,.req-item .edit-row button{font:inherit;font-size:13px;font-weight:650;border-radius:8px;padding:2px 10px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.req-item .own button:hover,.req-item .edit-row button:hover{border-color:var(--lime)}
+.req-item textarea{display:block;width:100%;box-sizing:border-box;min-height:90px;margin-top:6px;font:inherit;font-weight:450;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.req-item .edit-row{display:flex;gap:6px;justify-content:flex-end;align-items:center;margin-top:6px}
+.req-item .edit-row .msg{margin-right:auto;color:#FFB4A8;font-size:13px}
 .req-pics{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .req-pics a,.req-pics .pic{position:relative;display:block}
 .req-pics img{display:block;max-height:160px;max-width:100%;border-radius:8px;border:1px solid var(--line);background:var(--bg)}
@@ -136,6 +143,33 @@ REQUEST_JS = """
   }
   // 받은 글은 남이 쓴 것이라 textContent로만 넣는다(태그를 적어 보내도 글자로 보인다)
   function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  // 내가 보낸 요청의 고치기 열쇠 — 이 브라우저에만 있다(2026-11-26 「수정하거나 삭제하고 싶은데」)
+  function keys(){ try { return JSON.parse(localStorage.getItem('dfz-req-keys') || '{}'); } catch (e) { return {}; } }
+  function keep(id, key){ var k = keys(); k[id] = key; localStorage.setItem('dfz-req-keys', JSON.stringify(k)); }
+  function post(body, ms){ return fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }, ms)
+    .then(function(r){ if (!r || !r.ok) throw new Error(r && r.error || 'fail'); return r; }); }
+  function why(err){ var w = String(err.message);
+    return w === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 해 주세요.' : w === 'bad-key' || w === 'gone' ? '이 요청은 여기서 고칠 수 없어요(이미 지웠거나 다른 브라우저에서 보낸 것).' : '저장하지 못했어요. 다시 해 주세요.'; }
+  function own(d, it, p){
+    var key = it.id && keys()[it.id]; if (!key) return;
+    var bar = el('span', 'own'), eb = el('button', '', '고치기'), db = el('button', '', '지우기'); eb.type = db.type = 'button';
+    bar.appendChild(eb); bar.appendChild(db); d.firstChild.prepend(bar);
+    eb.addEventListener('click', function(){
+      if (d.querySelector('textarea')) return;
+      var ta = el('textarea'), row = el('div', 'edit-row'), m = el('span', 'msg'), ok = el('button', '', '저장'), no = el('button', '', '취소');
+      ta.value = it.text; ta.maxLength = 1000; ok.type = no.type = 'button'; row.appendChild(m); row.appendChild(no); row.appendChild(ok);
+      p.hidden = true; p.after(ta); ta.after(row); ta.focus();
+      no.addEventListener('click', function(){ ta.remove(); row.remove(); p.hidden = false; });
+      ok.addEventListener('click', function(){ var t = ta.value.trim(); if (t.length < 2) { m.textContent = '고칠 점을 적어 주세요.'; return; }
+        ok.disabled = true; ok.textContent = '저장 중…';
+        post({ action: 'edit', id: it.id, key: key, text: t }).then(load).catch(function(err){ ok.disabled = false; ok.textContent = '저장'; m.textContent = why(err); }); });
+    });
+    db.addEventListener('click', function(){
+      if (!confirm('이 수정 요청을 지울까요? 페이지에서 사라집니다.')) return;
+      db.disabled = true; db.textContent = '지우는 중…';
+      post({ action: 'delete', id: it.id, key: key }).then(load).catch(function(err){ db.disabled = false; db.textContent = '지우기'; alert(why(err)); });
+    });
+  }
   // 요청 글과 답글을 댓글처럼 — 목록에서는 접어 두고, 게임 페이지에서는 펴 둔다
   function thread(slug, g){
     var req = document.querySelector('.req[data-slug="' + slug + '"]'); if (!req || !g || !g.items || !g.items.length) return;
@@ -145,8 +179,9 @@ REQUEST_JS = """
     box.appendChild(el('summary', '', '수정 요청 ' + g.items.length + '건'));
     g.items.forEach(function(it){
       var d = el('div', 'req-item'), h = el('div');
-      h.appendChild(el('span', 'who', it.name)); h.appendChild(el('span', 'at', it.at)); if (it.status) h.appendChild(el('span', 'st', it.status));
-      d.appendChild(h); d.appendChild(el('p', '', it.text));
+      h.appendChild(el('span', 'who', it.name)); h.appendChild(el('span', 'at', it.at)); if (it.edited) h.appendChild(el('span', 'ed', '(' + it.edited.slice(5) + ' 고침)'));
+      if (it.status) h.appendChild(el('span', 'st', it.status));
+      var p = el('p', '', it.text); d.appendChild(h); d.appendChild(p); own(d, it, p);
       if (it.images && it.images.length) { var ps = el('div', 'req-pics');
         it.images.forEach(function(id, i){ if (!/^[A-Za-z0-9_-]+$/.test(id)) return;
           var a = el('a'), im = el('img'); a.href = 'https://drive.google.com/file/d/' + id + '/view'; a.target = '_blank'; a.rel = 'noopener';
@@ -206,11 +241,10 @@ REQUEST_JS = """
     // text/plain — 브라우저가 사전 요청(OPTIONS)을 보내지 않게(Apps Script는 그것을 받지 못한다)
     if (pics.length) send.textContent = '그림 올리는 중…';
     var images = pics.map(function(d){ return { type: 'image/jpeg', data: d.split(',')[1] }; });
-    fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text, images: images }) },
+    post({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text, images: images },
       images.length ? 60000 : 15000)
       .then(function(r){
-        if (!r || !r.ok) throw new Error(r && r.error || 'fail');
+        if (r.id && r.key) keep(r.id, r.key);
         dlg.close(); load();
         mark(cur.slug, { count: 1, last: r.at, status: '' });
       })
@@ -231,7 +265,7 @@ REQUEST_DIALOG = """<dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h"
 <label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요 (화면 캡처는 여기에 붙여 넣어도 돼요)"></textarea></label>
 <div class="pick"><button type="button">그림 넣기</button><span>3장까지 · 글 칸에 Ctrl+V로 붙여 넣기</span><span class="pick-count"></span><input type="file" accept="image/*" multiple hidden></div>
 <div class="req-pics"></div>
-<p class="open-note">보낸 글·이름·그림은 이 페이지에 그대로 보입니다. 학생 얼굴이 나온 사진은 올리지 마세요.</p>
+<p class="open-note">보낸 글·이름·그림은 이 페이지에 그대로 보입니다. 학생 얼굴이 나온 사진은 올리지 마세요. 보낸 뒤에는 같은 브라우저에서 「고치기」·「지우기」를 할 수 있습니다.</p>
 <div class="row"><span class="msg" role="status"></span><button type="button" class="cancel">취소</button><button type="submit" class="send">보내기</button></div>
 </form>
 </dialog>"""

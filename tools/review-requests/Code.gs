@@ -8,6 +8,9 @@
  *   답 { ok, games: { slug: { count, last, status, items: [{ at, name, text, status, reply }] } } }.
  * - GET ?action=prs: 게임마다 변환 PR 단계(app·merged·open·closed)와 수정 PR — GitHub 읽기 전용 토큰(스크립트 속성 GITHUB_TOKEN), 5분 캐시.
  * - 답글은 시트 「답글」 칸(H열)에 적는다 — 페이지에서 그 요청 아래에 붙어 보인다.
+ * - POST { action: 'edit'|'delete', id, key, text? }: 보낸 사람이 자기 요청을 고치거나 지운다(2026-11-26 김권수 선생님
+ *   「수정 요청 한것을 수정하거나 삭제하고 싶은데」). 만들 때 열쇠를 돌려주고 시트에는 열쇠의 SHA-256만 둔다(K열) —
+ *   그 브라우저(localStorage)만 열쇠를 안다. 지우기는 「지운 시각」(M열)만 적는 숨김이라 시트에는 남는다.
  *
  * ★ 익명 웹앱(실행: 나 / 액세스: 모든 사용자)이라 내장 SpreadsheetApp 대신 처음부터 고급 Sheets 서비스(Sheets v4)를 쓴다.
  * ★ 쓰기는 LockService로 줄 세우고, 조회는 CacheService로 20초 묶는다(쓰면 지운다).
@@ -16,9 +19,10 @@
  */
 var SHEET_ID = '1YYFMoVyPWgdroDd1h4kDmHMoguyhsi9WuaZaH_my5xw';
 var TAB = '수정 요청';
-var HEAD = ['요청 시각', '게임 ID', '게임 제목', '요청한 사람', '수정 요청 내용', '확인 페이지', '처리 상태', '답글', '그림'];
-var LIST_KEY = 'list-v3';
-var TAB_KEY = 'tab-ok-v3';   // v3 — 「그림」 머리칸
+var HEAD = ['요청 시각', '게임 ID', '게임 제목', '요청한 사람', '수정 요청 내용', '확인 페이지', '처리 상태', '답글', '그림',
+            '요청 ID', '고치기 열쇠(해시)', '고친 시각', '지운 시각'];
+var LIST_KEY = 'list-v4';
+var TAB_KEY = 'tab-ok-v4';   // v4 — 고치기·지우기 칸(J~M)
 var LIMIT_PER_10MIN = 30;
 var MAX_IMAGES = 3;
 var MAX_IMAGE_CHARS = 3500000;   // base64 글자 수 — 그림 한 장 약 2.6MB까지(페이지가 긴 변 1600px JPEG로 줄여 보내 보통 0.3MB 안팎)
@@ -46,7 +50,7 @@ function buildRow(p, at) {
     if (typeof im.data !== 'string' || !/^[A-Za-z0-9+\/=]+$/.test(im.data)) return { ok: false, error: 'bad-image' };
     if (im.data.length > MAX_IMAGE_CHARS) return { ok: false, error: 'image-too-big' };
   }
-  return { ok: true, row: [at, slug, title, name || '(이름 없음)', text, page, '', '', ''], images: images };
+  return { ok: true, row: [at, slug, title, name || '(이름 없음)', text, page, '', '', '', '', '', '', ''], images: images };
 }
 
 /** 시트 줄들 → 게임마다 요약. 순수 함수(검사용). 시각은 「yyyy-MM-dd HH:mm」 글이라 글자 비교가 시간 비교다. */
@@ -55,15 +59,45 @@ function summarize(rows) {
   for (var i = 0; i < rows.length; i++) {
     var r = rows[i] || [];
     var slug = String(r[1] || '');
-    if (!slug) continue;
+    if (!slug || r[12]) continue;   // 지운 요청(M열)은 안 보인다
     var at = String(r[0] || '');
     var g = games[slug] || (games[slug] = { count: 0, last: '', status: '', items: [] });
     g.count++;
     g.items.push({ at: at, name: String(r[3] || ''), text: String(r[4] || ''), status: String(r[6] || ''), reply: String(r[7] || ''),
-                   images: imageIds(r[8]) });
+                   images: imageIds(r[8]), id: String(r[9] || ''), edited: String(r[11] || '') });
     if (at >= g.last) { g.last = at; g.status = String(r[6] || ''); }
   }
   return games;
+}
+
+/**
+ * 고치기·지우기 요청 검사 — 맞으면 { ok, index(rows 차례), text? }. 순수 함수(검사용, hash는 넘겨받는다).
+ * 열쇠가 없는 옛 요청(K열 빈칸)은 고칠 수 없다.
+ */
+function checkChange(rows, p, hash) {
+  if (!p || (p.action !== 'edit' && p.action !== 'delete')) return { ok: false, error: 'bad-action' };
+  var id = String(p.id || ''), key = String(p.key || '');
+  if (!/^[a-f0-9]{12}$/.test(id) || !/^[a-f0-9-]{36}$/.test(key)) return { ok: false, error: 'bad-key' };
+  var text = '';
+  if (p.action === 'edit') {
+    text = String(p.text || '').trim();
+    if (text.length < 2) return { ok: false, error: 'empty-text' };
+    if (text.length > 1000) return { ok: false, error: 'too-long' };
+  }
+  for (var i = 0; i < rows.length; i++) {
+    var r = rows[i] || [];
+    if (String(r[9] || '') !== id) continue;
+    if (r[12]) return { ok: false, error: 'gone' };
+    if (!r[10] || String(r[10]) !== hash(key)) return { ok: false, error: 'bad-key' };
+    return { ok: true, index: i, text: text };
+  }
+  return { ok: false, error: 'gone' };
+}
+
+function sha256(s) {
+  return Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, s, Utilities.Charset.UTF_8)
+    .map(function (b) { return ((b + 256) % 256).toString(16); })
+    .map(function (h) { return h.length < 2 ? '0' + h : h; }).join('');
 }
 
 /** 「그림」 칸의 드라이브 주소들 → 파일 ID 목록. 순수 함수(검사용). */
@@ -175,6 +209,7 @@ function doPost(e) {
   var p;
   try { p = JSON.parse(e.postData.contents); } catch (err) { return json({ ok: false, error: 'bad-body' }); }
   var at = Utilities.formatDate(new Date(), 'Asia/Seoul', 'yyyy-MM-dd HH:mm');
+  if (p && (p.action === 'edit' || p.action === 'delete')) return change(p, at);
   var built = buildRow(p, at);
   if (!built.ok) return json(built);
   var lock = LockService.getScriptLock();
@@ -191,8 +226,35 @@ function doPost(e) {
     } catch (err) {
       return json({ ok: false, error: 'image-failed' });
     }
+    var id = Utilities.getUuid().replace(/-/g, '').slice(0, 12), key = Utilities.getUuid().toLowerCase();
+    built.row[9] = id;
+    built.row[10] = sha256(key);
     Sheets.Spreadsheets.Values.append({ values: [built.row] }, SHEET_ID, "'" + TAB + "'!A1",
       { valueInputOption: 'RAW', insertDataOption: 'INSERT_ROWS' });
+    CacheService.getScriptCache().remove(LIST_KEY);
+    return json({ ok: true, at: at, id: id, key: key });
+  } catch (err) {
+    return json({ ok: false, error: 'write-failed' });
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** 자기 요청 고치기(E·L열)·지우기(M열). 줄을 지우지 않아 시트의 다른 줄 번호가 밀리지 않는다. */
+function change(p, at) {
+  var lock = LockService.getScriptLock();
+  try { lock.waitLock(15000); } catch (err) { return json({ ok: false, error: 'busy' }); }
+  try {
+    if (!allowOne()) return json({ ok: false, error: 'rate-limit' });
+    var c = checkChange(readRows(), p, sha256);
+    if (!c.ok) return json(c);
+    var row = c.index + 2;
+    if (p.action === 'edit') {
+      Sheets.Spreadsheets.Values.update({ values: [[c.text]] }, SHEET_ID, "'" + TAB + "'!E" + row, { valueInputOption: 'RAW' });
+      Sheets.Spreadsheets.Values.update({ values: [[at]] }, SHEET_ID, "'" + TAB + "'!L" + row, { valueInputOption: 'RAW' });
+    } else {
+      Sheets.Spreadsheets.Values.update({ values: [[at]] }, SHEET_ID, "'" + TAB + "'!M" + row, { valueInputOption: 'RAW' });
+    }
     CacheService.getScriptCache().remove(LIST_KEY);
     return json({ ok: true, at: at });
   } catch (err) {
@@ -211,13 +273,13 @@ function ensureTab() {
   if (!has) {
     Sheets.Spreadsheets.batchUpdate({ requests: [{ addSheet: { properties: { title: TAB, gridProperties: { frozenRowCount: 1 } } } }] }, SHEET_ID);
   }
-  Sheets.Spreadsheets.Values.update({ values: [HEAD] }, SHEET_ID, "'" + TAB + "'!A1:I1", { valueInputOption: 'RAW' });
+  Sheets.Spreadsheets.Values.update({ values: [HEAD] }, SHEET_ID, "'" + TAB + "'!A1:M1", { valueInputOption: 'RAW' });
   cache.put(TAB_KEY, '1', 21600);
 }
 
 function readRows() {
   try {
-    var res = Sheets.Spreadsheets.Values.get(SHEET_ID, "'" + TAB + "'!A2:I");
+    var res = Sheets.Spreadsheets.Values.get(SHEET_ID, "'" + TAB + "'!A2:M");
     return res.values || [];
   } catch (err) {
     if (String(err).indexOf('Unable to parse range') >= 0) return [];   // 탭이 아직 없다 — 요청 0건
