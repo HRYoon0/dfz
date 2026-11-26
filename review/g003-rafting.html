@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G003 협동 래프팅 팀 챌린지 — C# 이식 확인</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --bg:#202B3D; --surface:#30435A; --line:#46607E; --ink:#F4F8FF; --muted:#CCDCE9;
+  --lime:#D1F58E; --coral:#FF8A7A; --sun:#FFD66B;
+  --font:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,'Malgun Gothic','Apple SD Gothic Neo','Noto Sans KR',sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);font-weight:450;line-height:1.65;font-size:16px}
+main{max-width:1040px;margin:0 auto;padding:32px 16px 64px}
+h1{font-size:clamp(28px,4vw,40px);line-height:1.2;margin:0 0 8px;font-weight:800}
+h2{font-size:22px;margin:44px 0 12px;font-weight:750;padding-top:8px;border-top:1px solid var(--line)}
+p{margin:0 0 12px}
+a{color:var(--lime)}
+.lead{color:var(--muted);max-width:46em}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 0}
+.chip{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:14px;font-weight:600}
+.chip b{color:var(--lime)}
+code{font-family:Consolas,'D2Coding',Menlo,monospace;font-size:.92em;background:#18212F;border:1px solid var(--line);border-radius:5px;padding:0 5px}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th,td{text-align:left;vertical-align:top;padding:9px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-size:13px;font-weight:700}
+.wrap{overflow-x:auto}
+.demo{background:#141C29;border:1px solid var(--line);border-radius:14px;padding:12px}
+.demo canvas{display:block;width:100%;aspect-ratio:16/9;border-radius:10px;background:#1B2536;touch-action:none;cursor:pointer}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px}
+.controls button{font:inherit;font-weight:650;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:7px 14px;cursor:pointer}
+.controls button[aria-pressed="true"]{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.score{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;font-size:14px;font-weight:600}
+.score span{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:2px 10px;font-variant-numeric:tabular-nums}
+.note{color:var(--muted);font-size:14px}
+.ok{color:var(--lime);font-weight:700}
+.no{color:var(--coral);font-weight:700}
+ol li,ul li{margin-bottom:6px}
+.back{display:inline-block;margin-bottom:14px;font-weight:650;text-decoration:none}
+ul.log{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.log li{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 14px;align-items:baseline;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:9px 14px}
+ul.log .when{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap}
+ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
+@media (max-width:640px){ul.log li{grid-template-columns:minmax(0,1fr)}}
+
+.stagewrap{position:relative}
+.start{position:absolute;inset:0;border-radius:10px;background:#1B2536;display:grid;grid-template-columns:1.15fr .85fr;gap:20px;padding:22px 26px;overflow:auto;align-content:start}
+.start[hidden]{display:none}
+.start .eyebrow{color:var(--lime);font-weight:800;font-size:13px;letter-spacing:1px}
+.start h3{font-size:clamp(22px,2.6vw,32px);margin:4px 0 6px;font-weight:800;line-height:1.2}
+.start .lead2{margin:0 0 8px;color:var(--muted);font-size:15px;line-height:1.55}
+.start .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.start .tags span{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:650}
+.start .how{background:#141C29;border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.start .how b{font-size:14px}
+.start ol{margin:6px 0 0;padding-left:20px;font-size:15px;line-height:1.5}
+.start ol li{margin-bottom:3px}
+.start .set{display:grid;gap:12px;align-content:start}
+.start .set h4{margin:0;font-size:17px;font-weight:800}
+.start .opt>span{display:block;font-weight:700;font-size:14px;margin-bottom:4px;color:var(--muted)}
+.start .opt .controls{margin:0}
+.start .go{font:inherit;font-weight:800;font-size:18px;background:var(--lime);color:#13202F;border:0;border-radius:12px;padding:12px 18px;cursor:pointer}
+.start .safe{font-size:13px;color:var(--muted);background:#141C29;border:1px solid var(--line);border-radius:10px;padding:8px 10px;line-height:1.5;margin:0}
+@media (max-width:760px){.start{position:static;grid-template-columns:1fr;margin-bottom:10px}}
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="./">← 변환 기록 전체</a>
+  <h1>G003 협동 래프팅 팀 챌린지 — C# 이식 확인</h1>
+  <p class="lead">HTML 게임 「협동 래프팅 팀 챌린지」(G003 v02, 회원님이 주신 HTML 파일)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 네 명이 한 배에 타서 왼쪽 노 둘·오른쪽 노 둘을 저어 급류를 내려가며 바위는 피하고 별은 모으는 팀 게임입니다. 원본이 제시한 대로 <b>사람마다 키 하나(A·D·J·L) → 사람마다 폰 단추 하나</b>로 옮겼고, 회원님 결정대로 팀이 차례로 타던 것을 <b>모든 팀이 같은 코스를 동시에</b> 타도록 바꿨습니다. 숫자는 모두 원본 그대로입니다. 주개발자 게임과 같은 흐름(참가 → 동작 연습 → 시작)을 넣었고, 앱 「웹 게임」에 붙여 넣는 <b>HTML 판</b>도 함께 올렸습니다. <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b></p>
+  <div class="chips">
+    <span class="chip">브랜치 <b>claude/g002-g003-g006</b></span>
+    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/141">PR #141</a> 검토 대기</span>
+    <span class="chip">새 파일 <b>18개</b>(+ .meta 11개) · 고친 파일 <b>0개</b></span>
+    <span class="chip">맥 Unity 컴파일 오류 0 · Rafting 47/47</span>
+  </div>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g002-g003-g006">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g002-g003-g006">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-g003-g006/docs/progress/2026-11-26-g003-rafting-native.md">진행 기록</a></p>
+
+  <!--@REQUEST@-->
+<style>
+.req{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:6px}
+.req-btn{font:inherit;font-weight:700;font-size:14px;background:var(--bg);color:var(--ink);border:1px solid var(--lime);border-radius:999px;padding:5px 14px;cursor:pointer}
+.req-btn:hover{background:var(--lime);color:#13202F}
+.req-mark{font-size:14px;font-weight:650;color:#13202F;background:#FFD66B;border-radius:999px;padding:3px 12px}
+.req-mark.done{background:var(--lime)}
+dialog.req-dlg{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:14px;padding:20px;width:min(520px,92vw)}
+dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
+.req-dlg h3{margin:0 0 4px}
+.req-dlg label{display:grid;gap:4px;margin-top:12px;font-weight:650;font-size:14px;color:var(--muted)}
+.req-dlg input,.req-dlg textarea{font:inherit;font-weight:450;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.req-dlg textarea{min-height:130px;resize:vertical}
+.req-dlg .row{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;align-items:center}
+.req-dlg .row button{font:inherit;font-weight:700;border-radius:10px;padding:8px 16px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.req-dlg .row button.send{background:var(--lime);color:#13202F;border-color:var(--lime)}
+.req-dlg .msg{margin-right:auto;font-size:14px;color:#FFB4A8}
+.req-dlg .open-note{margin:10px 0 0;font-size:14px;color:var(--muted)}
+.req-thread{grid-column:1/-1;margin:8px 0 0;font-size:14px;font-weight:500}
+.req-thread summary{cursor:pointer;color:var(--muted);font-weight:650}
+.req-item{margin:8px 0 0;padding:10px 12px;background:var(--bg);border:1px solid var(--line);border-radius:10px}
+.req-item .who{font-weight:700}
+.req-item .at{color:var(--muted);margin-left:8px}
+.req-item .st{margin-left:8px;font-weight:650;color:#13202F;background:var(--lime);border-radius:999px;padding:1px 10px}
+.req-item p{margin:4px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.req-item .ed{color:var(--muted);margin-left:6px;font-size:13px}
+.req-item .own{float:right;display:flex;gap:6px}
+.req-item .own button,.req-item .edit-row button{font:inherit;font-size:13px;font-weight:650;border-radius:8px;padding:2px 10px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.req-item .own button:hover,.req-item .edit-row button:hover{border-color:var(--lime)}
+.req-item textarea{display:block;width:100%;box-sizing:border-box;min-height:90px;margin-top:6px;font:inherit;font-weight:450;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+.req-item .edit-row{display:flex;gap:6px;justify-content:flex-end;align-items:center;margin-top:6px}
+.req-item .edit-row .msg{margin-right:auto;color:#FFB4A8;font-size:13px}
+.req-pics{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.req-pics a,.req-pics .pic{position:relative;display:block}
+.req-pics img{display:block;max-height:160px;max-width:100%;border-radius:8px;border:1px solid var(--line);background:var(--bg)}
+.req-dlg .req-pics img{max-height:90px}
+.req-pics .del{position:absolute;top:4px;right:4px;font:inherit;font-weight:700;font-size:13px;line-height:1;border:0;border-radius:999px;padding:5px 8px;background:rgba(10,16,26,.8);color:#fff;cursor:pointer}
+.req-dlg .pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:14px;color:var(--muted)}
+.req-dlg .pick button{font:inherit;font-weight:700;font-size:14px;border-radius:10px;padding:7px 14px;cursor:pointer;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+.req-reply{margin:8px 0 0 14px;padding:8px 12px;background:#2B3A4E;border:1px solid var(--line);border-radius:10px}
+.req-reply .who{color:var(--lime)}
+</style>
+<div class="req" data-slug="g003-rafting" data-title="G003 협동 래프팅 팀 챌린지" data-page="g003-rafting.html" style="margin:14px 0 0"><button type="button" class="req-btn">이 게임 수정 요청</button><span class="req-mark" hidden></span></div>
+<dialog class="req-dlg" id="req-dlg" aria-labelledby="req-h">
+<form method="dialog">
+<h3 id="req-h">수정 요청</h3>
+<div class="game" style="font-weight:700"></div>
+<label>요청한 사람(선택)<input name="who" maxlength="40" autocomplete="name"></label>
+<label>고칠 점<textarea name="note" maxlength="1000" required placeholder="무엇을 어떻게 고치면 좋을지 적어 주세요 (화면 캡처는 여기에 붙여 넣어도 돼요)"></textarea></label>
+<div class="pick"><button type="button">그림 넣기</button><span>3장까지 · 글 칸에 Ctrl+V로 붙여 넣기</span><span class="pick-count"></span><input type="file" accept="image/*" multiple hidden></div>
+<div class="req-pics"></div>
+<p class="open-note">보낸 글·이름·그림은 이 페이지에 그대로 보입니다. 학생 얼굴이 나온 사진은 올리지 마세요. 보낸 뒤에는 같은 브라우저에서 「고치기」·「지우기」를 할 수 있습니다.</p>
+<div class="row"><span class="msg" role="status"></span><button type="button" class="cancel">취소</button><button type="submit" class="send">보내기</button></div>
+</form>
+</dialog>
+<script>
+(function(){
+  var URL_ = "https://script.google.com/macros/s/AKfycbwRpKn6QXcB_kITjF_YPSyPDp8Dx9tiD84oj90SO8u2FfV6lLIcHy5StBsAhaPeLg-S/exec", PAGES = "https://hryoon0.github.io/dfz/review/";
+  // 응답이 없을 때 「보내는 중」이 영원히 돌지 않게 15초에 끊는다
+  function fetchJSON(url, opts, ms){ var c = new AbortController(), t = setTimeout(function(){ c.abort(); }, ms || 15000);
+    return fetch(url, Object.assign({}, opts, { signal: c.signal })).then(function(r){ return r.json(); }).finally(function(){ clearTimeout(t); }); }
+  function mark(slug, g){
+    var el = document.querySelector('[data-slug="' + slug + '"] .req-mark'); if (!el || !g || !g.count) return;
+    var day = String(g.last || '').slice(0, 10);
+    el.textContent = (g.status ? g.status + ' · ' : '수정 요청함 · ') + day + (g.count > 1 ? ' (' + g.count + '건)' : '');
+    el.title = '마지막 요청 ' + g.last;
+    el.classList.toggle('done', !!g.status); el.hidden = false;
+  }
+  // 받은 글은 남이 쓴 것이라 textContent로만 넣는다(태그를 적어 보내도 글자로 보인다)
+  function el(tag, cls, text){ var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; }
+  // 내가 보낸 요청의 고치기 열쇠 — 이 브라우저에만 있다(2026-11-26 「수정하거나 삭제하고 싶은데」)
+  function keys(){ try { return JSON.parse(localStorage.getItem('dfz-req-keys') || '{}'); } catch (e) { return {}; } }
+  function keep(id, key){ var k = keys(); k[id] = key; localStorage.setItem('dfz-req-keys', JSON.stringify(k)); }
+  // 옛 요청 열쇠 받기 링크(#claim=…) — 열쇠는 # 뒤라 서버로 안 가고, 받은 뒤 주소창에서 지운다(2026-11-26)
+  (function(){ var m = /[#&]claim=([A-Za-z0-9_-]+)/.exec(location.hash); if (!m) return;
+    try { var got = JSON.parse(atob(m[1].replace(/-/g, '+').replace(/_/g, '/'))), k = keys(), n = 0;
+      Object.keys(got).forEach(function(id){ if (/^[a-f0-9]{12}$/.test(id) && /^[a-f0-9-]{36}$/.test(got[id])) { k[id] = got[id]; n++; } });
+      localStorage.setItem('dfz-req-keys', JSON.stringify(k));
+      if (n) setTimeout(function(){ alert('보내신 수정 요청 ' + n + '건을 이 브라우저에서 고치거나 지울 수 있게 됐어요.'); }, 300);
+    } catch (e) {}
+    history.replaceState(null, '', location.pathname + location.search); })();
+  function post(body, ms){ return fetchJSON(URL_, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) }, ms)
+    .then(function(r){ if (!r || !r.ok) throw new Error(r && r.error || 'fail'); return r; }); }
+  function why(err){ var w = String(err.message);
+    return w === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 해 주세요.' : w === 'bad-key' || w === 'gone' ? '이 요청은 여기서 고칠 수 없어요(이미 지웠거나 다른 브라우저에서 보낸 것).' : '저장하지 못했어요. 다시 해 주세요.'; }
+  function own(d, it, p){
+    var key = it.id && keys()[it.id]; if (!key) return;
+    var bar = el('span', 'own'), eb = el('button', '', '고치기'), db = el('button', '', '지우기'); eb.type = db.type = 'button';
+    bar.appendChild(eb); bar.appendChild(db); d.firstChild.prepend(bar);
+    eb.addEventListener('click', function(){
+      if (d.querySelector('textarea')) return;
+      var ta = el('textarea'), row = el('div', 'edit-row'), m = el('span', 'msg'), ok = el('button', '', '저장'), no = el('button', '', '취소');
+      ta.value = it.text; ta.maxLength = 1000; ok.type = no.type = 'button'; row.appendChild(m); row.appendChild(no); row.appendChild(ok);
+      p.hidden = true; p.after(ta); ta.after(row); ta.focus();
+      no.addEventListener('click', function(){ ta.remove(); row.remove(); p.hidden = false; });
+      ok.addEventListener('click', function(){ var t = ta.value.trim(); if (t.length < 2) { m.textContent = '고칠 점을 적어 주세요.'; return; }
+        ok.disabled = true; ok.textContent = '저장 중…';
+        post({ action: 'edit', id: it.id, key: key, text: t }).then(load).catch(function(err){ ok.disabled = false; ok.textContent = '저장'; m.textContent = why(err); }); });
+    });
+    db.addEventListener('click', function(){
+      if (!confirm('이 수정 요청을 지울까요? 페이지에서 사라집니다.')) return;
+      db.disabled = true; db.textContent = '지우는 중…';
+      post({ action: 'delete', id: it.id, key: key }).then(load).catch(function(err){ db.disabled = false; db.textContent = '지우기'; alert(why(err)); });
+    });
+  }
+  // 요청 글과 답글을 댓글처럼 — 목록에서는 접어 두고, 게임 페이지에서는 펴 둔다
+  function thread(slug, g){
+    var req = document.querySelector('.req[data-slug="' + slug + '"]'); if (!req || !g || !g.items || !g.items.length) return;
+    var box = req.nextElementSibling;
+    if (!box || !box.classList.contains('req-thread')) { box = el('details', 'req-thread'); box.open = !req.closest('ul.games'); req.after(box); }
+    box.textContent = '';
+    box.appendChild(el('summary', '', '수정 요청 ' + g.items.length + '건'));
+    g.items.forEach(function(it){
+      var d = el('div', 'req-item'), h = el('div');
+      h.appendChild(el('span', 'who', it.name)); h.appendChild(el('span', 'at', it.at)); if (it.edited) h.appendChild(el('span', 'ed', '(' + it.edited.slice(5) + ' 고침)'));
+      if (it.status) h.appendChild(el('span', 'st', it.status));
+      var p = el('p', '', it.text); d.appendChild(h); d.appendChild(p); own(d, it, p);
+      if (it.images && it.images.length) { var ps = el('div', 'req-pics');
+        it.images.forEach(function(id, i){ if (!/^[A-Za-z0-9_-]+$/.test(id)) return;
+          var a = el('a'), im = el('img'); a.href = 'https://drive.google.com/file/d/' + id + '/view'; a.target = '_blank'; a.rel = 'noopener';
+          im.src = 'https://drive.google.com/thumbnail?id=' + id + '&sz=w800'; im.alt = it.name + '이 올린 그림 ' + (i + 1); im.loading = 'lazy';
+          a.appendChild(im); ps.appendChild(a); });
+        d.appendChild(ps); }
+      if (it.reply) { var r = el('div', 'req-reply'); r.appendChild(el('span', 'who', '답글')); r.appendChild(el('p', '', it.reply)); d.appendChild(r); }
+      box.appendChild(d);
+    });
+  }
+  // 게임별 목록 — 고친 기록과 수정 요청 중 더 늦은 시각이 위로(2026-11-17 회원님 「수정요청 받으면 또 그게 최신」)
+  function resort(games){
+    var ul = document.querySelector('ul.games'); if (!ul) return;
+    var rows = [].slice.call(ul.children);
+    rows.forEach(function(li){ var g = games[li.dataset.slug], at = g && String(g.last || '').slice(0, 16);
+      if (at && at > (li.dataset.last || '')) li.dataset.last = at; });
+    rows.sort(function(a, b){ return (b.dataset.last || '').localeCompare(a.dataset.last || ''); }).forEach(function(li){ ul.appendChild(li); });
+  }
+  function load(){ fetchJSON(URL_ + '?action=list').then(function(r){ if (r && r.ok) { Object.keys(r.games).forEach(function(k){ mark(k, r.games[k]); thread(k, r.games[k]); }); resort(r.games); } }).catch(function(){}); }
+  var dlg = document.getElementById('req-dlg'), form = dlg.querySelector('form'), msg = dlg.querySelector('.msg'), send = dlg.querySelector('.send'), W = form.elements, cur = null;
+  // 그림(2026-11-22) — 3장까지, 긴 변 1600px JPEG로 줄여 보낸다(휴대폰 사진 그대로면 수 MB라 느리고 잘 끊긴다)
+  var MAX = 3, pics = [], strip = dlg.querySelector('.req-pics'), file = dlg.querySelector('input[type=file]');
+  function shrink(f){ return new Promise(function(ok, bad){
+    var u = URL.createObjectURL(f), im = new Image();
+    im.onload = function(){ var k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight)), c = document.createElement('canvas');
+      c.width = Math.round(im.naturalWidth * k); c.height = Math.round(im.naturalHeight * k);
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(u); ok(c.toDataURL('image/jpeg', 0.85)); };
+    im.onerror = function(){ URL.revokeObjectURL(u); bad(new Error('not-image')); }; im.src = u; }); }
+  function drawPics(){ strip.textContent = '';
+    pics.forEach(function(d, i){ var w = el('div', 'pic'), im = el('img'), x = el('button', 'del', '×');
+      im.src = d; im.alt = '올릴 그림 ' + (i + 1); x.type = 'button'; x.setAttribute('aria-label', '그림 ' + (i + 1) + ' 빼기');
+      x.addEventListener('click', function(){ pics.splice(i, 1); drawPics(); }); w.appendChild(im); w.appendChild(x); strip.appendChild(w); });
+    dlg.querySelector('.pick-count').textContent = pics.length ? pics.length + ' / ' + MAX + '장' : ''; }
+  var pending = 0;
+  function addFiles(list){ [].slice.call(list || []).forEach(function(f){
+    if (String(f.type).indexOf('image/') !== 0) return;
+    if (pics.length + pending >= MAX) { msg.textContent = '그림은 ' + MAX + '장까지예요.'; return; }
+    pending++;
+    shrink(f).then(function(d){ pics.push(d); }).catch(function(){ msg.textContent = '그림을 읽지 못했어요.'; })
+      .finally(function(){ pending--; drawPics(); }); }); }
+  dlg.querySelector('.pick button').addEventListener('click', function(){ file.click(); });
+  file.addEventListener('change', function(){ addFiles(file.files); file.value = ''; });
+  // 화면 캡처를 글 칸에 바로 붙여 넣어도(Ctrl+V) 그림으로 받는다
+  W.note.addEventListener('paste', function(e){ var fs = [].slice.call((e.clipboardData || {}).files || []);
+    if (fs.length) { e.preventDefault(); addFiles(fs); } });
+  document.querySelectorAll('.req-btn').forEach(function(b){ b.addEventListener('click', function(){
+    cur = b.closest('.req').dataset; dlg.querySelector('.game').textContent = cur.title; msg.textContent = ''; send.disabled = false; send.textContent = '보내기';
+    form.reset(); pics = []; drawPics(); var n = localStorage.getItem('dfz-req-name'); if (n) W.who.value = n; dlg.showModal(); W.note.focus(); }); });
+  dlg.querySelector('.cancel').addEventListener('click', function(){ dlg.close(); });
+  form.addEventListener('submit', function(e){
+    e.preventDefault(); if (!cur) return;
+    var text = W.note.value.trim(); if (text.length < 2) { msg.textContent = '고칠 점을 적어 주세요.'; return; }
+    if (pending) { msg.textContent = '그림을 준비하는 중이에요. 잠시 뒤 보내 주세요.'; return; }
+    send.disabled = true; send.textContent = '보내는 중…'; msg.textContent = '';
+    localStorage.setItem('dfz-req-name', W.who.value.trim());
+    // text/plain — 브라우저가 사전 요청(OPTIONS)을 보내지 않게(Apps Script는 그것을 받지 못한다)
+    if (pics.length) send.textContent = '그림 올리는 중…';
+    var images = pics.map(function(d){ return { type: 'image/jpeg', data: d.split(',')[1] }; });
+    post({ slug: cur.slug, title: cur.title, page: PAGES + cur.page, name: W.who.value.trim(), text: text, images: images },
+      images.length ? 60000 : 15000)
+      .then(function(r){
+        if (r.id && r.key) keep(r.id, r.key);
+        dlg.close(); load();
+        mark(cur.slug, { count: 1, last: r.at, status: '' });
+      })
+      .catch(function(err){ send.disabled = false; send.textContent = '다시 보내기';
+        var why = String(err.message);
+        msg.textContent = why === 'rate-limit' ? '요청이 몰렸어요. 10분 뒤 다시 보내 주세요.'
+          : /image/.test(why) ? '그림을 올리지 못했어요. 그림을 빼고 보내 보세요.' : '보내지 못했어요. 다시 보내 주세요.'; });
+  });
+  load();
+})();
+</script>
+<!--@/REQUEST@-->
+
+  <h2>변환 기록</h2>
+  <!--@HISTORY@-->
+<ul class="log">
+<li><span class="when">2026-11-26 16:45</span><span>처음 변환 — 원본이 제시한 대로 사람마다 폰 단추(1·2번째 왼쪽 노, 3·4번째 오른쪽 노), 팀은 동시 진행(회원님 결정), 배마다 4명·모자라면 봇, 숫자는 원본 그대로, 배경 = 여름 계곡 래프팅 나루. 맥 Unity 컴파일 오류 0 · Rafting 47건 통과</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #141">PR #141</a></li>
+</ul>
+<!--@/HISTORY@-->
+
+  <h2>흐름 — 참가 → 동작 연습 → 시작</h2>
+  <div class="wrap"><table>
+    <tr><th>단계</th><th>누가</th><th>무엇</th></tr>
+    <tr><td>1. 참가 화면</td><td>앱(그대로)</td><td>폰·컨트롤러로 참가, 앱이 팀을 고르게 나눕니다(2·3·4팀 규칙 파일). 배마다 4명 — 모자라면 봇이 채웁니다(<code>botFill</code>, 팀마다 4명)</td></tr>
+    <tr><td>2. 입장 뒤 동작 연습</td><td><b>이 게임</b>(<code>RaftingPractice</code>)</td><td>① 「내 노 젓기」 — 저마다 단추 한 번(내 노가 물보라를 튀깁니다) ② 「짝과 함께」 — 같은 배 친구와 0.55초 안에 같이 누르기(같은 배에 사람이 혼자면 한 번). 단계마다 <b>참가자 전원</b>(봇은 바로 통과)이 통과하면 「잘했어요!」 0.8초 뒤 다음. 선생님은 앱의 「바로 시작」/Enter.</td></tr>
+    <tr><td>3. 게임 시작</td><td>앱 3초 세기 → 이 게임</td><td>모든 팀이 같은 코스로 동시에 출발. 시간(60초)이 다 되거나 안전도가 0이 되면 그 배가 멈추고, 모든 배가 멈추면 앱이 경기를 닫고 결과 화면(팀 합계 = 원본 최종 점수)</td></tr>
+  </table></div>
+
+  <h2>직접 해 보기</h2>
+  <!--start-screen-->
+<style>#start{grid-template-columns:1fr 1fr}.start .set{gap:10px}.start .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px}.start .grid2 .wide{grid-column:1/-1}.start .opt .controls{gap:5px}.start .opt .controls button{padding:5px 11px;font-size:14px}.start .set h4{font-size:16px}@media (max-width:760px){.start .grid2{grid-template-columns:1fr}}</style>
+<p class="note">C# 판정과 같은 규칙과 숫자로 움직입니다. 원본 키 그대로 <b>A·D</b>가 파랑팀 왼쪽 노 둘, <b>J·L</b>이 오른쪽 노 둘입니다(앱에서는 사람마다 폰 단추 하나). 다른 팀은 앱의 봇처럼 0.9초 박자로 젓습니다 — 앱에서는 그 자리에 다른 모둠 학생이 섭니다. 「시범 보기」면 파랑팀도 봇. Enter는 선생님의 「바로 시작」.</p>
+  <div class="demo">
+    <div class="stagewrap">
+      <canvas id="cv" width="1600" height="900" tabindex="0" aria-label="협동 래프팅 체험판"></canvas>
+      <div class="start" id="start">
+        <div>
+          <div class="eyebrow">G003 · 6학년 체육 · 협력과 배려</div>
+          <h3>협동 래프팅 팀 챌린지</h3>
+          <p class="lead2">네 명이 하나의 배를 움직여요! 왼쪽 노와 오른쪽 노를 함께 저어 급류를 헤쳐 나가세요. 바위는 피하고 별은 모으세요.</p>
+          <div class="how"><b>진행 방법</b>
+            <ol>
+              <li>팀 안 1·2번째는 왼쪽 노, 3·4번째는 오른쪽 노 — 단추 한 번이 한 번 젓기예요.</li>
+              <li>왼쪽 노가 강하면 오른쪽으로, 오른쪽 노가 강하면 왼쪽으로 가요.</li>
+              <li>같은 쪽 짝과 맞춰 저으면 +8, 양쪽이 함께 저으면 +10 · 속도 상승!</li>
+              <li>별 +40, 바위는 안전도가 줄어요. 최종 = 점수 + 안전도 × 2 + 별 × 10.</li>
+            </ol>
+          </div>
+        </div>
+        <div class="set">
+          <h4>시작 설정</h4>
+          <div class="grid2">
+          <div class="opt"><span>참여 팀 수</span><div class="controls">
+            <button data-teams="2" aria-pressed="true">2팀</button>
+            <button data-teams="3" aria-pressed="false">3팀</button>
+            <button data-teams="4" aria-pressed="false">4팀</button>
+          </div></div>
+          <div class="opt"><span>경기 시간</span><div class="controls">
+            <button data-seconds="45" aria-pressed="false">45초</button>
+            <button data-seconds="60" aria-pressed="true">60초</button>
+            <button data-seconds="90" aria-pressed="false">90초</button>
+          </div></div>
+          <div class="opt wide"><span>난이도</span><div class="controls">
+            <button data-level="0" aria-pressed="false">쉬움</button>
+            <button data-level="1" aria-pressed="true">보통</button>
+            <button data-level="2" aria-pressed="false">어려움</button>
+          </div></div>
+          <div class="opt wide"><span>참가</span><div class="controls">
+            <button data-demo="0" aria-pressed="true">키보드(파랑팀 A·D·J·L)</button>
+            <button data-demo="1" aria-pressed="false">시범 보기(모두 봇)</button>
+          </div></div>
+          </div>
+          <button class="go" id="go">게임 시작</button>
+          <p class="safe"><b>수업 목표</b> 팀원과 역할을 나누고 의견을 조율해 안전하게 움직이는 협력 전략을 실천해요. 실물 래프팅이 아니라 협력·의사소통을 연습하는 디지털 활동입니다.</p>
+        </div>
+      </div>
+    </div>
+    <div class="controls">
+      <button id="home" hidden>처음 화면</button>
+      <button id="restart" style="margin-left:auto">다시</button>
+    </div>
+    <div class="score" id="score"></div>
+  </div>
+
+  <h2>HTML 판 — 원본 형식 그대로 함께 올렸습니다</h2>
+  <p>앱의 「AI로 게임 만들기 → HTML 붙여넣기」에 그대로 넣으면 도는 <b>HTML 한 파일</b>도 같은 PR에 넣었습니다: <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-g003-g006/docs/progress/g003-rafting-web/game.html"><code>docs/progress/g003-rafting-web/game.html</code></a>(설명 <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-g003-g006/docs/progress/g003-rafting-web/README.md">README</a>). 웹 통로가 사람마다 단추(<code>Press</code>·<code>Touch</code>)와 팀(<code>team</code>)을 넘겨 주어 원본 규칙을 그대로 옮길 수 있습니다.</p>
+  <div class="wrap"><table>
+    <tr><th></th><th>Unity C# 판(앱 내장)</th><th>HTML 판(붙여넣기용)</th></tr>
+    <tr><td>규칙·숫자</td><td colspan="2">같다 — 원본 v02(코스 씨앗값 712092, 노 힘·기울기·협동 창 0.55/0.45, 점수 8·10·40·−20, 안전도, 최종 점수), 팀마다 동시에</td></tr>
+    <tr><td>입력</td><td>누르기·톡 = 그 사람 노 한 번(같은 노 0.12초)</td><td>같다 — 단, 같은 사람 0.25초 안 두 번은 한 번(웹 게임 규약)</td></tr>
+    <tr><td>설정</td><td>규칙 파일 칸 경기 시간 45·60·90, 앱 「게임 다듬기 → 난이도」 쉬움·보통·어려움, 팀 수는 2·3·4팀 규칙 파일</td><td>기본값 고정(60초 · 보통) · 팀 수는 앱 <code>teams</code></td></tr>
+    <tr><td>동작 연습</td><td>있음(내 노 젓기 → 짝과 함께)</td><td>없음 — 앱이 시작을 알리면 바로 출발</td></tr>
+  </table></div>
+  <ul>
+    <li><span class="ok">통과</span> 앱 웹 게임 검사기(<code>WebGameLint</code>·<code>FindClassroomHazards</code>·바깥 주소) — 맥 Unity에서 문제 없음.</li>
+    <li><span class="ok">끝까지</span> <code>dfz</code> 대역 위에서 60·120Hz로 한 판을 돌려 끝 알림(<code>dfz.finish</code>)이 한 번 오고, 같은 팀 두 사람 점수가 똑같이 나뉘는 것을 봤습니다.</li>
+    <li><span class="no">안 함</span> 앱 안 격리 브라우저에서 실제 실행 — 그 엔진이 Windows 전용이라 맥에서는 못 돌립니다.</li>
+  </ul>
+
+  <h2>원본 HTML판에서 달라진 것</h2>
+  <div class="wrap"><table>
+    <tr><th>원본 HTML판</th><th>앱판(C#)</th><th>까닭</th></tr>
+    <tr><td>한 키보드에 네 명(A·D 왼쪽 노, J·L 오른쪽 노)</td><td><b>사람마다 폰·컨트롤러 단추 하나</b> — 팀 안 참가 차례 1·2번째 왼쪽 노, 3·4번째 오른쪽 노</td><td>원본이 제시한 「사람마다 키 하나」를 앱 기기로(회원님 「원본에서 제시한대로」)</td></tr>
+    <tr><td>2~4팀이 같은 코스를 <b>차례로</b>(팀마다 다음 팀 단추)</td><td><b>모든 팀이 같은 코스를 동시에</b> — 팀마다 자기 강줄기 칸</td><td>회원님 결정(「동시 진행」)</td></tr>
+    <tr><td>4명 고정</td><td>배마다 4명 — 모자란 자리는 앱 봇. 봇과 빈 노는 0.9초 박자로 노마다 0.15초씩 늦게, 앞 바위를 피할 쪽(없으면 별 쪽) 노만 젓는다</td><td>원본에 봇이 없다 — 4명이 안 되는 반에서도 배가 움직이게(원본에 없던 행동이라 따로 적음)</td></tr>
+    <tr><td>순위: 점수 → 안전도 → 거리, 팀 점수 하나</td><td>배가 멈출 때 팀 최종 점수를 팀 사람들에게 똑같이 나눠(나머지는 앞 자리부터 1점) 앱 팀 합계 = 원본 최종 점수. 화면 순위는 원본 셋 그대로, 앱 결과판은 팀 합계(같으면 무승부)</td><td>앱은 사람마다 점수를 모아 팀 합계를 낸다</td></tr>
+    <tr><td>기울기 섞기 ×0.86 + 방향 ×0.14를 <b>장면마다</b></td><td>1/60초 걸음마다(60Hz 화면과 같다)</td><td>화면 빠르기와 상관없이 같은 입력이면 같은 자리 — 원본은 120Hz 화면에서 두 배 빨리 돌았다</td></tr>
+    <tr><td>팀 이름 방식(색깔팀 · 1팀·2팀)</td><td>색깔팀(원본 기본값) 고정</td><td>앱 모둠 표시가 따로 있다</td></tr>
+    <tr><td>Space 일시정지 · 창을 벗어나면 멈춤 · 「현재 팀 재시작」 · 「처음으로」</td><td>앱 일시정지·다시 하기</td><td>앱 공통</td></tr>
+    <tr><td>이모지 🌿🌳⭐🪨 · 아이 👧👦👩🧒</td><td>같은 자리에 도형(풀숲·나무·별·바위), 사람은 팀 색 콩콩이 넷 — 노 옆에 자리 표시, 방금 저은 노는 물보라</td><td>윈도·맥이 같게, 누가 어느 노인지 보이게</td></tr>
+    <tr><td>하늘빛 바탕</td><td><b>배경 그림(여름 계곡 래프팅 나루, GPT)</b> 위에 원본 강줄기 그대로</td><td>게임마다 다른 밝은 장면</td></tr>
+  </table></div>
+  <p class="note">그대로 옮긴 것: 참가 팀 2·3·4, 경기 시간 45·60·90초, 난이도 쉬움·보통·어려움(바위 안전도 −15·22·30, 이동 ×0.84·1·1.3), 코스 200개(씨앗값 712092, 별 28%, x 155~585, 200점 간격), 배 y 374·x 135~605, 노 힘 +1·초당 3.7 빠짐, 방향 = clamp(왼쪽 − 오른쪽), x += 기울기 × 220 × dt, 같은 노 0.12초, 같은 쪽 짝 0.55초 +8, 다른 쪽 0.45초 +10·빠르기 +6(최대 160, ×0.65로 80에 돌아옴), 초당 +1.3, 별 +40, 바위 −20(0 아래 없음)·1초에 한 번, 부딪힘 창 세로 22·가로 크기 + 20, 최종 = 점수 + 안전도 × 2 + 별 × 10, 거리 = 이동 ÷ 8 m, 알림 글 여섯 가지.</p>
+
+  <h2>새 파일</h2>
+  <div class="wrap"><table id="files">
+    <tr><th>파일</th><th>무엇</th></tr>
+  </table></div>
+
+  <h2>검증한 것과 안 한 것</h2>
+  <ul>
+    <li><span class="ok">Unity</span> <span class="ok">통과</span> 맥 Unity 6000.5.9f1(빌드 대상 Win64, 가지 9767a1a) 컴파일 오류 0, Rafting EditMode 47건 통과. EditMode 전체 6198건 중 실패 7건은 맥에서만 나는 것(main도 같음).</li>
+    <li><span class="ok">.NET</span> 판정·연습·감독 40건 + 무대 7건을 .NET 8·C# 9·경고를 오류로·NUnit 3.14로 돌렸습니다(main의 실제 파일과 함께 묶음, 무대는 실제 <code>QuizArt.cs</code>와 UI 대역).</li>
+    <li><span class="ok">빨간불 확인</span> 판정·연습·감독·무대 규칙 73개를 하나씩 끄면 모두 검사가 실패합니다. 처음엔 8개가 구멍이라 검사 4건을 더하고 1건을 보강했습니다(하나는 결과가 같은 변이라 목록에서 뺐습니다).</li>
+    <li><span class="ok">코스</span> 원본 <code>rnd(712092)</code>를 브라우저 엔진(Node)에서 돌린 값과 C# 코스가 소수 9자리까지 같습니다.</li>
+    <li><span class="no">안 함</span> 앱 화면 촬영(앱에 아직 연결 전이라 앱 화면이 없음), 실물 폰으로 한 판(만든 분들이 확인), Windows 실행.</li>
+  </ul>
+
+  <h2>앱에 붙이려면</h2>
+  <ol>
+    <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>Rafting</code>, <code>FlowTypes.IsMovedHtmlGame</code>, <code>FlowSpec</code>·검증기·스키마에 <code>raftingSeconds</code>(45·60·90). 값은 <code>RaftingSettings.From(모둠 수, raftingSeconds, rules.Difficulty.Default)</code>로 감독에.</li>
+    <li><b>봇</b>: <code>BotFill.Supports</code>에 <code>FlowType.Rafting</code>(봇 행동은 판 안에 있음 — <code>IsBot</code> 노는 리듬으로 젓는다).</li>
+    <li><b>연습</b>: 안내 단계(<code>SessionState.Intro</code>)에서 이 게임이면 안내 카드 대신 감독 연습 — <code>BeginPractice</code>, 장면마다 <code>SyncRoster</code> → 입력 <code>HandleInput(e)</code> → <code>TickPractice</code> → 무대 <code>SyncPractice</code>. <code>PracticeStartRequested</code>면 <code>RequestSkipIntro()</code>.</li>
+    <li><b>경기</b>: <code>UguiNativeActivities</code>에서 <code>SyncRoster</code> → <code>HandleInput(e)</code> → <code>Tick(경기 시간, 판)</code> → 무대 <code>Sync</code>. <code>Award</code>는 <code>HandleActivityInput</code>으로(팀 합계는 앱이), <code>Finished</code>면 <code>runner.CompleteCourse(now)</code>.</li>
+    <li><b>그림</b>: <code>stage.Backdrop = _hud.StageArt;</code></li>
+    <li><b>출시</b>: <code>StreamingAssets/games/g003-rafting{,-3teams,-4teams}/</code>, <code>GameTitles.FolderById</code>, 표지, 말 표(<code>rafting.*</code>, 진행 기록에 ko·en), 로비 묶음(<code>builtin-games.csv</code> → <code>catalog.json</code>, <code>family.name.g003-rafting</code>).</li>
+  </ol>
+
+  <h2>실물에서 봐 주셨으면 하는 것</h2>
+  <ul>
+    <li>폰 톡 한 번이 노 한 번으로 오는지(누르기·톡 둘 다 받습니다 — 같은 노는 0.12초 안에 두 번 안 셈).</li>
+    <li>4팀(2×2 칸)에서 강줄기·배·바위가 교실 화면에서 충분히 크게 보이는지.</li>
+    <li>봇 노(0.9초 박자)가 사람과 섞였을 때 너무 세거나 약하지 않은지 — <code>BotBeatSeconds</code>가 손잡이 값입니다.</li>
+  </ul>
+</main>
+<script>
+/* 새 파일 목록 */
+(function(){
+  var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-g003-g006/";
+  var rows = [
+    ["unity/Assets/DigitalFitZone/Game/Play/Rafting/RaftingSettings.cs", "놀이 값: 팀·경기 시간·난이도, 강줄기 좌표, 노 젓기·협동·점수·안전도, 코스, 봇 박자"],
+    ["unity/Assets/DigitalFitZone/Game/Play/Rafting/RaftingRound.cs", "판: 팀마다 배 하나(동시에), 코스(rnd 712092), 노 젓기·짝·양쪽 협력, 별·바위, 배 끝·최종 점수 나누기, 빈 노 리듬 젓기, 순위"],
+    ["unity/Assets/DigitalFitZone/Game/Play/Rafting/RaftingPractice.cs", "입장 뒤 동작 연습: ① 내 노 젓기 ② 짝과 함께 젓기, 전원 통과"],
+    ["unity/Assets/DigitalFitZone/Game/Play/Rafting/RaftingScoring.cs", "팀 최종 점수 몫 → Raise(+10)·Squat(+1)"],
+    ["unity/Assets/DigitalFitZone/UI/Session/RaftingDirector.cs", "감독: 명단(팀·봇), 누르기·톡 → 그 사람 노, 연습·경기 밀기, Award, 끝 알림"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiRaftingStage.cs", "무대: 위 띠 · 팀마다 칸(이름·점수 / 강줄기 / 안전도·기록·알림), 연습 화면, 배경 그림"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/RaftingRoundTests.cs", "판 검사 26건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/RaftingPracticeTests.cs", "연습 검사 6건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/RaftingDirectorTests.cs", "감독 검사 8건"],
+    ["unity/Assets/DigitalFitZone/Tests/EditMode/RaftingStageTests.cs", "무대 검사 7건"],
+    ["docs/progress/2026-11-26-g003-rafting-native.md", "진행 기록, 붙이는 길, 말 표"],
+    ["docs/progress/g003-rafting-rulesets/g003-rafting.ruleset.json", "규칙 파일 초안(2팀) — 같은 폴더에 -3teams · -4teams"],
+    ["docs/progress/g003-rafting-rulesets/assets/images/bg.jpg", "배경 그림 — 여름 계곡 래프팅 나루(GPT 생성)"],
+    ["docs/progress/g003-rafting-web/game.html", "HTML 판 — 앱 「웹 게임」에 붙여 넣는 한 파일"],
+    ["docs/progress/g003-rafting-web/README.md", "HTML 판 붙이는 길·입력·Unity 판과 다른 점"],
+    ["docs/progress/g003-rafting-review.html", "이 페이지 사본"]
+  ];
+  var t = document.getElementById("files");
+  rows.forEach(function(r){
+    var tr = document.createElement("tr"), a = document.createElement("a"), td1 = document.createElement("td"), td2 = document.createElement("td");
+    a.href = base + r[0]; a.textContent = r[0].replace("unity/Assets/DigitalFitZone/", "");
+    td1.appendChild(a); td2.textContent = r[1]; tr.appendChild(td1); tr.appendChild(td2); t.appendChild(tr);
+  });
+})();
+
+/* 체험판 — RaftingRound.cs·RaftingPractice.cs 와 같은 규칙과 숫자, 1/60초 고정 걸음(남은 시간을 쌓아 꺼낸다).
+   흐름은 앱과 같다: 시작 화면(참가) → 동작 연습(내 노 젓기 → 짝과 함께, 전원) → 3초 → 경기(팀마다 동시에).
+   키보드: 원본 키 그대로 A·D = 파랑팀 왼쪽 노 둘, J·L = 오른쪽 노 둘. 다른 팀은 앱의 봇처럼 0.9초 박자로 젓는다. 「시범 보기」면 파랑팀도 봇. */
+(function(){
+  "use strict";
+  var STEP = 1 / 60, EPS = 1e-9, COUNTDOWN = 3, RW = 740, RH = 500, BOAT_Y = 374, FEEDBACK = 0.8, MATE = 0.55, SIDE = 0.45;
+  var BEAT = 0.9, OFFS = [0, 0.15, 0.3, 0.45], KEYS = ["a", "d", "j", "l"];
+  var COLORS = ["#2d7fd3", "#e0525a", "#3ba55c", "#e2a82a"], NAMES = ["파랑팀", "빨강팀", "초록팀", "노랑팀"];
+  var NOTES = { start: "출발! 노를 리듬 있게 저어요", steady: "좌·우 노를 맞춰 안전하게 항해해요!", mate: "같은 쪽 노 호흡 성공!", side: "양쪽 협력! 속도 상승", star: "별 획득! +40", rock: "바위 충돌! 안전도 감소" };
+  var cfg = { teams: 2, seconds: 60, level: 1, demo: 0 };
+  function damage() { return [15, 22, 30][cfg.level]; }
+  function travelScale() { return [0.84, 1, 1.3][cfg.level]; }
+  function rnd(seed) { var a = seed >>> 0; return function () { a += 0x6D2B79F5; var t = a; t = Math.imul(t ^ t >>> 15, t | 1); t ^= t + Math.imul(t ^ t >>> 7, t | 61); return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  var COURSE = (function () { var r = rnd(712092), a = []; for (var i = 0; i < 200; i++) { var x = 155 + r() * 430, y = i * 200 + 380, star = r() < .28, size = r() * 10 + 16; a.push({ x: x, y: y, star: star, size: size }); } return a; })();
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
+  var bg = typeof Image === "function" ? new Image() : null; if (bg) bg.src = "img/g003-rafting-bg.jpg";
+  var started = false, stage = "idle", clock = 0, acc = 0, cd = 0, boats = [], PR;
+  function human(team, k) { return team === 0 && !cfg.demo; }
+  function boat(t) { return { team: t, e: 0, x: 370, tilt: 0, speed: 80, travel: 0, score: 0, safety: 100, stars: 0, coops: 0, l: 0, r: 0, last: [-9, -9, -9, -9], hit: -10, done: {}, note: "start", until: 2, ended: false, fin: 0, slot: 0 }; }
+  function reset() {
+    clock = 0; acc = 0; stage = started ? "practice" : "idle"; boats = [];
+    for (var t = 0; t < cfg.teams; t++) boats.push(boat(t));
+    PR = { step: 0, passed: {}, at: {}, next: NaN };
+  }
+  function say(b, n, until) { b.note = n; b.until = until; }
+  function stroke(b, k) {
+    var now = b.e; if (now - b.last[k] < 0.12) return false; b.last[k] = now;
+    var left = k < 2; if (left) b.l += 1; else b.r += 1;
+    var mate = now - b.last[k ^ 1];
+    if (mate < MATE && mate > 0) { b.coops++; b.score += 8; say(b, "mate", now + 1.1); }
+    var other = left ? Math.max(b.last[2], b.last[3]) : Math.max(b.last[0], b.last[1]);
+    if (now - other >= 0 && now - other < SIDE) { b.coops++; b.score += 10; b.speed = Math.min(160, b.speed + 6); say(b, "side", now + 1.1); }
+    return true;
+  }
+  function want(b) {
+    var ry = -1e9, rd = 0, sy = -1e9, sd = 0;
+    COURSE.forEach(function (o, i) {
+      if (b.done[i]) return; var y = RH - (o.y - b.travel); if (y < BOAT_Y - 320 || y > BOAT_Y + 22) return; var dx = o.x - b.x;
+      if (!o.star) { if (Math.abs(dx) < o.size + 45 && y > ry) { ry = y; rd = dx >= 0 ? -1 : 1; if (rd < 0 && b.x - 135 < o.size + 20) rd = 1; else if (rd > 0 && 605 - b.x < o.size + 20) rd = -1; } }
+      else if (y > sy) { sy = y; sd = Math.abs(dx) <= 15 ? 0 : Math.sign(dx); }
+    });
+    return rd || sd;
+  }
+  function bots(b) {
+    for (var g = 0; g < 64; g++) {
+      var k = b.slot % 4, at = Math.floor(b.slot / 4) * BEAT + OFFS[k]; if (at > b.e + EPS) return; b.slot++;
+      if (human(b.team, k)) continue; var w = want(b); if (w === 0 || (k < 2 ? w > 0 : w < 0)) stroke(b, k);
+    }
+  }
+  function final(b) { return b.ended ? b.fin : Math.round(b.score + Math.max(0, b.safety) * 2 + b.stars * 10); }
+  function move(b) {
+    b.e += STEP; var l = b.l, r = b.r; b.l = Math.max(0, l - STEP * 3.7); b.r = Math.max(0, r - STEP * 3.7);
+    var steer = Math.max(-1, Math.min(1, l - r)); b.tilt = b.tilt * .86 + steer * .14; b.x = Math.max(135, Math.min(605, b.x + b.tilt * 220 * STEP));
+    b.speed += (80 - b.speed) * STEP * .65; b.travel += b.speed * STEP * travelScale(); b.score += STEP * 1.3;
+    if (cfg.seconds - b.e <= 0 || b.safety <= 0) { b.fin = final(b); b.ended = true; return; }
+    COURSE.forEach(function (o, i) {
+      if (b.done[i]) return; var y = RH - (o.y - b.travel); if (y < -50 || y > RH + 80) return;
+      if (Math.abs(y - BOAT_Y) < 22 && Math.abs(o.x - b.x) < o.size + 20) {
+        b.done[i] = true;
+        if (o.star) { b.stars++; b.score += 40; b.note = "star"; }
+        else if (b.e - b.hit > 1) { b.hit = b.e; b.safety = Math.max(0, b.safety - damage()); b.score = Math.max(0, b.score - 20); b.note = "rock"; }
+        b.until = b.e + 1.15;
+      }
+    });
+  }
+  function order() {
+    return boats.slice().sort(function (a, b) { return final(b) - final(a) || Math.round(b.safety) - Math.round(a.safety) || Math.floor(b.travel / 8) - Math.floor(a.travel / 8); });
+  }
+  function rankOf(b) { var o = order(), f = final(b); return o.filter(function (x) { return final(x) > f || (final(x) === f && (Math.round(x.safety) > Math.round(b.safety) || (Math.round(x.safety) === Math.round(b.safety) && Math.floor(x.travel / 8) > Math.floor(b.travel / 8)))); }).length; }
+  function practicePeople() { return cfg.demo ? [] : [0, 1, 2, 3]; }
+  function advance(t) {
+    if (stage === "practice") {
+      if (!isNaN(PR.next)) {
+        if (t >= PR.next - EPS) { PR.next = NaN; if (PR.step + 1 >= 2) { stage = "count"; cd = t; } else { PR.step++; PR.passed = {}; PR.at = {}; } }
+        return;
+      }
+      if (practicePeople().every(function (k) { return PR.passed[k]; })) PR.next = t + FEEDBACK;
+      return;
+    }
+    if (stage === "count") { if (t - cd >= COUNTDOWN - EPS) { stage = "play"; boats = []; for (var i = 0; i < cfg.teams; i++) boats.push(boat(i)); } return; }
+    if (stage !== "play") return;
+    boats.forEach(function (b) { if (!b.ended) { bots(b); move(b); } });
+    if (boats.every(function (b) { return b.ended; })) stage = "over";
+  }
+  function press(k) {
+    if (!started || cfg.demo) return;
+    if (stage === "practice") {
+      if (!isNaN(PR.next)) return;
+      PR.at[k] = clock;
+      if (PR.step === 0) { PR.passed[k] = true; return; }
+      for (var q = 0; q < 4; q++) if (q !== k && PR.at[q] !== undefined && clock - PR.at[q] < MATE) { PR.passed[k] = true; PR.passed[q] = true; }
+      return;
+    }
+    if (stage === "play" && boats[0] && !boats[0].ended) stroke(boats[0], k);
+  }
+
+  /* ---- 그리기(UguiRaftingStage 배치) */
+  function rr(x, y, w, h, r, c) { ctx.fillStyle = c; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); ctx.fill(); }
+  function label(s, x, y, size, c, align) { ctx.fillStyle = c; ctx.font = "800 " + size + "px Pretendard, 'Malgun Gothic', sans-serif"; ctx.textAlign = align || "center"; ctx.textBaseline = "middle"; ctx.fillText(String(s), x, y); }
+  function star(x, y, r) { ctx.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + i * Math.PI / 5, q = i % 2 ? r * .45 : r; ctx.lineTo(x + Math.cos(a) * q, y + Math.sin(a) * q); } ctx.closePath(); ctx.fillStyle = "#f6c33b"; ctx.fill(); ctx.strokeStyle = "#c98a12"; ctx.lineWidth = 2; ctx.stroke(); }
+  function rock(x, y, r, s) {
+    ctx.fillStyle = "rgba(231,250,255,.85)"; ctx.beginPath(); ctx.ellipse(x, y + r * .35, r * 1.25, r * .55, 0, 0, 7); ctx.fill(); ctx.beginPath();
+    for (var i = 0; i < 9; i++) { var a = i * Math.PI * 2 / 9, w = .82 + .18 * Math.sin(s * 1.7 + i * 2.3); ctx.lineTo(x + Math.cos(a) * r * w, y + Math.sin(a) * r * w * .85); }
+    ctx.closePath(); ctx.fillStyle = "#8c9399"; ctx.fill(); ctx.fillStyle = "#b5bcc1"; ctx.beginPath(); ctx.ellipse(x - r * .2, y - r * .25, r * .5, r * .3, 0, 0, 7); ctx.fill();
+  }
+  function buddy(x, y, s, col, cheer) {   /* 콩콩이를 줄인 모양 — 몸·얼굴·눈, 저을 때 두 팔 번쩍 */
+    ctx.fillStyle = col; ctx.beginPath(); ctx.ellipse(x, y - s * .3, s * .32, s * .34, 0, 0, 7); ctx.fill();
+    ctx.fillStyle = "#ffe2c4"; ctx.beginPath(); ctx.arc(x, y - s * .78, s * .26, 0, 7); ctx.fill();
+    ctx.fillStyle = "#17324b"; ctx.beginPath(); ctx.arc(x - s * .09, y - s * .8, s * .04, 0, 7); ctx.arc(x + s * .09, y - s * .8, s * .04, 0, 7); ctx.fill();
+    if (cheer) { ctx.strokeStyle = col; ctx.lineWidth = s * .12; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(x - s * .25, y - s * .45); ctx.lineTo(x - s * .45, y - s * .95); ctx.moveTo(x + s * .25, y - s * .45); ctx.lineTo(x + s * .45, y - s * .95); ctx.stroke(); }
+  }
+  var ROWERS = [[-13, -8], [-13, 25], [15, -8], [15, 25]];
+  function river(rx, ry, rw, b, items, splashAt) {
+    var k = rw / RW, travel = items ? b.travel : 0;
+    ctx.save(); ctx.translate(rx, ry); ctx.scale(k, k); ctx.beginPath(); ctx.rect(0, 0, RW, RH); ctx.clip();
+    ctx.fillStyle = "#bfeac1"; ctx.fillRect(0, 0, RW, RH);
+    ctx.fillStyle = "#55c7e1"; ctx.beginPath(); ctx.moveTo(105, 0); ctx.bezierCurveTo(135, 170, 94, 330, 108, 500); ctx.lineTo(635, 500); ctx.bezierCurveTo(608, 340, 650, 155, 625, 0); ctx.closePath(); ctx.fill();
+    var shift = (travel * 1.2) % 64; ctx.strokeStyle = "rgba(231,250,255,.48)"; ctx.lineWidth = 3;
+    for (var x = 160; x < 630; x += 93) for (var y = -60 + shift; y < RH; y += 64) { ctx.beginPath(); ctx.moveTo(x, y); ctx.quadraticCurveTo(x + 15, y + 8, x + 30, y); ctx.stroke(); }
+    for (var i = 0; i < 14; i++) {
+      var by = ((i * 97 + travel * .22) % 600) - 55, ty = ((i * 125 + travel * .18) % 640) - 62;
+      ctx.fillStyle = "#2f7d3e"; ctx.beginPath(); ctx.arc(29 + (i % 2) * 50, by + 3, 8, 0, 7); ctx.arc(45 + (i % 2) * 50, by + 3, 8, 0, 7); ctx.fill(); ctx.fillStyle = "#4ea84f"; ctx.beginPath(); ctx.arc(37 + (i % 2) * 50, by - 3, 10, 0, 7); ctx.fill();
+      ctx.fillStyle = "#8b5e3c"; ctx.fillRect(659 + (i % 3) * 32, ty + 5, 4, 10); ctx.fillStyle = "#2f7d3e"; ctx.beginPath(); ctx.arc(661 + (i % 3) * 32, ty, 12, 0, 7); ctx.fill();
+    }
+    if (items) COURSE.forEach(function (o, i) { if (b.done[i]) return; var y = RH - (o.y - travel) - 8; if (y < -40 || y > RH + 40) return; if (o.star) star(o.x, y, 14); else rock(o.x, y, 15, i); });
+    ctx.save(); ctx.translate(b.x, BOAT_Y); ctx.rotate(b.tilt * .2 + Math.sin(b.e * 4) * .035);
+    ctx.fillStyle = "#8a4c23"; ctx.beginPath(); ctx.ellipse(0, 8, 29, 54, 0, 0, 7); ctx.fill(); ctx.fillStyle = "#f0a849"; ctx.beginPath(); ctx.ellipse(0, 3, 25, 48, 0, 0, 7); ctx.fill();
+    ROWERS.forEach(function (s, p) {
+      var side = p < 2 ? -1 : 1, hit = splashAt(p);
+      ctx.strokeStyle = "#5e402c"; ctx.lineWidth = 5; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(side * 22, s[1] - 6); ctx.lineTo(side * (hit ? 56 : 50), s[1] + (hit ? 4 : 16)); ctx.stroke();
+      if (hit) { ctx.fillStyle = "rgba(231,250,255,.9)"; ctx.beginPath(); ctx.arc(side * 60, s[1] + 4, 7, 0, 7); ctx.arc(side * 66, s[1] + 10, 4, 0, 7); ctx.fill(); }
+      buddy(s[0], s[1] + 12, 24, COLORS[b.team], hit);
+    });
+    ctx.restore(); ctx.restore();
+  }
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    if (bg && bg.complete && bg.naturalWidth) {
+      ctx.drawImage(bg, 0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.14)"; ctx.fillRect(0, 0, W, H);
+      var gr = ctx.createLinearGradient(0, 0, 0, H * .2); gr.addColorStop(0, "rgba(0,0,0,.45)"); gr.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = gr; ctx.fillRect(0, 0, W, H * .2);
+    } else { ctx.fillStyle = "#e6f6fb"; ctx.fillRect(0, 0, W, H); }
+    var m = H * .03, gap = W * .01, w = W - gap * 2, hud = { x: gap, y: gap, w: w, h: (H - gap * 3) * .11 };
+    var top = hud.y + hud.h + gap, ah = H - gap - top, n = cfg.teams, cols = n <= 3 ? n : 2, rows = n <= 3 ? 1 : 2;
+    var cw = (w - gap * (cols - 1)) / cols, ch = (ah - gap * (rows - 1)) / rows;
+    var play = stage === "play" || stage === "over";
+    if (play) {
+      if (stage === "over") { var o = order(), top1 = o.filter(function (b) { return rankOf(b) === 0; }); label((top1.length > 1 ? "공동 우승! " : "우승! ") + top1.map(function (b) { return NAMES[b.team]; }).join(" · "), hud.x, hud.y + hud.h / 2, m * 1.6, "#ffffff", "left"); }
+      else { var left = Math.min.apply(null, boats.filter(function (b) { return !b.ended; }).map(function (b) { return cfg.seconds - b.e; }).concat([cfg.seconds])); label("남은 시간 " + Math.max(0, left).toFixed(1) + "초", hud.x, hud.y + hud.h / 2, m * 1.6, "#ffffff", "left"); }
+      label("1·2번째 왼쪽 노 · 3·4번째 오른쪽 노 — 단추 한 번 = 한 번 젓기", hud.x + hud.w, hud.y + hud.h / 2, m * .85, "#ffffff", "right");
+    } else {
+      var celebrating = !isNaN(PR.next);
+      label("동작 연습 " + (PR.step + 1) + " / 2", hud.x, hud.y + hud.h * .25, m * .85, "#ffffff", "left");
+      label(stage === "count" ? "곧 출발해요!" : celebrating ? "잘했어요!" : PR.step === 0 ? "내 노 젓기 — 단추를 한 번 눌러요" : "짝과 함께 — 같은 배 친구와 동시에!", hud.x, hud.y + hud.h * .68, m * 1.3, "#ffffff", "left");
+      label(PR.step === 0 ? "1·2번째는 왼쪽 노, 3·4번째는 오른쪽 노예요. (체험판: A·D·J·L)" : "같은 배 친구와 0.55초 안에 같이 누르면 통과!", hud.x + hud.w, hud.y + hud.h / 2, m * .8, "#ffffff", "right");
+    }
+    for (var t = 0; t < n; t++) {
+      var b = boats[t], x = gap + (t % cols) * (cw + gap), y = top + Math.floor(t / cols) * (ch + gap), pad = m * .3;
+      rr(x, y, cw, ch, m * .6, "rgba(255,255,255,.95)");
+      var hh = m * 1.5, bw = Math.min((cw - pad * 2) * .45, m * 5.2);
+      rr(x + pad, y + pad, bw, hh, hh * .45, COLORS[t]); label(NAMES[t], x + pad + bw / 2, y + pad + hh / 2, m * .95, "#ffffff");
+      var right;
+      if (play) right = "점수 " + Math.round(b.score);
+      else { var hum = t === 0 && !cfg.demo ? 4 : 0, ok = hum ? practicePeople().filter(function (k) { return PR.passed[k]; }).length : 0; right = ok + " / " + hum + "명 통과"; }
+      label(right, x + cw - pad, y + pad + hh / 2, m * 1.05, "#17324b", "right");
+      var fh = m * 2.5, fy = y + ch - pad - fh, rtop = y + pad + hh + pad, rah = fy - pad - rtop, raw = cw - pad * 2;
+      var rw = Math.min(raw, rah * RW / RH), rh = rw * RH / RW, rx = x + (cw - rw) / 2, ry = rtop + (rah - rh) / 2;
+      river(rx, ry, rw, b, play, (function (bb, team) { return function (p) {
+        if (play) { var s = bb.e - bb.last[p]; return s >= 0 && s < .25; }
+        return team === 0 && PR.at[p] !== undefined && clock - PR.at[p] < .25;
+      }; })(b, t));
+      /* 노 옆 이름표 */
+      var k = rw / RW;
+      ROWERS.forEach(function (s, p) {
+        var side = p < 2 ? -1 : 1, tag = t === 0 && !cfg.demo ? KEYS[p].toUpperCase() : "봇", passed = !play && t === 0 && PR.passed[p];
+        label(passed ? "통과!" : tag, rx + (b.x + side * 64) * k, ry + (BOAT_Y + s[1]) * k, m * .8, passed ? "#0f8a5f" : "#17324b", side < 0 ? "right" : "left");
+      });
+      if (play && b.ended) {
+        rr(rx + rw * .15, ry + rh * .3, rw * .7, rh * .4, m * .6, "rgba(255,255,255,.94)");
+        label(stage === "over" ? (rankOf(b) + 1) + "위" : b.safety <= 0 ? "배가 멈췄어요" : "도착!", rx + rw / 2, ry + rh * .4, m * 1.3, "#17324b");
+        label("최종 " + final(b) + "점", rx + rw / 2, ry + rh * .59, m * 1.2, COLORS[t]);
+      }
+      if (play) {
+        var row = fh / 2, sbw = (cw - pad * 2) * .46, bh = row * .72, sby = fy + (row - bh) / 2;
+        rr(x + pad, sby, sbw, bh, bh / 2, "#daebf1"); if (b.safety > 0) rr(x + pad, sby, Math.max(bh, sbw * b.safety / 100), bh, bh / 2, b.safety < 30 ? "#f05f65" : "#17ba96");
+        label("안전도 " + Math.round(b.safety) + "%", x + pad + sbw / 2, fy + row / 2, m * .8, "#17324b");
+        label("별 " + b.stars + " · 협동 " + b.coops + " · " + Math.floor(b.travel / 8) + "m", x + cw - pad, fy + row / 2, m * .85, "#17324b", "right");
+        label(b.e < b.until ? NOTES[b.note] : NOTES.steady, x + cw / 2, fy + row * 1.5, m * .85, "#4e677a");
+      } else label(t === 0 && !cfg.demo ? "A·D 왼쪽 노 · J·L 오른쪽 노 — 다른 팀은 봇" : "봇 — 바로 통과", x + cw / 2, fy + fh / 2, m * .85, "#17324b");
+    }
+    if (stage === "count") { var cn = Math.max(1, Math.ceil(COUNTDOWN - (clock - cd) - EPS)); ctx.fillStyle = "rgba(9,111,145,.45)"; ctx.fillRect(0, 0, W, H); label(cn, W / 2, H / 2, H * .3, "#ffffff"); }
+    var info = stage === "practice" ? "동작 연습 — A·D·J·L로 젓고 Enter로 바로 시작" : stage === "count" ? "3초 뒤 출발" : stage === "over" ? "경기 끝" : stage === "play" ? "경기 중 — A·D·J·L" : "";
+    var el = document.getElementById("score");
+    if (el) el.innerHTML = "<span>" + info + "</span>" + boats.map(function (b, i) { return "<span style='border-color:" + COLORS[i] + "'>" + NAMES[i] + " " + (play ? final(b) : 0) + "점</span>"; }).join("");
+  }
+  var last = 0;
+  function frame(t) {
+    var now = t / 1000; if (!last) last = now;
+    var dt = Math.min(0.25, now - last); last = now;
+    if (started && dt > 0) { acc += dt; while (acc >= STEP) { acc -= STEP; clock += STEP; advance(clock); } }
+    draw(); requestAnimationFrame(frame);
+  }
+  window.addEventListener("keydown", function (e) {
+    if (!started) return;
+    if (e.key === "Enter" && stage === "practice") { stage = "count"; cd = clock; e.preventDefault(); return; }
+    var k = KEYS.indexOf(String(e.key).toLowerCase());
+    if (k >= 0) { e.preventDefault(); if (!e.repeat) press(k); }
+  });
+  function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
+  [["data-teams", "teams"], ["data-seconds", "seconds"], ["data-level", "level"], ["data-demo", "demo"]].forEach(function (o) {
+    document.querySelectorAll("[" + o[0] + "]").forEach(function (b) { b.onclick = function () { var v = b.getAttribute(o[0]); cfg[o[1]] = +v; pick(o[0], v); reset(); }; });
+  });
+  document.getElementById("restart").onclick = function () { reset(); };
+  window.__startDemo = function () { started = true; reset(); if (cv.focus) cv.focus(); };
+  window.__stopDemo = function () { started = false; reset(); };
+  window.__g003 = {
+    state: function () {
+      return { stage: stage, step: PR.step, passed: Object.keys(PR.passed).length, clock: clock,
+               boats: boats.map(function (b) { return { x: b.x, e: b.e, safety: b.safety, stars: b.stars, coops: b.coops, ended: b.ended, final: final(b), travel: b.travel }; }) };
+    },
+    press: press, set: function (o) { Object.keys(o).forEach(function (k) { cfg[k] = o[k]; }); reset(); }
+  };
+  reset(); requestAnimationFrame(frame);
+})();
+</script>
+<script>
+/* 시작 화면 — 「경기 시작」을 누르면 체험판이 돈다, 「처음 화면」이면 멈추고 돌아온다 */
+(function(){
+  var start = document.getElementById("start"), go = document.getElementById("go"), home = document.getElementById("home");
+  go.addEventListener("click", function(){ start.hidden = true; home.hidden = false; window.__startDemo(); });
+  home.addEventListener("click", function(){ window.__stopDemo(); start.hidden = false; home.hidden = true; go.focus(); });
+})();
+</script>
+</body>
+</html>

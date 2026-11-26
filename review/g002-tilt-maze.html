@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>G002 몸으로 탈출! 기울기 미로 — C# 이식 확인</title>
+<title>G002 몸으로 탈출! 기울기 미로 — C# 이식 확인(팀 차례전)</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -71,14 +71,13 @@ ul.log .sha{font-family:Consolas,Menlo,monospace;font-size:14px}
 <main>
   <a class="back" href="./">← 변환 기록 전체</a>
   <h1>G002 몸으로 탈출! 기울기 미로 — C# 이식 확인</h1>
-  <p class="lead">HTML 게임 「G002 기울기 미로 팀 챌린지」(<a href="https://graceful-sprite-e19918.netlify.app/">원본</a>)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 「색깔 띠 잡아 오기」와 같은 방식으로 <b>새 파일만 더했고 기존 파일은 고치지 않았습니다.</b> 그래서 아직 앱 목록에는 안 뜹니다. 붙이는 길은 아래 「앱에 붙이려면」에 있습니다.</p>
+  <p class="lead">HTML 게임 「G002 기울기 미로 팀 챌린지」(<a href="https://graceful-sprite-e19918.netlify.app/">원본</a>)를 이 저장소의 C# 틀(판정 → 감독 → 무대)로 옮겼습니다. 11-04에는 「모두 동시 개인전」으로 옮겨 설치본 0.9.276부터 앱에 들어 있고, <b>2026-11-26 회원님 「원본대로 다시」로 원본의 팀 차례전</b>(2~4팀이 같은 미로를 차례로, 팀별 제한시간, 완주 → 시간 → 별 → 거리 순위)으로 다시 만들었습니다. 앱에 이미 이어진 게임이라 이번에는 공용 파일도 함께 고쳤습니다(아래 「앱에 이은 것」).</p>
   <div class="chips">
-    <span class="chip">브랜치 <b>claude/g002-tilt-maze-native</b></span>
-    <span class="chip">기준 <b>main</b> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/44">PR #44</a> 검토 대기</span>
-    <span class="chip">새 파일 <b>12개</b>(+ .meta 10개) · 고친 파일 <b>0개</b></span>
-    <span class="chip">검사 <b>32건 통과</b> · Unity 밖</span>
+    <span class="chip">기준 <b>main</b> · 처음 <a href="https://github.com/EduFit-Tech/digitalpe/pull/44">PR #44</a>(병합) · 팀 차례전 <a href="https://github.com/EduFit-Tech/digitalpe/pull/141">PR #141</a> 검토 중</span>
+    <span class="chip">입력 <b>폰·컨트롤러 기울기</b> · <b>2·3·4팀</b></span>
+    <span class="chip">검사 <b>55건 통과</b> · 빨간불 32/32 · 맥 Unity 컴파일 오류 0</span>
   </div>
-  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g002-tilt-maze-native">브랜치 열기</a> · <a href="https://github.com/EduFit-Tech/digitalpe/compare/main...claude/g002-tilt-maze-native">기준과 비교</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/44">PR #44</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-tilt-maze-native/docs/progress/2026-11-04-g002-tilt-maze-native.md">진행 기록</a></p>
+  <p class="note" style="margin-top:12px"><a href="https://github.com/EduFit-Tech/digitalpe/tree/claude/g002-g003-g006">팀 차례전 가지</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/141">PR #141</a> · <a href="https://github.com/EduFit-Tech/digitalpe/pull/44">처음 PR #44</a> · <a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-g003-g006/docs/progress/2026-11-04-g002-tilt-maze-native.md">진행 기록</a></p>
 
   <!--@REQUEST@-->
 <style>
@@ -276,6 +275,7 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
   <h2>변환 기록</h2>
   <!--@HISTORY@-->
 <ul class="log">
+<li><span class="when">2026-11-26 16:45</span><span>원본대로 다시 — 팀 차례전: 2·3·4팀이 같은 미로를 차례로(팀별 제한 60·90·120초), 차례인 팀 폰 기울기 평균으로 공 하나, 순위 완주→시간→별→거리, 입장 뒤 네 방향 동작 연습, 빈 팀 자동 조종, HTML 판. 맥 Unity 컴파일 오류 0 · EditMode 전체 통과(맥 전용 7건 제외)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #141">PR #141</a></li>
 <li><span class="when">2026-11-06 19:11</span><span>본줄기가 main으로 바뀌어 main을 합쳐 최신으로 맞추고 main 대상 PR을 열었다(server-checks 통과, 충돌 없음)</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/PR #44">PR #44</a></li>
 <li><span class="when">2026-11-06 10:31</span><span>배경 그림 — 정글 속 고대 유적 마당(탈출 모험, 앱 무궁화 마당과 같은 손그림 화풍, GPT 생성). 그림이 없으면 지금처럼 밤하늘, 체험판에도 깔림</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/250b1debe">250b1de</a></li>
 <li><span class="when">2026-11-04 09:11</span><span>확인 페이지 체험판에 원본 같은 시작 화면(설명·진행 방법·설정·경기 시작·안전), 시작 전에는 멈춰 있음</span><a class="sha" href="https://github.com/EduFit-Tech/digitalpe/commit/27047cec6">27047ce</a></li>
@@ -286,93 +286,117 @@ dialog.req-dlg::backdrop{background:rgba(10,16,26,.6)}
 
   <h2>직접 해 보기</h2>
   <!--start-screen-->
-<p class="note">C# 판정과 같은 숫자(미로, 공 반지름 0.325칸, 보통 6.25칸/초, 따라가기 9, 문턱 0.11, 1/60초 고정 걸음)로 움직입니다. 원본처럼 <b>시작 화면</b>에서 난이도를 고르고 시작합니다. 경기가 돌면 <b>방향키</b>나 <b>WASD</b>, 또는 미로를 <b>누른 채 끌면</b> P1이 그쪽으로 기웁니다(폰 기울기 대신). 친구 공은 가장 짧은 길로 가는 자동 조종입니다.</p>
+<p class="note">C# 판정과 같은 숫자(미로, 공 반지름 0.325칸, 보통 6.25칸/초, 따라가기 9, 문턱 0.11, 1/60초 고정 걸음, 준비 3초 · 결과 5초 · 최종 6초)로 움직입니다. 원본처럼 <b>시작 화면</b>에서 팀 수·난이도·팀별 제한시간을 고르고 시작합니다. 시작하면 앱처럼 <b>동작 연습</b>(왼쪽·오른쪽·앞·뒤로 기울이기)이 먼저 나옵니다. <b>방향키</b>나 <b>WASD</b>, 또는 미로를 <b>누른 채 끌면</b> 내가 파랑팀으로 폰을 기울인 것이 됩니다(↑ = 앞으로). <b>Enter</b>는 선생님 「바로 시작」입니다. 나머지 팀은 체험판에서 가장 짧은 길로 가는 자동 조종입니다(앱도 사람이 없는 팀은 자동으로 굴립니다).</p>
   <div class="demo">
     <div class="stagewrap">
       <canvas id="cv" width="1600" height="900" aria-label="기울기 미로 체험판"></canvas>
       <div class="start" id="start">
         <div>
-          <div class="eyebrow">G002 · 체육 · 모두 함께 개인 도전</div>
+          <div class="eyebrow">G002 · 6학년 체육 · 팀 도전</div>
           <h3>몸으로 탈출! 기울기 미로</h3>
-          <p class="lead2">몸을 기울여 별을 모으고 출구까지! 폰을 기울여 내 공을 굴려 미로를 탈출하세요. 벽에 부딪히면 튕기지 않고 멈춥니다. 모두 같은 미로에서 동시에 도전합니다.</p>
-          <div class="tags"><span>균형과 움직임 조절</span><span>공간 판단</span><span>끝까지 도전</span></div>
+          <p class="lead2">몸을 기울여 보물을 찾고 출구까지! 폰을 기울여 공을 굴려 미로를 탈출하세요. 벽에 부딪히면 튕기지 않고 멈춥니다. 팀별로 같은 미로를 도전해 <b>성공 여부 → 걸린 시간 → 별 획득 수</b>로 승리팀을 정합니다.</p>
+          <div class="tags"><span>균형과 움직임 조절</span><span>공간 판단</span><span>팀 협력</span></div>
           <div class="how"><b>진행 방법</b>
             <ol>
-              <li>난이도를 정합니다.</li>
-              <li>폰을 기울이면 내 공이 움직입니다. 앞으로 기울이면 위로 갑니다.</li>
-              <li>별을 주우면 1점, 초록 출구에 닿으면 5점! 출발점에서 다시 돕니다.</li>
-              <li>90초가 끝나면 점수가 높은 사람이 이깁니다.</li>
+              <li>팀 수와 난이도, 제한시간을 정합니다.</li>
+              <li>팀별로 차례대로 경기를 합니다. 우리 팀이 함께 폰을 기울이면 공이 움직입니다.</li>
+              <li>별을 모으며 초록색 출구에 도착하면 성공!</li>
+              <li>모든 팀이 끝나면 승리팀과 순위를 발표합니다.</li>
             </ol>
           </div>
         </div>
         <div class="set">
           <h4>경기 설정</h4>
+          <div class="opt"><span>팀 수</span><div class="controls">
+            <button data-teams="2" aria-pressed="true">2팀</button>
+            <button data-teams="3" aria-pressed="false">3팀</button>
+            <button data-teams="4" aria-pressed="false">4팀</button>
+          </div></div>
           <div class="opt"><span>미로 난이도</span><div class="controls">
             <button data-speed="5.25" aria-pressed="false">쉬움</button>
             <button data-speed="6.25" aria-pressed="true">보통</button>
             <button data-speed="7.25" aria-pressed="false">어려움</button>
           </div></div>
-          <div class="opt"><span>자동 친구 (체험판)</span><div class="controls">
-            <button data-bots="0" aria-pressed="true">없음</button>
-            <button data-bots="2" aria-pressed="false">2명</button>
-            <button data-bots="5" aria-pressed="false">5명</button>
+          <div class="opt"><span>팀별 제한시간</span><div class="controls">
+            <button data-limit="60" aria-pressed="false">60초</button>
+            <button data-limit="90" aria-pressed="true">90초</button>
+            <button data-limit="120" aria-pressed="false">120초</button>
           </div></div>
           <button class="go" id="go">게임 시작 →</button>
-          <p class="safe"><b>안전</b> 제자리에서 작은 범위로 몸을 기울이고 주변 공간을 확보하세요.</p>
+          <p class="safe"><b>안전</b> 학생은 제자리에서 작은 범위로 몸을 기울이고 주변 공간을 확보하세요.</p>
         </div>
       </div>
     </div>
     <div class="controls">
       <button id="home" hidden>처음 화면</button>
-      <button id="restart" style="margin-left:auto">다시 90초</button>
     </div>
     <div class="score" id="score"></div>
   </div>
 
-  <h2>HTML판에서 달라진 것</h2>
+  <h2>흐름 — 참가 → 동작 연습 → 시작</h2>
   <div class="wrap"><table>
-    <tr><th>HTML판</th><th>앱판</th><th>까닭</th></tr>
-    <tr><td>2~4팀이 한 기기로 차례대로, 팀마다 제한시간</td><td><b>모두 같은 미로에서 동시에</b>, 저마다 제 공(1~30명), 판 90초. 공끼리는 안 부딪힘</td><td>앱은 개인 점수제. 회원님 「모두 동시 개인전」</td></tr>
-    <tr><td>순위: 완주 → 빠른 시간 → 별 → 이동 거리</td><td><b>별 +1, 출구 +5</b>, 탈출하면 출발점에서 별이 다시 놓인 다음 바퀴</td><td>회원님 「별 +1, 출구 +5, 다시 출발」. 빠를수록 바퀴가 늘어 시간이 점수에 녹음</td></tr>
-    <tr><td>폰 기울기 · micro:bit 시리얼 · 키보드</td><td>폰·컨트롤러 기울기(<code>Tilt</code>의 <code>Vector</code> x 좌우, y 앞뒤)</td><td>앱의 입력 계약. 영점·권한은 앱이 맡음</td></tr>
-    <tr><td>쉬움·보통·어려움(빠르기만 다름)</td><td><code>ForMode("easy"/"normal"/"hard")</code>, 규칙 파일 초안은 보통 하나</td><td>필요하면 모드만 바꾼 규칙 파일 둘을 더함</td></tr>
-    <tr><td>주황 공, ⭐·🏁 이모지</td><td>콩콩이(자리 색, 기울인 쪽으로 기움, 탈출하면 환호), 도형 별·깃발</td><td>앱의 다른 기울이기 게임과 같은 캐릭터, 윈도·맥이 같게</td></tr>
-    <tr><td>길이 막히면 벽을 헐어 길 내기</td><td>옮기지 않음(길이 있는지 검사가 붙듦)</td><td>고정 미로라 쓰일 일이 없음</td></tr>
-    <tr><td>—</td><td>기울기 소식이 0.5초 끊기면 기울이지 않은 것으로</td><td>폰이 끊겼을 때 공이 끝까지 굴러가지 않게</td></tr>
-    <tr><td>장면 간격으로 밀기(최대 0.05초)</td><td>1/60초 고정 걸음, 예정 시각에서 세기</td><td>장면 빠르기와 상관없이 같은 결과</td></tr>
+    <tr><th>단계</th><th>앱에서</th></tr>
+    <tr><td>참가</td><td>앱 로비에서 폰으로 들어오면 앱이 팀을 고르게 나눕니다(2·3·4팀 규칙 파일). 사람이 없는 팀은 봇이 채웁니다.</td></tr>
+    <tr><td>동작 연습</td><td>네 단계 — 폰을 <b>왼쪽 · 오른쪽 · 앞 · 몸 쪽</b>으로 기울이기. 단계마다 모두가 그쪽으로 0.3초 기울이면 「잘했어요!」 뒤 다음 단계, 네 단계를 마치면 시작. 선생님 「바로 시작」은 그대로.</td></tr>
+    <tr><td>경기</td><td>팀마다 준비 3초 → 도전(제한 60·90·120초) → 결과 5초. 마지막 팀 뒤 최종 순위 6초를 보이고 저절로 끝납니다.</td></tr>
   </table></div>
-  <p class="note">그대로 옮긴 것: 미로 20×13(한 글자도 같음), 공 반지름·닿는 거리·빠르기(HTML판 픽셀 ÷ 40), 따라가기 계수 9, 문턱 0.11, 대각선 길이 1, 축마다 따로 움직여 벽에 막힌 축만 멈춤(튕기지 않음), 공 둘레 여덟 점으로 벽 보기, 별 세 개를 가장 짧은 길의 1/4·1/2·3/4 자리에(길 찾기 방향 차례도 같음), 바닥·벽·출구 색.</p>
 
-  <h2>새 파일</h2>
+  <h2>원본과 달라진 것 (2026-11-26 원본대로 다시)</h2>
+  <p class="note">11-04에는 회원님 결정으로 「모두 동시 개인전, 별 +1 · 출구 +5」로 옮겼습니다. 11-26 회원님 「원본대로 다시」로 원본의 팀 차례전을 되살렸습니다. 남은 차이는 앱 기기와 점수판에 맞추느라 생긴 것뿐입니다.</p>
+  <div class="wrap"><table>
+    <tr><th>원본</th><th>앱판</th><th>까닭</th></tr>
+    <tr><td>팀마다 기기 하나(폰 기울기 · micro:bit · 키보드)</td><td>차례인 팀 <b>모두의 폰 기울기를 평균</b>해 공 하나를 굴림(0.5초 넘게 소식이 없는 폰은 뺌). 다른 팀 기울기는 버림</td><td>앱은 사람마다 폰이 있다. 원본 첫 기기(폰 기울기)를 그대로 쓰고, 팀이 함께 기울여야 가게 했다</td></tr>
+    <tr><td>순위: 완주 → 빠른 시간 → 별 → 이동 거리</td><td>같은 순위를 무대 최종 화면에 그대로. 앱 점수는 <b>완주 1000 + 남은 0.1초당 1</b>, 못 하면 <b>별 × 200 + 간 거리 0.1칸당 1</b>을 팀 대표(자리 번호가 가장 앞) 한 사람에게</td><td>앱은 팀 합계 점수로 이긴 팀을 고른다. 이 점수의 차례가 원본 순위와 같다(검사가 무작위 기록 묶음으로 확인)</td></tr>
+    <tr><td>팀 사이 「다음 팀 시작 →」 단추</td><td>결과 5초 뒤 다음 팀 준비 3초, 저절로</td><td>앱에는 선생님 단추가 없다</td></tr>
+    <tr><td>「센서 연결/권한」·「센서 중심 맞추기」</td><td>앱 폰 화면의 기울기 권한·기준 잡기</td><td>앱이 맡는다</td></tr>
+    <tr><td>「일시정지」·「이 팀 종료」</td><td>앱 일시정지·판 끝</td><td>앱이 판 시간을 쥔다</td></tr>
+    <tr><td>주황 공, 이모지(⭐ 🏁 🎉)</td><td>차례인 팀 색 콩콩이, 도형 별·깃발</td><td>앱 캐릭터, 윈도·맥이 같게</td></tr>
+    <tr><td>—</td><td>입장 뒤 네 방향 동작 연습</td><td>주개발자 흐름(참가 → 동작 연습 → 시작)</td></tr>
+  </table></div>
+  <p class="note">그대로 옮긴 것: 팀 2·3·4, 난이도 3단계(빠르기만), 팀별 제한시간 60·90·120초, 미로 20×13(한 글자도 같음), 공 반지름·닿는 거리·빠르기(원본 픽셀 ÷ 40), 따라가기 9, 문턱 0.11, 대각선 길이 1, 축마다 따로 움직여 벽에 막힌 축만 멈춤, 별 셋을 가장 짧은 길의 1/4·1/2·3/4에, 팀 이름·색(파랑·빨강·초록·보라), 결과 글(「완주 기록」·「도전 시간」·「공동 우승!」), 바닥·벽·출구 색.</p>
+
+  <h2>HTML 판</h2>
+  <p>앱 「AI로 게임 만들기 → HTML 붙여넣기」에 넣으면 도는 한 파일입니다(<a href="https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-g003-g006/docs/progress/g002-tilt-maze-web/game.html?plain=1">game.html</a>). 규칙·숫자는 Unity 판과 같습니다.</p>
+  <div class="wrap"><table>
+    <tr><th></th><th>Unity 판</th><th>HTML 판</th></tr>
+    <tr><td>팀 차례·순위·팀 점수</td><td colspan="2">같음 — 준비 3 · 제한 · 결과 5 · 최종 6초, 완주 → 시간 → 별 → 거리, 팀 평균 기울기, 빈 팀 자동 조종</td></tr>
+    <tr><td>난이도·제한시간</td><td>규칙 파일(<code>tiltMazeMode</code>·<code>tiltMazeLimit</code>)</td><td>보통·90초 고정(웹 게임에는 설정 칸이 넘어오지 않음, 팀 수는 앱 <code>teams</code>)</td></tr>
+    <tr><td>동작 연습</td><td>네 방향</td><td>없음 — 앱이 시작을 알리면 첫 팀 준비</td></tr>
+    <tr><td>공</td><td>팀 색 콩콩이</td><td>팀 색 공</td></tr>
+  </table></div>
+
+  <h2>바꾼 파일</h2>
   <div class="wrap"><table id="files">
     <tr><th>파일</th><th>무엇</th></tr>
   </table></div>
 
   <h2>검증한 것과 안 한 것</h2>
   <ul>
-    <li><span class="ok">통과</span> 판정·감독 검사 29건과 무대 검사 3건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 네 개, <code>MatchActorKey</code>, <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>)과 함께 묶었고, 대역은 <code>Vector2</code>·<code>Vector3</code>·<code>Rect</code>·<code>Mathf.Abs</code>·<code>InterpreterPhase</code>뿐입니다.</li>
-    <li><span class="ok">자동 조종 완주</span> 가장 짧은 길로 기울이는 자동 조종이 원본 미로에서 별 셋을 줍고 탈출한 뒤, 다음 바퀴에서도 별 셋을 다시 줍습니다.</li>
-    <li><span class="ok">빨간불 확인</span> 판정 규칙 14개(벽 · 문턱 · 기울기 끊김 · 대각선 · 앞뒤 방향 · 별은 바퀴에 한 번 · 다시 출발 · 고정 걸음 · 시작 전 · 새 판 · 별 자리 · 출구 동작 · 기울기만 받기 · 명단)를 하나씩 끄면 각각 검사가 실패했고, 되돌리면 모두 다시 통과했습니다.</li>
-    <li><span class="ok">컴파일</span> 무대 <code>UguiTiltMazeStage</code>를 이 저장소의 실제 <code>QuizArt.cs</code>와, 나머지 원본 함수의 실제 선언과 같은 모양의 대역에 대고 컴파일했습니다(경고 0, 오류 0).</li>
-    <li><span class="no">안 함</span> Unity 실행기, 실제 엔진 컴파일, 앱 화면 촬영, 실물 폰·컨트롤러, 윈도 PC. 이 맥에는 Unity가 없습니다.</li>
+    <li><span class="ok">통과</span> 판정·연습·점수·감독 검사 51건과 무대 검사 4건. .NET 8, C# 9, 경고를 오류로, NUnit 3.14. 이 저장소의 실제 파일(<code>Core/Input</code> 네 개, <code>MatchActorKey</code>, <code>Participant</code>·<code>ParticipantRoster</code>, <code>SessionStateMachine</code>, <code>PoseSkeleton</code>, <code>QuizArt</code>)과 함께 묶었고, 대역은 <code>Vector2</code>·<code>Vector3</code>·<code>Rect</code>·<code>Mathf</code>·<code>InterpreterPhase</code>와 UI 함수 선언뿐입니다. <b>Unity 실행기에서 돈 것이 아닙니다.</b></li>
+    <li><span class="ok">원본 순위</span> 무작위 기록 400개의 모든 짝(1만 쌍 넘게)에서 앱 점수 차례가 원본 순위(완주 → 시간 → 별 → 거리)와 뒤집히지 않습니다.</li>
+    <li><span class="ok">빨간불 확인</span> 판정 규칙 32개(벽 · 문턱 · 끊긴 폰 빼기 · 차례인 팀만 · 평균 · 대각선 · 앞뒤 · 별 한 번 · 출구 · 제한시간 · 고정 걸음 · 준비 중 · 다음 팀 · 최종 · 판 닫기 · 새 판 · 자동 조종 · 대표 · 점수 식 다섯 · 연습 넷 · 기울기만 · y − z · 명단 · 대표에게만)를 하나씩 끄면 모두 검사가 실패했습니다.</li>
+    <li><span class="ok">HTML 판</span> dfz 대역 위에서 2팀(사람 1 + 빈 팀)·3팀(모두 빈 팀)을 60·120Hz로 끝까지 — 오류 0, 빈 팀 자동 조종은 6.6초에 별 셋으로 탈출.</li>
+    <li><span class="ok">통과</span> 맥 Unity 6000.5.9f1(빌드 대상 Win64, 가지 9767a1a): 컴파일 오류 0, EditMode 전체 6198건 중 통과 6187 · 실패 7(맥에서만 나는 시리얼 5·설치 경로 1·CameraChoice 1, main도 같음) · 건너뜀 4. TiltMaze 55건 모두 통과. PlayMode <code>SharedMatchHold</code> 2건 통과. 로비 묶음 표(<code>catalog.json</code>)와 표지 목록을 맥 Unity로 다시 만듦. HTML 판 앱 검사기 문제 없음.</li>
+    <li><span class="ok">봄</span> 앱 화면(맥 에디터 <code>SessionTest</code> 씬, 가짜 장치·봇): 팀 도전 줄·준비 3초·안내 단계 동작 연습. 그림은 PR #141 본문.</li>
+    <li><span class="no">안 함</span> 실물 폰으로 한 판, 윈도 PC, HTML 판 앱 실행(Windows 전용).</li>
   </ul>
 
-  <h2>앱에 붙이려면</h2>
+  <h2>앱에 이은 것 (공용 파일)</h2>
   <ol>
-    <li><b>규칙</b>: <code>FlowType</code> 맨 뒤에 <code>TiltMaze</code>, <code>GameRuleSet</code>에 <code>flow.tiltMazeMode</code>(<code>easy</code>·<code>normal</code>·<code>hard</code>), 검증기와 JSON 스키마 갱신(장치 Phone·Controller, 인원 ≤ 30, 개인전).</li>
-    <li><b>세션</b>: <code>SessionRunner</code>의 <code>IsNativeActivity</code>에 이 흐름을 넣어 기기 입력이 점수로 바로 가지 않게. 감독의 <code>Award</code>만 <code>HandleActivityInput</code>으로.</li>
-    <li><b>화면</b>: <code>UguiNativeActivities</code>에 감독·무대. 라우터 입력은 <code>HandleInput</code>, 장면마다(<code>RunsNow</code>일 때) <code>SyncRoster</code> → <code>Tick(경기 시간, 판 번호)</code> → <code>Sync</code>. 시계는 일시정지를 뺀 경기 시간. 끝나면 <code>Close</code>, 떠나면 <code>Reset</code>.</li>
-    <li><b>대결</b>: 공통 경기 상태를 지원하지 않으므로 단독 경기만.</li>
-    <li><b>출시</b>: <code>GameTitles</code>(제목에 「G002」 번호를 붙여 둠), 표지, 출시 목록 검사, 포털 내장 게임 사본. 규칙 파일 초안을 <code>StreamingAssets/games/g002-tilt-maze/</code>로.</li>
-    <li><b>말 표</b> 12개 언어: <code>tiltMaze.hint</code>(폰을 기울여 공을 굴려요 / Tilt your phone to roll). 이미 있는 <code>native.wellDone</code>도 씀.</li>
+    <li><b>흐름</b>: <code>FlowTypes.PracticesInIntro</code>·<code>HasLongRound</code>·<code>MaxTeams</code>에 <code>TiltMaze</code>. 이제 안내 단계에서 연습을 돌고, 판 길이 상한은 540초(팀 넷 × (3 + 120 + 5) + 6)이며 판이 스스로 끝납니다.</li>
+    <li><b>규칙</b>: <code>flow.tiltMazeLimit</code>(60·90·120, 필수) — <code>GameRuleSet</code>·검증기·JSON 스키마. 검증기는 TiltMaze를 팀전 흐름으로 받습니다. <code>BotFill.Supports</code>에도 더해 빈 팀에 봇이 섭니다(봇 팀은 판이 자동으로 굴림).</li>
+    <li><b>화면</b>: 감독이 다섯 게임과 같은 모양이 되어 <code>NativePracticeStages</code>의 손잡이(<code>Maze</code>)로 섭니다. <code>UguiNativeActivities</code>의 기울기 미로 전용 줄은 지웠습니다.</li>
+    <li><b>규칙 파일</b>: <code>g002-tilt-maze</code>(2팀) · <code>-3teams</code> · <code>-4teams</code>, 점수 규칙 셋(Squat +100 · Move +10 · Raise +1), <code>victory.scope</code> Team. <code>GameTitles</code> 두 줄.</li>
+    <li><b>로비 묶음</b>: <code>builtin-games.csv</code> 세 줄(틀 <code>tilt-maze</code>), 말 파일 12개 <code>family.name.tilt-maze</code>, <code>catalog.json</code>은 맥 Unity로 다시 만들어 이 PR에 넣었습니다.</li>
+    <li><b>말 표</b> 12개 언어: <code>tiltMaze.*</code> 31개(팀 이름·도전 줄·준비·결과·최종·연습). ko·en 외 10개는 원어민 미확인.</li>
+    <li><b>검사</b>: <code>MovedHtmlGamesTests</code>·<code>RuleSetCensusTests</code>·<code>BuiltinEducationCatalogTests</code>·<code>HomeFamiliesTests</code>·PlayMode 두 목록·서버 <code>NativeActivityValidationTests</code>를 새 규칙에 맞췄습니다.</li>
   </ol>
 
   <h2>실물에서 봐 주셨으면 하는 것</h2>
   <ul>
-    <li><b>앞뒤 방향</b> — 가정: 기울기 <code>Vector.y</code> +1이 「앞으로」(스키와 같음)라 미로에서 위로 갑니다. 반대로 느껴지면 <code>TiltMazeSettings.ForwardSign</code>만 +1로 바꿉니다.</li>
-    <li>끝까지 기울였을 때 6.25칸/초가 폰 기울기 범위에서 다루기 알맞은지(앱의 중력 거르개 시간 상수 약 0.31초).</li>
-    <li>30명이 한 미로에 겹칠 때 자기 공을 찾을 수 있는지. 처음엔 모두 출발점에 겹쳐 섭니다.</li>
-    <li>1920×1080에서 칸이 약 80px라, 콩콩이 번호판 글자가 글자 하한(<code>QuizArt.MinText</code>)에 걸려 칸보다 클 수 있습니다.</li>
+    <li><b>팀 평균</b> — 팀원이 많으면(예: 30명 2팀 = 15명) 서로 다른 쪽으로 기울여 공이 잘 안 갈 수 있습니다. 원본 「팀원이 알려준 방향」 활동을 몸으로 하는 셈이지만, 너무 어려우면 대표 한 명만 조종하게 바꿀 수 있습니다.</li>
+    <li><b>앞뒤 방향</b> — 앞으로 기울이면 공이 위로(<code>TiltMazeSettings.ForwardSign</code> −1). 반대로 느껴지면 그 값만 +1.</li>
+    <li>점수판 숫자(예: 1873점)가 아이들에게 낯설 수 있습니다. 무대 최종 화면에는 원본처럼 「완주 · 12.3초 · 별 3/3」로 보입니다.</li>
   </ul>
 </main>
 <script>
@@ -527,22 +551,23 @@ var Buddy = (function () {
 
 </script>
 <script>
-/* 새 파일 목록 */
+/* 바꾼 파일 목록 */
 (function(){
-  var base = "https://github.com/EduFit-Tech/digitalpe/blob/claude/g002-tilt-maze-native/";
+  var base = "https://github.com/EduFit-Tech/digitalpe/blob/main/";
   var rows = [
-    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeSettings.cs", "놀이 값, 원본 미로, 모드(easy·normal·hard)"],
-    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/MazeMap.cs", "미로: 벽, 출발·출구, 가장 짧은 길, 별 자리, 공이 설 수 있는가"],
-    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeRound.cs", "판: 기울기 → 속도, 고정 걸음, 벽, 별·출구, 다시 출발"],
-    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeScoring.cs", "별 → Raise(+1), 출구 → Squat(+5)"],
-    ["unity/Assets/DigitalFitZone/UI/Session/TiltMazeDirector.cs", "감독: 명단 맞추기, 기울기만 판에, Award, 알림"],
-    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiTiltMazeStage.cs", "무대: 미로, 별·깃발, 콩콩이, +1·+5"],
-    ["unity/Assets/DigitalFitZone/Tests/EditMode/TiltMazeRoundTests.cs", "판 검사 21건"],
-    ["unity/Assets/DigitalFitZone/Tests/EditMode/TiltMazeDirectorTests.cs", "감독 검사 8건"],
-    ["unity/Assets/DigitalFitZone/Tests/EditMode/TiltMazeStageTests.cs", "무대 검사 3건"],
-    ["docs/progress/2026-11-04-g002-tilt-maze-native.md", "진행 기록, 붙이는 길"],
-    ["docs/progress/g002-tilt-maze-rulesets/g002-tilt-maze.ruleset.json", "규칙 파일 초안(보통)"],
-    ["docs/progress/g002-tilt-maze-review.html", "이 페이지 사본"]
+    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeSettings.cs", "놀이 값 + 팀 수·팀별 제한시간·준비·결과·최종·자동 조종·연습 값, From"],
+    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeRound.cs", "판: 팀 차례(준비 → 도전 → 결과 → 최종), 팀 평균 기울기, 자동 조종, 팀 기록"],
+    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazeScoring.cs", "원본 순위 비교·공동 순위, 팀 점수 식, 백·십·일 자리 동작"],
+    ["unity/Assets/DigitalFitZone/Game/Play/TiltMaze/TiltMazePractice.cs", "새 파일 — 동작 연습 네 방향"],
+    ["unity/Assets/DigitalFitZone/UI/Session/TiltMazeDirector.cs", "감독: 연습·경기, y − z, 팀 점수를 대표에게"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiTiltMazeStage.cs", "무대: 도전 줄, 팀 색 콩콩이, 준비·결과·최종 카드, 연습 화면"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiPracticeGames.cs", "공용 — 기울기 미로 손잡이"],
+    ["unity/Assets/DigitalFitZone/UI/Session/Ugui/UguiNativeActivities.cs", "공용 — 기울기 미로 전용 줄 지움"],
+    ["unity/Assets/DigitalFitZone/Rules/Schema/RuleSetEnums.cs", "공용 — 연습·긴 판·팀 넷"],
+    ["unity/Assets/DigitalFitZone/Rules/Validation/RuleSetValidator.cs", "공용 — tiltMazeLimit, 팀전 흐름"],
+    ["unity/Assets/StreamingAssets/games/g002-tilt-maze/ruleset.json", "규칙 파일 — 2팀(-3teams · -4teams 따로)"],
+    ["docs/progress/2026-11-04-g002-tilt-maze-native.md", "진행 기록 — 끝에 「2026-11-26 원본대로 팀 차례전」"],
+    ["docs/progress/g002-tilt-maze-web/game.html", "HTML 판(붙여넣기용 한 파일)"]
   ];
   var t = document.getElementById("files");
   rows.forEach(function(r){
@@ -552,172 +577,161 @@ var Buddy = (function () {
   });
 })();
 
-/* 체험판 — TiltMazeRound.cs 와 같은 숫자 */
+/* 체험판 — TiltMazeRound.cs · TiltMazePractice.cs 와 같은 숫자 */
 (function(){
   "use strict";
-  var MAP = [
-    "####################",
-    "#S.....#...........#",
-    "#.###..#.######.##.#",
-    "#...#..#..#.....#..#",
-    "###.#.....#.###.#.##",
-    "#...###.###.#...#..#",
-    "#.#.....#...#.###..#",
-    "#.#.#####.###......#",
-    "#.#...#...#...####.#",
-    "#.###.#.###.#......#",
-    "#.....#.....#.####.#",
-    "#.................E#",
-    "####################"];
-  var COLS = 20, ROWS = 13, R = 0.325, PICK = 0.625, RESP = 9, DEAD = 0.11, HOLD = 0.5, STEP = 1 / 60, ROUND = 90;
-  var SEAT = ["#D1F58E", "#8CC8FF", "#FFD66B", "#C7A4FF", "#FF8A7A", "#A4F0D7"];
-  var speed = 6.25, bots = 0;
+  var MAP = ["####################","#S.....#...........#","#.###..#.######.##.#","#...#..#..#.....#..#","###.#.....#.###.#.##","#...###.###.#...#..#",
+             "#.#.....#...#.###..#","#.#.#####.###......#","#.#...#...#...####.#","#.###.#.###.#......#","#.....#.....#.####.#","#.................E#","####################"];
+  var COLS = 20, ROWS = 13, R = 0.325, PICK = 0.625, RESP = 9, DEAD = 0.11, HOLD = 0.5, STEP = 1 / 60;
+  var READY = 3, RESULT = 5, FINAL = 6, BOT = 0.7, P_TILT = 0.5, P_HOLD = 0.3, P_FEED = 0.8;
+  var COLORS = ["#2279D5", "#DF574C", "#54A65B", "#A45BC4"], NAMES = ["파랑팀", "빨강팀", "초록팀", "보라팀"];
+  var STEPS = [["왼쪽", -1, 0], ["오른쪽", 1, 0], ["앞", 0, 1], ["몸 쪽", 0, -1]];
+  var speed = 6.25, teams = 2, LIMIT = 90;
   function wallCell(x, y) { return x < 0 || y < 0 || x >= COLS || y >= ROWS || MAP[y][x] === "#"; }
-  function wallAt(x, y) { return x < 0 || y < 0 || wallCell(Math.floor(x), Math.floor(y)); }
-  function fits(x, y) {
-    return !(wallAt(x - R, y - R) || wallAt(x + R, y - R) || wallAt(x - R, y + R) || wallAt(x + R, y + R) ||
-             wallAt(x, y - R) || wallAt(x, y + R) || wallAt(x - R, y) || wallAt(x + R, y));
-  }
+  function wallAt(x, y) { return wallCell(Math.floor(x), Math.floor(y)); }
+  function fits(x, y) { return !(wallAt(x - R, y - R) || wallAt(x + R, y - R) || wallAt(x - R, y + R) || wallAt(x + R, y + R) || wallAt(x, y - R) || wallAt(x, y + R) || wallAt(x - R, y) || wallAt(x + R, y)); }
   var DX = [1, 0, -1, 0], DY = [0, 1, 0, -1];
   function path(fx, fy, tx, ty) {
-    var q = [[fx, fy]], seen = {}, prev = {};
-    seen[fx + "," + fy] = 1;
-    while (q.length) {
-      var c = q.shift();
-      if (c[0] === tx && c[1] === ty) {
-        var out = [c], k = c[0] + "," + c[1];
-        while (prev[k]) { out.unshift(prev[k]); k = prev[k][0] + "," + prev[k][1]; }
-        return out;
-      }
-      for (var d = 0; d < 4; d++) {
-        var nx = c[0] + DX[d], ny = c[1] + DY[d], nk = nx + "," + ny;
-        if (wallCell(nx, ny) || seen[nk]) continue;
-        seen[nk] = 1; prev[nk] = c; q.push([nx, ny]);
-      }
-    }
+    var q = [[fx, fy]], seen = {}, prev = {}; seen[fx + "," + fy] = 1;
+    while (q.length) { var c = q.shift();
+      if (c[0] === tx && c[1] === ty) { var out = [c], k = c[0] + "," + c[1]; while (prev[k]) { out.unshift(prev[k]); k = prev[k][0] + "," + prev[k][1]; } return out; }
+      for (var d = 0; d < 4; d++) { var nx = c[0] + DX[d], ny = c[1] + DY[d], nk = nx + "," + ny; if (wallCell(nx, ny) || seen[nk]) continue; seen[nk] = 1; prev[nk] = c; q.push([nx, ny]); } }
     return null;
   }
-  var START = { x: 1.5, y: 1.5 }, EXIT = { x: 18.5, y: 11.5 };
-  var route = path(1, 1, 18, 11), STARS = [];
-  for (var i = 1; i <= 3; i++) { var c = route[Math.min(route.length - 1, Math.floor(route.length * i / 4))]; STARS.push({ x: c[0] + 0.5, y: c[1] + 0.5 }); }
+  var START = { x: 1.5, y: 1.5 }, EXIT = { x: 18.5, y: 11.5 }, ROUTE = path(1, 1, 18, 11), STARS = [];
+  for (var i = 1; i <= 3; i++) { var c0 = ROUTE[Math.floor(ROUTE.length * i / 4)]; STARS.push({ x: c0[0] + 0.5, y: c0[1] + 0.5 }); }
 
-  var balls = [], clock = 0, acc = 0, cheers = [], last = 0, over = false, started = false;
-  function ball(seat, bot) { return { seat: seat, bot: bot, x: START.x, y: START.y, vx: 0, vy: 0, tx: 0, ty: 0, tAt: -1e9, taken: [0, 0, 0], score: 0, laps: 0, exitAt: -1e9 }; }
-  function reset() {
-    balls = [ball(1, false)];
-    for (var i = 0; i < bots; i++) balls.push(ball(i + 2, true));
-    clock = 0; cheers = []; over = false;
-  }
-  function steer(b) {
-    if (clock - b.tAt > HOLD) return [0, 0];
-    var ax = Math.abs(b.tx) < DEAD ? 0 : b.tx, ay = Math.abs(b.ty) < DEAD ? 0 : b.ty, l = Math.hypot(ax, ay);
-    return l > 1 ? [ax / l, ay / l] : [ax, ay];
-  }
-  function advance(b) {
-    var s = steer(b), k = Math.min(1, STEP * RESP);
-    b.vx += (s[0] * speed - b.vx) * k; b.vy += (s[1] * speed - b.vy) * k;
-    var nx = b.x + b.vx * STEP; if (fits(nx, b.y)) b.x = nx; else b.vx = 0;
-    var ny = b.y + b.vy * STEP; if (fits(b.x, ny)) b.y = ny; else b.vy = 0;
-    for (var i = 0; i < 3; i++) {
-      if (!b.taken[i] && Math.hypot(b.x - STARS[i].x, b.y - STARS[i].y) < PICK) { b.taken[i] = 1; b.score += 1; cheers.push({ x: STARS[i].x, y: STARS[i].y, t: "+1", at: clock, exit: false }); }
-    }
-    if (Math.hypot(b.x - EXIT.x, b.y - EXIT.y) < PICK) {
-      b.score += 5; b.laps++; b.exitAt = clock; cheers.push({ x: EXIT.x, y: EXIT.y, t: "+5", at: clock, exit: true });
-      b.x = START.x; b.y = START.y; b.vx = b.vy = 0; b.taken = [0, 0, 0];
-    }
-  }
-  function autopilot(b) {
-    var p = path(Math.floor(b.x), Math.floor(b.y), 18, 11), n = p.length > 1 ? p[1] : p[0];
-    var dx = n[0] + 0.5 - b.x, dy = n[1] + 0.5 - b.y, l = Math.hypot(dx, dy) || 1;
-    var slow = 0.55 + b.seat * 0.07;   // 친구마다 빠르기를 조금씩 다르게
-    b.tx = dx / l * slow; b.ty = dy / l * slow; b.tAt = clock;
-  }
+  var mode = "off", clock = 0, acc = 0, last = 0, phase = "ready", phaseAt = 0, turnStart = 0, active = 0, botIdx = 0;
+  var ball, taken, stars, records, cheers = [], me = { x: 0, y: 0, at: -1e9 }, step = 0, held = 0, passed = false, feedAt = -1;
+  function place() { ball = { x: START.x, y: START.y, vx: 0, vy: 0 }; taken = [0, 0, 0]; stars = 0; botIdx = 0; }
+  function reset() { clock = 0; acc = 0; records = []; for (var t = 0; t < teams; t++) records.push({ team: t, played: false }); active = 0; cheers = []; place(); step = 0; held = 0; passed = false; feedAt = -1; }
+  function enter(p) { phase = p; phaseAt = clock; }
+  function points(r) { if (!r.played) return 0; if (r.success) return 1000 + Math.round(Math.max(0, LIMIT - r.time) * 10); return r.stars * 200 + Math.min(199, Math.round(r.progress * 10)); }
+  function compare(a, b) { if (a.played !== b.played) return a.played ? -1 : 1; if (a.success !== b.success) return a.success ? -1 : 1; var c = a.success ? a.time - b.time : b.stars - a.stars; return c !== 0 ? c : b.progress - a.progress; }
+  function ties(a, b) { return a.success === b.success && (a.success ? Math.abs(a.time - b.time) < 0.05 : a.stars === b.stars && Math.abs(a.progress - b.progress) < 1 / 40); }
 
-  /* P1 조종: 방향키·WASD, 또는 누른 채 끌기 */
+  /* 내 기울기(파랑팀, 앞 +): 방향키·WASD, 또는 누른 채 끌기 */
   var keys = {}, drag = null;
-  addEventListener("keydown", function (e) { if (/^Arrow|^[wasd]$/i.test(e.key)) { keys[e.key.toLowerCase()] = 1; e.preventDefault(); } });
+  addEventListener("keydown", function (e) {
+    if (mode !== "off" && e.key === "Enter") { if (mode === "practice") { mode = "count"; clock = 0; } e.preventDefault(); return; }
+    if (/^Arrow|^[wasd]$/i.test(e.key)) { keys[e.key.toLowerCase()] = 1; if (mode !== "off") e.preventDefault(); } });
   addEventListener("keyup", function (e) { keys[e.key.toLowerCase()] = 0; });
-  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height;
-  var pad = H * 0.02, tile = Math.min((W - pad * 2) / COLS, (H - pad * 2) / ROWS), ox = (W - tile * COLS) / 2, oy = (H - tile * ROWS) / 2;
+  var cv = document.getElementById("cv"), ctx = cv.getContext("2d"), W = cv.width, H = cv.height, HUD = H * 0.11;
+  var tile = Math.min(W * 0.96 / COLS, (H - HUD) * 0.96 / ROWS), ox = (W - tile * COLS) / 2, oy = HUD + (H - HUD - tile * ROWS) / 2;
   function toMaze(e) { var r = cv.getBoundingClientRect(); return { x: ((e.clientX - r.left) / r.width * W - ox) / tile, y: ((e.clientY - r.top) / r.height * H - oy) / tile }; }
   cv.addEventListener("pointerdown", function (e) { drag = toMaze(e); cv.setPointerCapture(e.pointerId); });
   cv.addEventListener("pointermove", function (e) { if (drag) drag = toMaze(e); });
   ["pointerup", "pointercancel"].forEach(function (n) { cv.addEventListener(n, function () { drag = null; }); });
-  function controlP1(b) {
+  function readMe() {
     var x = (keys.arrowright || keys.d ? 1 : 0) - (keys.arrowleft || keys.a ? 1 : 0);
-    var y = (keys.arrowdown || keys.s ? 1 : 0) - (keys.arrowup || keys.w ? 1 : 0);
-    if (drag) { x = (drag.x - b.x) / 1.5; y = (drag.y - b.y) / 1.5; x = Math.max(-1, Math.min(1, x)); y = Math.max(-1, Math.min(1, y)); }
-    if (x || y) { b.tx = x; b.ty = y; b.tAt = clock; }
+    var y = (keys.arrowup || keys.w ? 1 : 0) - (keys.arrowdown || keys.s ? 1 : 0);
+    if (drag) { x = Math.max(-1, Math.min(1, (drag.x - ball.x) / 1.5)); y = Math.max(-1, Math.min(1, (ball.y - drag.y) / 1.5)); }
+    if (x || y) { me.x = x; me.y = y; me.at = clock; }
+  }
+  function steer() {
+    if (active !== 0) { /* 체험판의 다른 팀 = 사람이 없는 팀 — 앱과 같은 자동 조종 */
+      while (botIdx + 1 < ROUTE.length) { var c = ROUTE[botIdx + 1]; if (Math.hypot(c[0] + 0.5 - ball.x, c[1] + 0.5 - ball.y) > 0.1) break; botIdx++; }
+      if (botIdx + 1 >= ROUTE.length) return [0, 0];
+      var n = ROUTE[botIdx + 1], dx = n[0] + 0.5 - ball.x, dy = n[1] + 0.5 - ball.y, l = Math.hypot(dx, dy) || 1; return [dx / l * BOT, dy / l * BOT]; }
+    if (clock - me.at > HOLD) return [0, 0];
+    var ax = Math.abs(me.x) < DEAD ? 0 : me.x, ay = Math.abs(me.y) < DEAD ? 0 : -me.y, ll = Math.hypot(ax, ay);
+    return ll > 1 ? [ax / ll, ay / ll] : [ax, ay];
+  }
+  function endTurn(ok) { var r = records[active]; r.played = true; r.success = ok; r.time = Math.min(LIMIT, clock - turnStart); r.stars = stars; r.progress = Math.hypot(ball.x - START.x, ball.y - START.y); r.points = points(r); ball.vx = ball.vy = 0; enter("result"); }
+  function advance() {
+    if (mode === "practice") { readMe();
+      if (feedAt >= 0) { if (clock >= feedAt) { feedAt = -1; held = 0; passed = false; if (step + 1 >= STEPS.length) { mode = "count"; clock = 0; } else step++; } return; }
+      var st = STEPS[step], on = clock - me.at <= HOLD && (st[1] ? me.x * st[1] >= P_TILT : me.y * st[2] >= P_TILT);
+      held = on ? held + STEP : 0; if (held >= P_HOLD - 1e-9) { passed = true; feedAt = clock + P_FEED; } return; }
+    if (mode === "count") { if (clock >= 3) { mode = "play"; clock = 0; reset(); enter("ready"); } return; }
+    if (mode !== "play") return;
+    if (phase === "ready" && clock >= phaseAt + READY - 1e-9) { place(); turnStart = clock; enter("run"); }
+    else if (phase === "run") { readMe();
+      var a = steer(), k = Math.min(1, STEP * RESP); ball.vx += (a[0] * speed - ball.vx) * k; ball.vy += (a[1] * speed - ball.vy) * k;
+      var nx = ball.x + ball.vx * STEP; if (fits(nx, ball.y)) ball.x = nx; else ball.vx = 0;
+      var ny = ball.y + ball.vy * STEP; if (fits(ball.x, ny)) ball.y = ny; else ball.vy = 0;
+      for (var s = 0; s < 3; s++) if (!taken[s] && Math.hypot(STARS[s].x - ball.x, STARS[s].y - ball.y) < PICK) { taken[s] = 1; stars++; cheers.push({ x: STARS[s].x, y: STARS[s].y, t: "별!", at: clock }); }
+      if (Math.hypot(EXIT.x - ball.x, EXIT.y - ball.y) < PICK) { cheers.push({ x: EXIT.x, y: EXIT.y, t: "탈출!", at: clock }); endTurn(true); }
+      else if (clock - turnStart >= LIMIT - 1e-9) endTurn(false); }
+    else if (phase === "result" && clock >= phaseAt + RESULT - 1e-9) { if (active + 1 < teams) { active++; place(); enter("ready"); } else enter("final"); }
+    else if (phase === "final" && clock >= phaseAt + FINAL - 1e-9) { mode = "over"; }
   }
 
-  function px(x) { return ox + x * tile; }
-  function py(y) { return oy + y * tile; }
-  function drawStar(cx, cy, r) {
-    ctx.beginPath();
-    for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + Math.PI * i / 5, rr = i % 2 ? r * 0.45 : r; ctx.lineTo(cx + Math.cos(a) * rr, cy + Math.sin(a) * rr); }
-    ctx.closePath(); ctx.fillStyle = "#FFC83D"; ctx.fill(); ctx.lineWidth = r * 0.12; ctx.strokeStyle = "#B97A0E"; ctx.stroke();
-  }
-  // 배경 그림 — 앱 규칙 파일 assets.background와 같은 그림(2026-11-06). 아직 안 왔으면 지금 색을 그린다.
+  function txt(s, x, y, size, color, align) { ctx.fillStyle = color; ctx.font = "800 " + Math.round(size) + "px Pretendard Variable, sans-serif"; ctx.textAlign = align || "center"; ctx.textBaseline = "middle"; ctx.fillText(String(s), x, y); }
+  function rr(x, y, w, h, r, c) { ctx.fillStyle = c; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.fill(); }
+  function drawStar(cx, cy, r) { ctx.beginPath(); for (var i = 0; i < 10; i++) { var a = -Math.PI / 2 + Math.PI * i / 5, q = i % 2 ? r * 0.45 : r; ctx.lineTo(cx + Math.cos(a) * q, cy + Math.sin(a) * q); } ctx.closePath(); ctx.fillStyle = "#FFC83D"; ctx.fill(); ctx.lineWidth = r * 0.12; ctx.strokeStyle = "#B97A0E"; ctx.stroke(); }
   var BG = typeof Image === "undefined" ? null : new Image(); if (BG) BG.src = "img/g002-tilt-maze-bg.jpg";
   function backdrop() { if (BG && BG.complete && BG.naturalWidth) { ctx.drawImage(BG, 0, 0, W, H); ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.fillRect(0, 0, W, H); var sh = ctx.createLinearGradient(0, 0, 0, H * 0.2); sh.addColorStop(0, "rgba(0,0,0,.45)"); sh.addColorStop(1, "rgba(0,0,0,0)"); ctx.fillStyle = sh; ctx.fillRect(0, 0, W, H * 0.2); return true; } return false; }
+  function card(w, h) { var x = ox + tile * COLS * (1 - w) / 2, y = oy + tile * ROWS * (1 - h) / 2; rr(x, y, tile * COLS * w, tile * ROWS * h, H * 0.03, "#F7FBFE"); return { x: x, y: y, w: tile * COLS * w, h: tile * ROWS * h }; }
   function draw() {
-    var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#34507F"); g.addColorStop(0.45, "#1A2944"); g.addColorStop(1, "#111B2E");
-    if (!backdrop()) { ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
-    for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) {
-      var X = px(x), Y = py(y);
-      if (wallCell(x, y)) {
-        ctx.fillStyle = "#426E83"; ctx.fillRect(X, Y, tile + .5, tile + .5);
-        ctx.fillStyle = "#78B7C0"; ctx.fillRect(X + tile * .1, Y + tile * .1, tile * .8, tile * .175);
-        ctx.fillStyle = "#31596D"; ctx.fillRect(X + tile * .125, Y + tile * .325, tile * .75, tile * .55);
-      } else { ctx.fillStyle = (x + y) % 2 ? "#E9F7E5" : "#DCF2D9"; ctx.fillRect(X, Y, tile + .5, tile + .5); }
-    }
-    var s = tile * .9, ex = px(EXIT.x), ey = py(EXIT.y);
-    ctx.fillStyle = "#51B668"; ctx.beginPath(); ctx.roundRect(ex - s / 2, ey - s / 2, s, s, s * .25); ctx.fill();
+    if (!backdrop()) { var g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, "#34507F"); g.addColorStop(0.45, "#1A2944"); g.addColorStop(1, "#111B2E"); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); }
+    for (var y = 0; y < ROWS; y++) for (var x = 0; x < COLS; x++) { var X = ox + x * tile, Y = oy + y * tile;
+      if (wallCell(x, y)) { ctx.fillStyle = "#426E83"; ctx.fillRect(X, Y, tile + .5, tile + .5); ctx.fillStyle = "#78B7C0"; ctx.fillRect(X + tile * .1, Y + tile * .1, tile * .8, tile * .175); ctx.fillStyle = "#31596D"; ctx.fillRect(X + tile * .125, Y + tile * .325, tile * .75, tile * .55); }
+      else { ctx.fillStyle = (x + y) % 2 ? "#E9F7E5" : "#DCF2D9"; ctx.fillRect(X, Y, tile + .5, tile + .5); } }
+    var s = tile * .9, ex = ox + EXIT.x * tile, ey = oy + EXIT.y * tile;
+    rr(ex - s / 2, ey - s / 2, s, s, s * .25, "#51B668");
     ctx.strokeStyle = "#fff"; ctx.lineWidth = s * .07; ctx.lineCap = "round"; ctx.beginPath(); ctx.moveTo(ex - s * .18, ey - s * .32); ctx.lineTo(ex - s * .18, ey + s * .32); ctx.stroke();
     ctx.fillStyle = "#fff"; ctx.beginPath(); ctx.moveTo(ex - s * .18, ey - s * .32); ctx.lineTo(ex + s * .24, ey - s * .18); ctx.lineTo(ex - s * .18, ey - s * .04); ctx.fill();
-    var now = performance.now();
-    STARS.forEach(function (st, i) { drawStar(px(st.x), py(st.y), tile * .36 * (1 + .06 * Math.sin(now / 333 + i))); });
-    balls.slice().reverse().forEach(function (b) {
-      var st = steer(b), size = tile * 1.05, cheer = clock - b.exitAt < 0.9 || over;
-      ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.ellipse(px(b.x), py(b.y) + size * .42, size * .32, size * .08, 0, 0, 7); ctx.fill();
-      Buddy.draw(ctx, { x: px(b.x), y: py(b.y) + size * .45, size: size, color: SEAT[(b.seat - 1) % SEAT.length],
-        pose: cheer ? "cheer" : (st[0] || st[1]) ? "lean" : "idle", lean: st[0], t: now + b.seat * 700, label: "P" + b.seat });
-    });
-    cheers = cheers.filter(function (c) { return clock - c.at < 0.9; });
-    cheers.forEach(function (c) {
-      var k = (clock - c.at) / 0.9; ctx.globalAlpha = 1 - k;
-      ctx.font = "800 " + Math.round(tile * (c.exit ? .9 : .7)) + "px Pretendard Variable, sans-serif"; ctx.textAlign = "center";
-      ctx.fillStyle = c.exit ? "#1F7A3A" : "#B97A0E"; ctx.fillText(c.t, px(c.x), py(c.y) - tile * .8 - k * tile);
-      ctx.globalAlpha = 1;
-    });
-    var left = Math.max(0, ROUND - clock);
-    ctx.font = "800 " + Math.round(H * .045) + "px Pretendard Variable, sans-serif"; ctx.textAlign = "left";
-    ctx.fillStyle = "#F4F8FF"; ctx.fillText(Math.ceil(left) + "초", H * .03, H * .07);
-    if (over) {
-      ctx.fillStyle = "#30435A"; ctx.beginPath(); ctx.roundRect(W * .3, H * .42, W * .4, H * .14, H * .07); ctx.fill();
-      ctx.fillStyle = "#F4F8FF"; ctx.textAlign = "center"; ctx.font = "800 " + Math.round(H * .06) + "px Pretendard Variable, sans-serif"; ctx.fillText("잘했어요!", W / 2, H * .515);
+    var now = performance.now(), f = H * 0.04;
+    if (mode === "practice" || mode === "count") {
+      STARS.forEach(function (st) { drawStar(ox + st.x * tile, oy + st.y * tile, tile * .36); });
+      var st2 = STEPS[step];
+      txt(mode === "count" ? "곧 시작해요" : "동작 연습 " + (step + 1) + "/4 · 폰을 " + st2[0] + "으로 기울여요", W / 2, HUD * 0.38, f * 1.05, "#F4F8FF");
+      txt(mode === "count" ? "" : "방향키로 기울여 보세요. 모두 기울이면 다음 단계, Enter = 바로 시작", W / 2, HUD * 0.8, f * 0.7, "#CCDCE9");
+      var cx = ox + tile * COLS / 2, cy = oy + tile * ROWS / 2, size = tile * 2.4;
+      if (mode === "practice") { var dx = st2[1], dy = -st2[2], L = tile * 3.2; ctx.strokeStyle = "#FFD66B"; ctx.lineWidth = tile * .42; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + dx * L, cy + dy * L); ctx.stroke();
+        ctx.fillStyle = "#FFD66B"; ctx.beginPath(); ctx.moveTo(cx + dx * (L + tile * .8), cy + dy * (L + tile * .8)); ctx.lineTo(cx + dx * L - dy * tile * .7, cy + dy * L + dx * tile * .7); ctx.lineTo(cx + dx * L + dy * tile * .7, cy + dy * L - dx * tile * .7); ctx.fill(); }
+      Buddy.draw(ctx, { x: cx, y: cy + size * .45, size: size, color: COLORS[0], pose: mode === "count" ? "idle" : "lean", lean: st2[1], t: now, label: "" });
+      if (mode === "practice") { var k = passed ? 1 : Math.min(1, held / P_HOLD), bw = W * 0.16, bx = W / 2 - bw / 2, by = oy + tile * ROWS - H * 0.1;
+        rr(bx, by, bw, H * 0.07, H * 0.015, "#30435A"); rr(bx + H * 0.01, by + H * 0.05, (bw - H * 0.02) * k, H * 0.012, H * 0.006, COLORS[0]);
+        txt(passed ? "통과!" : "나(P1)", W / 2, by + H * 0.025, f * 0.7, "#F4F8FF");
+        if (feedAt >= 0) { rr(W * .3, H * .42, W * .4, H * .12, H * .06, "#30435A"); txt("잘했어요!", W / 2, H * .48, H * .05, "#F4F8FF"); } }
+      else txt(Math.ceil(3 - clock), W / 2, oy + tile * ROWS / 2, H * 0.12, "#F4F8FF");
+      return;
     }
-    document.getElementById("score").innerHTML = balls.map(function (b) { return "<span>P" + b.seat + " " + b.score + "점 · 탈출 " + b.laps + "</span>"; }).join("");
+    /* 도전 줄 */
+    var left = phase === "run" ? Math.max(0, LIMIT - (clock - turnStart)) : phase === "ready" ? LIMIT : Math.max(0, LIMIT - (records[active].time || 0));
+    var cells = [NAMES[active] + " 도전", "남은 시간 " + left.toFixed(1) + "초", "별 " + stars + " / 3", (active + 1) + " / " + teams + "팀"], bw2 = (W * 0.94 - W * 0.036) / 4;
+    cells.forEach(function (c, i) { var x = W * 0.03 + i * (bw2 + W * 0.012); rr(x, HUD * 0.15, bw2, HUD * 0.7, HUD * 0.2, i === 0 ? COLORS[active] : "#F7FBFE"); txt(c, x + bw2 / 2, HUD * 0.5, f * 0.8, i === 0 ? "#FFFFFF" : "#16304A"); });
+    if (phase !== "final" && mode !== "over") {
+      STARS.forEach(function (st, i) { if (!taken[i]) drawStar(ox + st.x * tile, oy + st.y * tile, tile * .36 * (1 + .06 * Math.sin(now / 333 + i))); });
+      var a = phase === "run" ? steer() : [0, 0], sz = tile * 1.05, cheer = phase === "result" && records[active].success;
+      ctx.fillStyle = "rgba(0,0,0,.18)"; ctx.beginPath(); ctx.ellipse(ox + ball.x * tile, oy + ball.y * tile + sz * .42, sz * .32, sz * .08, 0, 0, 7); ctx.fill();
+      Buddy.draw(ctx, { x: ox + ball.x * tile, y: oy + ball.y * tile + sz * .45, size: sz, color: COLORS[active], pose: cheer ? "cheer" : (a[0] || a[1]) ? "lean" : "idle", lean: a[0], t: now, label: "" });
+    }
+    cheers = cheers.filter(function (c) { return clock - c.at < 0.9; });
+    cheers.forEach(function (c) { var k = (clock - c.at) / 0.9; ctx.globalAlpha = 1 - k; txt(c.t, ox + c.x * tile, oy + (c.y - .8 - k) * tile, tile * .8, "#1F7A3A"); ctx.globalAlpha = 1; });
+    if (phase === "ready" && mode === "play") { var c1 = card(.5, .42); txt(NAMES[active] + " 준비", c1.x + c1.w / 2, c1.y + c1.h * .25, f * 1.2, COLORS[active]); txt(Math.ceil(phaseAt + READY - clock), c1.x + c1.w / 2, c1.y + c1.h * .65, f * 2.6, "#16304A"); }
+    if (phase === "result") { var r = records[active], c2 = card(.62, .46);
+      txt(NAMES[active] + (r.success ? " 탈출 성공!" : " 도전 종료"), c2.x + c2.w / 2, c2.y + c2.h * .22, f * 1.1, r.success ? "#B96B12" : COLORS[active]);
+      txt((r.success ? "완주 기록: " : "도전 시간: ") + r.time.toFixed(1) + "초 · 별 " + r.stars + "/3개", c2.x + c2.w / 2, c2.y + c2.h * .53, f * .85, "#16304A");
+      txt(active + 1 < teams ? "다음: " + NAMES[active + 1] : "곧 승리팀 발표", c2.x + c2.w / 2, c2.y + c2.h * .8, f * .7, "#506981"); }
+    if (phase === "final" || mode === "over") { var rank = records.filter(function (q) { return q.played; }).sort(compare), c3 = card(.8, .9), row = c3.h / 8;
+      txt("최종 경기 결과", c3.x + c3.w / 2, c3.y + row * .8, f * 1.05, "#16304A");
+      var win = rank.filter(function (q) { return ties(q, rank[0]); }).map(function (q) { return NAMES[q.team]; });
+      txt(win.length > 1 ? "공동 우승! " + win.join(" · ") : "우승: " + win[0], c3.x + c3.w / 2, c3.y + row * 1.95, f * 1.3, "#B96B12");
+      rank.forEach(function (q, i) { var yy = c3.y + row * (2.9 + i * 1.2); rr(c3.x + c3.w * .06, yy, c3.w * .88, row, row * .25, "#E9F1F8");
+        ctx.fillStyle = COLORS[q.team]; ctx.beginPath(); ctx.arc(c3.x + c3.w * .06 + row * .5, yy + row / 2, row * .2, 0, 7); ctx.fill();
+        txt((i + 1) + "위 · " + NAMES[q.team], c3.x + c3.w * .06 + row, yy + row / 2, f * .8, COLORS[q.team], "left");
+        txt((q.success ? "완주" : "미완주") + " · " + q.time.toFixed(1) + "초 · 별 " + q.stars + "/3", c3.x + c3.w * .92, yy + row / 2, f * .7, "#16304A", "right"); }); }
+    document.getElementById("score").innerHTML = records.map(function (q) { return "<span>" + NAMES[q.team] + " " + (q.played ? points(q) + "점" : "—") + "</span>"; }).join("");
   }
   function frame(t) {
     var now = t / 1000; if (!last) last = now;
     /* 남은 시간을 쌓아 두고 1/60초씩 꺼낸다 — 화면이 120Hz면 한 장면이 한 걸음보다 짧다 */
-    acc += started ? Math.min(0.25, now - last) : 0; last = now;   /* 시작 화면에서는 멈춰 있다 */
-    while (!over && acc >= STEP) {
-      acc -= STEP;
-      clock += STEP;
-      controlP1(balls[0]);
-      for (var i = 0; i < balls.length; i++) { if (balls[i].bot) autopilot(balls[i]); advance(balls[i]); }
-      if (clock >= ROUND) over = true;
-    }
+    acc += mode !== "off" && mode !== "over" ? Math.min(0.25, now - last) : 0; last = now;
+    while (acc >= STEP) { acc -= STEP; clock += STEP; advance(); }
     draw(); requestAnimationFrame(frame);
   }
   function pick(attr, val) { document.querySelectorAll("[" + attr + "]").forEach(function (b) { b.setAttribute("aria-pressed", b.getAttribute(attr) === val ? "true" : "false"); }); }
-  document.querySelectorAll("[data-bots]").forEach(function (b) { b.onclick = function () { bots = +b.dataset.bots; pick("data-bots", b.dataset.bots); reset(); }; });
-  document.querySelectorAll("[data-speed]").forEach(function (b) { b.onclick = function () { speed = +b.dataset.speed; pick("data-speed", b.dataset.speed); reset(); }; });
-  document.getElementById("restart").onclick = reset;
-  window.__startDemo = function () { reset(); acc = 0; started = true; };
-  window.__stopDemo = function () { started = false; reset(); };
+  document.querySelectorAll("[data-teams]").forEach(function (b) { b.onclick = function () { teams = +b.dataset.teams; pick("data-teams", b.dataset.teams); reset(); }; });
+  document.querySelectorAll("[data-speed]").forEach(function (b) { b.onclick = function () { speed = +b.dataset.speed; pick("data-speed", b.dataset.speed); }; });
+  document.querySelectorAll("[data-limit]").forEach(function (b) { b.onclick = function () { LIMIT = +b.dataset.limit; pick("data-limit", b.dataset.limit); }; });
+  window.__startDemo = function () { reset(); me = { x: 0, y: 0, at: -1e9 }; clock = 0; acc = 0; mode = "practice"; };
+  window.__stopDemo = function () { mode = "off"; reset(); };
+  /* 검사용 — demo_check.mjs */
+  window.__demoState = function () { return { mode: mode, phase: phase, active: active, records: records, step: step, x: ball.x }; };
+  window.__demoSet = function (o) { if (o.teams) teams = o.teams; if (o.limit) LIMIT = o.limit; reset(); };
   reset(); requestAnimationFrame(frame);
 })();
 </script>
